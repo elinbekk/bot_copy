@@ -1,52 +1,32 @@
 package backend.academy.bot;
 
-import com.pengrad.telegrambot.ExceptionHandler;
 import com.pengrad.telegrambot.TelegramBot;
-import com.pengrad.telegrambot.TelegramException;
 import com.pengrad.telegrambot.UpdatesListener;
 import com.pengrad.telegrambot.model.Update;
-import com.pengrad.telegrambot.request.DeleteWebhook;
-import jakarta.annotation.PostConstruct;
 import java.util.List;
 import org.springframework.stereotype.Component;
 
-
 @Component
-public class Bot implements UpdatesListener, ExceptionHandler {
-    private final TelegramBot telegramBot;
+public class Bot {
     private final CommandHandler commandHandler;
 
     public Bot(TelegramBot telegramBot, CommandHandler commandHandler) {
-        this.telegramBot = telegramBot;
         this.commandHandler = commandHandler;
+        telegramBot.setUpdatesListener(this::handleUpdates);
     }
 
-    @PostConstruct
-    public void start() {
-        telegramBot.setUpdatesListener(this, this);
-    }
-
-    @Override
-    public int process(List<Update> updates) {
+    private int handleUpdates(List<Update> updates) {
         for (Update update : updates) {
-            if (update.message() != null && update.message().text() != null) {
-                long chatId = update.message().chat().id();
-                String message = update.message().text();
-//                System.out.println("Получено сообщение: " + message);
-                commandHandler.handleCommand(chatId, message);
-            }
+            onUpdateReceived(update);
         }
         return UpdatesListener.CONFIRMED_UPDATES_ALL;
     }
 
-    @Override
-    public void onException(TelegramException e) {
-        if (e.response() != null) {
-//            log.error("Telegram error: {} - {}", e.response().errorCode(), e.response().description());
-            System.out.println(e.response());
-        } else {
-//            log.error(e.toString());
-            e.printStackTrace();
+    public void onUpdateReceived(Update update) {
+        if (update.message() != null && update.message().text() != null) {
+            long chatId = update.message().chat().id();
+            String message = update.message().text();
+            commandHandler.handleCommand(chatId, message);
         }
     }
 }

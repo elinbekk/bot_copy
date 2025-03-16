@@ -1,5 +1,5 @@
 app:
-  telegram-token: ${TELEGRAM_TOKEN} # env variable
+  telegram-token: 8061371672:AAHhb1VNH7o867EEXcBd4xIoBzCnvdL7jjs # env variable
 
 spring:
   application:

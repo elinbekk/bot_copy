@@ -14,7 +14,7 @@ public class BotService {
     }
 
     public void sendMessage(long chatId, String message) {
-        SendResponse response = telegramBot.execute(new SendMessage(chatId, message));
-        System.out.println("Response: " + response);
+        telegramBot.execute(new SendMessage(chatId, message));
+//        System.out.println("Response: " + response);
     }
 }
