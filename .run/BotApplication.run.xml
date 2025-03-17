@@ -1,0 +1,14 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="BotApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+    <envs>
+      <env name="TELEGRAM_TOKEN" value="8061371672:AAHhb1VNH7o867EEXcBd4xIoBzCnvdL7jjs" />
+      <env name="GITHUB_TOKEN" value="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" />
+    </envs>
+    <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
+    <module name="bot" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="backend.academy.bot.BotApplication" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

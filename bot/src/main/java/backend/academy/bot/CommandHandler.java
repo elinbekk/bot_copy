@@ -27,7 +27,10 @@ public class CommandHandler {
                     botService.sendMessage(chatId, "Введите ссылку для отслеживания:");
                 } else if (message.equals("/list")) {
                     showTrackedLinks(chatId);
-                } else {
+                } else if (message.equals ("/untrack")) {
+                    userStates.put(chatId, BotState.WAITING_FOR_LINK); //todo: add new state
+                    botService.sendMessage(chatId, "Введите ссылку для удаления:");
+                }else {
                     botService.sendMessage(chatId, "Неизвестная команда. Используй /help");
                 }
             }

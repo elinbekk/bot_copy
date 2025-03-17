@@ -2,7 +2,6 @@ package backend.academy.bot;
 
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.request.SendMessage;
-import com.pengrad.telegrambot.response.SendResponse;
 import org.springframework.stereotype.Component;
 
 @Component
