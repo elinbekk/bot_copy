@@ -11,6 +11,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 @Component
@@ -19,7 +20,9 @@ public class StackOverflowClient implements UpdateChecker {
     private final ObjectMapper objectMapper;
     private final String soTokenKey;
     private final String soAccessToken;
+    private final String apiBaseUrl;
 
+    @Autowired
     public StackOverflowClient(
         @Value("${stackoverflow.key:}") String key,
         @Value("${stackoverflow.token:}") String token
@@ -30,6 +33,17 @@ public class StackOverflowClient implements UpdateChecker {
         this.objectMapper = new ObjectMapper();
         this.soTokenKey = key;
         this.soAccessToken = token;
+        this.apiBaseUrl = "https://api.stackexchange.com/2.3/";
+    }
+
+    public StackOverflowClient(String key, String token, String apiBaseUrl) {
+        this.soTokenKey = key;
+        this.soAccessToken = token;
+        this.apiBaseUrl = apiBaseUrl;
+        this.httpClient = HttpClient.newBuilder()
+            .connectTimeout(Duration.ofSeconds(10))
+            .build();
+        this.objectMapper = new ObjectMapper();
     }
 
     @Override
@@ -43,7 +57,7 @@ public class StackOverflowClient implements UpdateChecker {
         }
     }
 
-    private JsonNode getQuestion(int questionId) {
+    public JsonNode getQuestion(int questionId) {
         String url = buildUrl(questionId);
         HttpRequest request = buildRequest(url);
 
@@ -64,7 +78,7 @@ public class StackOverflowClient implements UpdateChecker {
         }
     }
 
-    private int extractQuestionId(String url) {
+    public int extractQuestionId(String url) {
         Pattern pattern = Pattern.compile("https?://stackoverflow.com/questions/(\\d+)");
         Matcher matcher = pattern.matcher(url);
 
@@ -75,9 +89,10 @@ public class StackOverflowClient implements UpdateChecker {
     }
 
 
-    private String buildUrl(int questionId) {
+    public String buildUrl(int questionId) {
         return String.format(
-            "https://api.stackexchange.com/2.3/questions/%d?site=stackoverflow&filter=withbody&key=%s&access_token=%s",
+            "%squestions/%d?site=stackoverflow&filter=withbody&key=%s&access_token=%s",
+            apiBaseUrl,
             questionId,
             soTokenKey,
             soAccessToken
@@ -103,7 +118,7 @@ public class StackOverflowClient implements UpdateChecker {
         }
     }
 
-    private JsonNode parseResponse(String body) throws Exception {
+    public JsonNode parseResponse(String body) throws Exception {
         JsonNode root = objectMapper.readTree(body);
         JsonNode items = root.get("items");
 
@@ -114,7 +129,7 @@ public class StackOverflowClient implements UpdateChecker {
         return items.get(0);
     }
 
-    private boolean isUpdated(String responseBody, String lastChecked) throws JsonProcessingException {
+    public boolean isUpdated(String responseBody, String lastChecked) throws JsonProcessingException {
         JsonNode root = new ObjectMapper().readTree(responseBody);
         JsonNode item = root.get("items").get(0);
         long lastActivity = item.get("last_activity_date").asLong();
