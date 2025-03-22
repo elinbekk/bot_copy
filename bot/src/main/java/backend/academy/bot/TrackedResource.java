@@ -1,5 +1,69 @@
 package backend.academy.bot;
 
-import java.util.List;
+import java.time.Instant;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 
-record TrackedResource(String link, List<String> tags, String filters) {}
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+public class TrackedResource {
+    private Long id;
+    private Long chatId;
+    private String link;
+    private Set<String> tags = new HashSet<>();
+    private Map<String, String> filters;
+    private Instant lastCheckedTime = Instant.now();
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getChatId() {
+        return chatId;
+    }
+
+    public void setChatId(Long chatId) {
+        this.chatId = chatId;
+    }
+
+    public String getLink() {
+        return link;
+    }
+
+    public void setLink(String link) {
+        this.link = link;
+    }
+
+    public Set<String> getTags() {
+        return tags;
+    }
+
+    public void setTags(Set<String> tags) {
+        this.tags = tags;
+    }
+
+    public Map<String, String> getFilters() {
+        return filters;
+    }
+
+    public void setFilters(Map<String, String> filters) {
+        this.filters = filters;
+    }
+
+    public Instant getLastCheckedTime() {
+        return lastCheckedTime;
+    }
+
+    public void setLastCheckedTime(Instant lastCheckedTime) {
+        this.lastCheckedTime = lastCheckedTime;
+    }
+}
