@@ -24,7 +24,6 @@ public class CommandHandler {
 
     public void handleCommand(long chatId, String message) {
         BotState state = userStates.getOrDefault(chatId, BotState.INITIAL);
-
         try {
             switch (state) {
                 case INITIAL -> handleInitialState(chatId, message);
@@ -39,8 +38,8 @@ public class CommandHandler {
         }
     }
 
-    private void handleInitialState(long chatId, String message) {
-        switch (message) {
+    private void handleInitialState(long chatId, String command) {
+        switch (command) {
             case "/start" -> handleStartCommand(chatId);
             case "/track" -> startTrackingProcess(chatId);
             case "/untrack" -> startUntrackingProcess(chatId);
@@ -70,12 +69,16 @@ public class CommandHandler {
 
     private void handleFiltersInput(long chatId, String message) {
         TrackedResource resource = trackResources.get(chatId);
-        resource.setFilters(parseFilters(message));
-        resource.setLastCheckedTime(Instant.now());
+        try {
+            resource.setFilters(parseFilters(message));
+            resource.setLastCheckedTime(Instant.now());
 
-        saveTrackedResource(chatId, resource);
-        resetUserState(chatId);
-        botService.sendMessage(chatId, "Ссылка успешно добавлена!");
+            saveTrackedResource(chatId, resource);
+            resetUserState(chatId);
+            botService.sendMessage(chatId, "Ссылка успешно добавлена!");
+        } catch (IllegalArgumentException e) {
+            botService.sendMessage(chatId, "Ошибка: " + e.getMessage());
+        }
     }
 
 
@@ -85,9 +88,9 @@ public class CommandHandler {
         resetUserState(chatId);
     }
 
-    private void saveTrackedResource(long chatId, TrackedResource resource) {
+    void saveTrackedResource(long chatId, TrackedResource resource) {
         if (linkRepository.existsByChatIdAndLink(chatId, resource.getLink())) {
-            throw new IllegalStateException("Эта ссылка уже отслеживается");
+            throw new IllegalArgumentException("Эта ссылка уже отслеживается");
         }
         linkRepository.addLink(chatId, resource);
     }
@@ -107,12 +110,15 @@ public class CommandHandler {
         botService.sendMessage(chatId, "Ваши отслеживаемые ссылки:\n" + response);
     }
 
-    private String formatResource(TrackedResource resource) {
+    String formatResource(TrackedResource resource) {
+        String filtersStr = resource.getFilters().entrySet().stream()
+            .map(entry -> entry.getKey() + ": " + entry.getValue())
+            .collect(Collectors.joining(", "));
         return String.format(
             "• %s\nТеги: %s\nФильтры: %s\nПоследняя проверка: %s",
             resource.getLink(),
             resource.getTags().isEmpty() ? "нет" : String.join(", ", resource.getTags()),
-            resource.getFilters().isEmpty() ? "нет" : resource.getFilters(),
+            resource.getFilters().isEmpty() ? "нет" : filtersStr,
             DateTimeFormatter.ISO_INSTANT.format(resource.getLastCheckedTime())
         );
     }
@@ -128,8 +134,27 @@ public class CommandHandler {
             .collect(Collectors.toSet());
     }
 
-    private String parseFilters(String message) {
-        return message;
+    private Map<String, String> parseFilters(String message) {
+        Map<String, String> filters = new HashMap<>();
+
+        if (message == null || message.isBlank()) {
+            return filters;
+        }
+
+        Arrays.stream(message.split("\\s+"))
+            .filter(part -> !part.isBlank())
+            .forEach(part -> {
+                String[] keyValue = part.split(":", 2);
+                if (keyValue.length != 2) {
+                    throw new IllegalArgumentException(
+                        "Некорректный формат фильтра: " + part + "\n" +
+                            "Используйте формат: ключ:значение"
+                    );
+                }
+                filters.put(keyValue[0].trim(), keyValue[1].trim());
+            });
+
+        return filters;
     }
 
     private void validateUrl(String url) {
@@ -137,7 +162,6 @@ public class CommandHandler {
             throw new IllegalArgumentException("Некорректный формат ссылки");
         }
     }
-
 
     private void handleStartCommand(long chatId) {
         botService.sendMessage(chatId, """
@@ -160,7 +184,7 @@ public class CommandHandler {
         botService.sendMessage(chatId, "Введите ссылку для удаления:");
     }
 
-    private LinkType detectLinkType(String url) {
+    protected LinkType detectLinkType(String url) {
         if (url.contains("github.com")) return LinkType.GITHUB;
         if (url.contains("stackoverflow.com")) return LinkType.STACKOVERFLOW;
         throw new IllegalArgumentException("Неподдерживаемый тип ссылки");

@@ -20,7 +20,7 @@ public class InMemoryLinkRepository implements LinkRepository {
     public void removeLink(long chatId, String url) {
         List<TrackedResource> resources = storage.get(chatId);
         if (resources != null) {
-            resources.removeIf(resource -> resource.link().equals(url));
+            resources.removeIf(resource -> resource.getLink().equals(url));
         }
     }
 
