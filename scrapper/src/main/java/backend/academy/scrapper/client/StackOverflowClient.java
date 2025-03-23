@@ -47,11 +47,11 @@ public class StackOverflowClient implements UpdateChecker {
     }
 
     @Override
-    public boolean hasUpdates(String url, String lastChecked) {
+    public boolean hasUpdates(String url, Instant lastChecked) {
         try {
             int questionId = extractQuestionId(url);
             JsonNode question = getQuestion(questionId);
-            return isUpdated(String.valueOf(question), lastChecked);
+            return isUpdated(String.valueOf(question), String.valueOf(lastChecked));
         } catch (Exception e) {
             throw new RuntimeException("Failed to check updates for: " + url, e);
         }

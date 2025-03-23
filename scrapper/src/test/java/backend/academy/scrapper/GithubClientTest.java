@@ -6,6 +6,7 @@ import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import java.time.Instant;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.notFound;
 import static com.github.tomakehurst.wiremock.client.WireMock.ok;
@@ -28,7 +29,7 @@ class GithubClientTest {
         wireMock.stubFor(get(urlEqualTo("/repos/owner/repo"))
             .willReturn(notFound()));
 
-        boolean result = client.hasUpdates("http://github.com/owner/repo", "2023-01-01T00:00:00Z");
+        boolean result = client.hasUpdates("http://github.com/owner/repo", Instant.parse("2023-01-01T00:00:00Z"));
         Assertions.assertFalse(result);
     }
 
@@ -39,7 +40,7 @@ class GithubClientTest {
         wireMock.stubFor(get(urlEqualTo("/repos/owner/repo"))
             .willReturn(okJson("{\"name\":\"repo\"}")));
 
-        boolean result = client.hasUpdates("http://github.com/owner/repo", "2023-01-01T00:00:00Z");
+        boolean result = client.hasUpdates("http://github.com/owner/repo", Instant.parse("2023-01-01T00:00:00Z"));
         Assertions.assertFalse(result);
     }
 
@@ -50,7 +51,7 @@ class GithubClientTest {
         wireMock.stubFor(get(urlEqualTo("/repos/owner/repo"))
             .willReturn(serverError()));
 
-        boolean result = client.hasUpdates("http://github.com/owner/repo", "2023-01-01T00:00:00Z");
+        boolean result = client.hasUpdates("http://github.com/owner/repo", Instant.parse("2023-01-01T00:00:00Z"));
         Assertions.assertFalse(result);
     }
 
@@ -61,7 +62,7 @@ class GithubClientTest {
         wireMock.stubFor(get(urlEqualTo("/repos/owner/repo"))
             .willReturn(ok().withFixedDelay(15000))); // 15 секунд > 10
 
-        boolean result = client.hasUpdates("http://github.com/owner/repo", "2023-01-01T00:00:00Z");
+        boolean result = client.hasUpdates("http://github.com/owner/repo", Instant.parse("2023-01-01T00:00:00Z"));
         Assertions.assertFalse(result);
     }
 }

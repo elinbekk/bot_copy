@@ -1,10 +1,12 @@
 package backend.academy.bot;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -42,5 +44,22 @@ public class InMemoryLinkRepository implements LinkRepository {
             .flatMap(List::stream)
             .anyMatch(r -> r.getChatId() == chatId && r.getLink().equals(link));
 
+    }
+
+    @Override
+    public List<TrackedResource> findByLastCheckedBefore(Instant checkFrom, LinkType type) {
+        return storage.values().stream()
+            .flatMap(List::stream)
+            .filter(res -> res.getLastCheckedTime().isBefore(checkFrom))
+            .filter(res -> type == null || res.getLinkType() == type)
+            .collect(Collectors.toList());
+    }
+
+    @Override
+    public void updateLastChecked(String url, Instant checkTime) {
+        storage.values().stream()
+            .flatMap(List::stream)
+            .filter(res -> res.getLink().equals(url))
+            .forEach(res -> res.setLastCheckedTime(checkTime));
     }
 }

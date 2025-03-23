@@ -1,5 +1,6 @@
 package backend.academy.bot;
 
+import java.time.Instant;
 import java.util.List;
 
 public interface LinkRepository {
@@ -8,4 +9,6 @@ public interface LinkRepository {
     List<TrackedResource> getLinks(long chatId);
     List<TrackedResource> getAllLinks();
     boolean existsByChatIdAndLink(long chatId, String link);
+    List<TrackedResource> findByLastCheckedBefore(Instant checkFrom, LinkType type);
+    void updateLastChecked(String url, Instant now);
 }

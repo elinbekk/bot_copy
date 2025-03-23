@@ -15,6 +15,7 @@ public class TrackedResource {
     private Long id;
     private Long chatId;
     private String link;
+    private LinkType linkType;
     private Set<String> tags = new HashSet<>();
     private Map<String, String> filters;
     private Instant lastCheckedTime = Instant.now();
@@ -65,5 +66,13 @@ public class TrackedResource {
 
     public void setLastCheckedTime(Instant lastCheckedTime) {
         this.lastCheckedTime = lastCheckedTime;
+    }
+
+    public LinkType getLinkType() {
+        return linkType;
+    }
+
+    public void setLinkType(LinkType linkType) {
+        this.linkType = linkType;
     }
 }

@@ -10,6 +10,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,13 +27,13 @@ public class GithubClient implements UpdateChecker {
     }
 
     @Override
-    public boolean hasUpdates(String url, String lastChecked) {
+    public boolean hasUpdates(String url, Instant lastChecked) {
         try {
             URI uri = parseGitHubUrl(url);
             HttpRequest request = buildRequest(uri);
             HttpResponse<String> response = sendRequest(request);
 
-            return isUpdated(response.body(), lastChecked);
+            return isUpdated(response.body(), String.valueOf(lastChecked));
         } catch (Exception e) {
             return false;
         }
