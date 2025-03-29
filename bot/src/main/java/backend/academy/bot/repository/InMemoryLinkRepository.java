@@ -1,4 +1,4 @@
-package backend.academy.bot;
+package backend.academy.bot.repository;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -7,6 +7,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import backend.academy.bot.entity.LinkType;
+import backend.academy.bot.entity.TrackedResource;
 import org.springframework.stereotype.Component;
 
 @Component

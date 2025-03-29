@@ -135,7 +135,6 @@ public class StackOverflowClient implements UpdateChecker {
         JsonNode item = root.get("items").get(0);
         long lastActivity = item.get("last_activity_date").asLong();
 
-        // Конвертируем lastChecked в timestamp для сравнения
         Instant lastCheckedInstant = Instant.parse(lastChecked);
         return lastActivity > lastCheckedInstant.getEpochSecond();
     }

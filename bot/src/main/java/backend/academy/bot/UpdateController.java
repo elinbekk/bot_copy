@@ -1,7 +1,9 @@
 package backend.academy.bot;
 
 
-import org.springframework.beans.factory.annotation.Autowired;
+import backend.academy.bot.entity.LinkUpdate;
+import backend.academy.bot.entity.TrackedResource;
+import backend.academy.bot.repository.LinkRepository;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -46,7 +48,7 @@ public class UpdateController {
     private String formatUpdateMessage(LinkUpdate update) {
         return String.format(
             """
-            🔔 Обновление в отслеживаемой ссылке!
+             Обновление в отслеживаемой ссылке!
 
             Ссылка: %s
             Описание: %s

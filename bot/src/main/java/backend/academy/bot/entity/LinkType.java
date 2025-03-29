@@ -1,4 +1,4 @@
-package backend.academy.bot;
+package backend.academy.bot.entity;
 
 public enum LinkType {
     GITHUB,

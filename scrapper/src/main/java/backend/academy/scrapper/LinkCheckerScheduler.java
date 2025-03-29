@@ -1,7 +1,7 @@
 package backend.academy.scrapper;
 
-import backend.academy.bot.LinkUpdate;
-import backend.academy.bot.TrackedResource;
+import backend.academy.bot.entity.LinkUpdate;
+import backend.academy.bot.entity.TrackedResource;
 import backend.academy.scrapper.client.GithubClient;
 import backend.academy.scrapper.client.StackOverflowClient;
 import java.util.List;

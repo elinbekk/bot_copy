@@ -8,6 +8,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import backend.academy.bot.entity.LinkType;
+import backend.academy.bot.entity.TrackedResource;
+import backend.academy.bot.repository.LinkRepository;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -52,7 +55,9 @@ public class CommandHandler {
     private void handleLinkInput(long chatId, String message) {
         validateUrl(message);
         TrackedResource resource = trackResources.get(chatId);
+        LinkType linkType = detectLinkType(message);
         resource.setLink(message);
+        resource.setLinkType(linkType);
         resource.setChatId(chatId);
 
         userStates.put(chatId, BotState.WAITING_FOR_TAGS);

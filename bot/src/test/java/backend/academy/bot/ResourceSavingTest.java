@@ -3,18 +3,19 @@ package backend.academy.bot;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import backend.academy.bot.entity.TrackedResource;
+import backend.academy.bot.repository.InMemoryLinkRepository;
+import backend.academy.bot.repository.LinkRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 public class ResourceSavingTest {
     @Test

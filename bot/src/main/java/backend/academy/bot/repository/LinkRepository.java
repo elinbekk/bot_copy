@@ -1,4 +1,7 @@
-package backend.academy.bot;
+package backend.academy.bot.repository;
+
+import backend.academy.bot.entity.LinkType;
+import backend.academy.bot.entity.TrackedResource;
 
 import java.time.Instant;
 import java.util.List;
