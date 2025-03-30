@@ -1,16 +1,21 @@
 package backend.academy.scrapper.client;
 
+import backend.academy.bot.entity.TrackedResource;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -57,6 +62,21 @@ public class StackOverflowClient implements UpdateChecker {
             throw new RuntimeException("Failed to check updates for: " + url, e);
         }
     }
+
+    @Override
+    public boolean hasUpdates(TrackedResource trackedResource) {
+        return false;
+    }
+
+/*    @Override
+    public boolean hasUpdates(TrackedResource resource) {
+        try {
+            JsonNode question = getQuestion(resource);
+            return isUpdated(question, resource.getLastCheckedTime());
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to check updates for: " + resource.getUrl(), e);
+        }
+    }*/
 
     public JsonNode getQuestion(int questionId) {
         String url = buildUrl(questionId);

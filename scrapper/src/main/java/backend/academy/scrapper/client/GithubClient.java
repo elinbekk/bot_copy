@@ -1,6 +1,8 @@
 package backend.academy.scrapper.client;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import backend.academy.bot.entity.LinkType;
+import backend.academy.bot.entity.TrackedResource;
+import backend.academy.scrapper.GithubResource;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
@@ -15,6 +17,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.UriComponentsBuilder;
+import static backend.academy.bot.entity.LinkType.GITHUB_ISSUE;
+import static backend.academy.bot.entity.LinkType.GITHUB_PR;
+import static backend.academy.bot.entity.LinkType.GITHUB_REPO;
+
 
 @Component
 public class GithubClient implements UpdateChecker {
@@ -26,29 +33,94 @@ public class GithubClient implements UpdateChecker {
         this.apiToken = apiToken;
     }
 
+
     @Override
-    public boolean hasUpdates(String url, Instant lastChecked) {
+    public boolean hasUpdates(TrackedResource resource) {
         try {
-            URI uri = parseGitHubUrl(url);
+            URI uri = buildUriWithFilters(resource);
             HttpRequest request = buildRequest(uri);
             HttpResponse<String> response = sendRequest(request);
 
-            return isUpdated(response.body(), String.valueOf(lastChecked));
+            JsonNode json = new ObjectMapper().readTree(response.body());
+            Instant lastUpdate = parseUpdateTime(json, resource.getLinkType());
+
+            return lastUpdate.isAfter(resource.getLastCheckedTime());
         } catch (Exception e) {
             return false;
         }
     }
 
-    private URI parseGitHubUrl(String url) throws URISyntaxException {
-        Pattern pattern = Pattern.compile("https?://github.com/([^/]+)/([^/]+)");
-        Matcher matcher = pattern.matcher(url);
+    private Instant parseUpdateTime(JsonNode json, LinkType linkType) {
+        return switch (linkType) {
+            case GITHUB_REPO -> Instant.parse(json.get("pushed_at").asText());
+            case GITHUB_ISSUE, GITHUB_PR -> Instant.parse(json.get("updated_at").asText());
+            default -> throw new IllegalArgumentException("Unsupported link type");
+        };
+    }
 
-        if (!matcher.find()) {
-            throw new IllegalArgumentException("Invalid GitHub URL");
+    private URI buildUriWithFilters(TrackedResource resource) throws URISyntaxException {
+        GithubResource gitHubResource = parseGitHubUrl(resource.getLink());
+        String basePath = buildBaseApiPath(gitHubResource);
+
+        UriComponentsBuilder builder = UriComponentsBuilder
+            .fromUriString("https://api.github.com" + basePath);
+
+        if (resource.getFilters() != null) {
+            resource.getFilters().forEach(builder::queryParam);
         }
 
-        return new URI("https://api.github.com/repos/"
-            + matcher.group(1) + "/" + matcher.group(2));
+        return builder.build().toUri();
+    }
+
+    private String buildBaseApiPath(GithubResource resource) {
+        return switch (resource.getType()) {
+            case GITHUB_REPO -> "/repos/%s/%s".formatted(resource.getOwner(), resource.getRepo());
+            case GITHUB_ISSUE -> "/repos/%s/%s/issues/%s".formatted(
+                resource.getOwner(),
+                resource.getRepo(),
+                resource.getNumber()
+            );
+            case GITHUB_PR -> "/repos/%s/%s/pulls/%s".formatted(
+                resource.getOwner(),
+                resource.getRepo(),
+                resource.getNumber()
+            );
+            case STACKOVERFLOW -> null;
+        };
+    }
+
+    private GithubResource parseGitHubUrl(String url) throws URISyntaxException {
+        Pattern repoPattern = Pattern.compile("https?://github.com/([^/]+)/([^/]+)/?");
+        Pattern issuePattern = Pattern.compile("https?://github.com/([^/]+)/([^/]+)/issues/(\\d+)");
+        Pattern prPattern = Pattern.compile("https?://github.com/([^/]+)/([^/]+)/pull/(\\d+)");
+
+        Matcher issueMatcher = issuePattern.matcher(url);
+        Matcher prMatcher = prPattern.matcher(url);
+        Matcher repoMatcher = repoPattern.matcher(url);
+
+        if (issueMatcher.find()) {
+            return new GithubResource(
+                GITHUB_ISSUE,
+                issueMatcher.group(1),
+                issueMatcher.group(2),
+                issueMatcher.group(3)
+            );
+        } else if (prMatcher.find()) {
+            return new GithubResource(
+                GITHUB_PR,
+                prMatcher.group(1),
+                prMatcher.group(2),
+                prMatcher.group(3)
+            );
+        } else if (repoMatcher.find()) {
+            return new GithubResource(
+                GITHUB_REPO,
+                repoMatcher.group(1),
+                repoMatcher.group(2),
+                null
+            );
+        }
+        throw new IllegalArgumentException("Unsupported GitHub URL");
     }
 
     private HttpRequest buildRequest(URI uri) {
@@ -65,9 +137,10 @@ public class GithubClient implements UpdateChecker {
         return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
     }
 
-    private boolean isUpdated(String responseBody, String lastChecked) throws JsonProcessingException {
-        JsonNode json = new ObjectMapper().readTree(responseBody);
-        String updatedAt = json.get("pushed_at").asText();
-        return updatedAt.compareTo(lastChecked) > 0;
+    //todo: delete
+    @Override
+    public boolean hasUpdates(String url, Instant lastChecked) {
+        return false;
     }
 }
+

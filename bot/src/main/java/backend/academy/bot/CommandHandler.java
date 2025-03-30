@@ -1,5 +1,8 @@
 package backend.academy.bot;
 
+import backend.academy.bot.entity.LinkType;
+import backend.academy.bot.entity.TrackedResource;
+import backend.academy.bot.repository.LinkRepository;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
@@ -7,10 +10,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import backend.academy.bot.entity.LinkType;
-import backend.academy.bot.entity.TrackedResource;
-import backend.academy.bot.repository.LinkRepository;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -190,8 +191,22 @@ public class CommandHandler {
     }
 
     protected LinkType detectLinkType(String url) {
-        if (url.contains("github.com")) return LinkType.GITHUB;
-        if (url.contains("stackoverflow.com")) return LinkType.STACKOVERFLOW;
+        if (url.contains("github.com")) {
+            Pattern issuePattern = Pattern.compile("https?://github\\.com/[^/]+/[^/]+/issues/\\d+");
+            Pattern prPattern = Pattern.compile("https?://github\\.com/[^/]+/[^/]+/pull/\\d+");
+            Pattern repoPattern = Pattern.compile("https?://github\\.com/[^/]+/[^/]+(/)?(.git)?");
+
+            if (issuePattern.matcher(url).find()) {
+                return LinkType.GITHUB_ISSUE;
+            } else if (prPattern.matcher(url).find()) {
+                return LinkType.GITHUB_PR;
+            } else if (repoPattern.matcher(url).find()) {
+                return LinkType.GITHUB_REPO;
+            }
+        }
+        if (url.contains("stackoverflow.com")) {
+            return LinkType.STACKOVERFLOW;
+        }
         throw new IllegalArgumentException("Неподдерживаемый тип ссылки");
     }
 
