@@ -62,23 +62,25 @@ public class CommandHandler {
         resource.setChatId(chatId);
 
         userStates.put(chatId, BotState.WAITING_FOR_TAGS);
-        botService.sendMessage(chatId, "Введите теги через пробел (опционально):");
+        botService.sendMessage(chatId, "Введите теги через пробел (опционально), если их нет, поставьте - :");
     }
 
     private void handleTagsInput(long chatId, String message) {
         TrackedResource resource = trackResources.get(chatId);
-        resource.setTags(parseTags(message));
-
+        if(!message.equals("-")) {
+            resource.setTags(parseTags(message));
+        }
         userStates.put(chatId, BotState.WAITING_FOR_FILTERS);
-        botService.sendMessage(chatId, "Введите фильтры в формате key:value (опционально):");
+        botService.sendMessage(chatId, "Введите фильтры в формате key:value (опционально), если их нет, поставьте -:");
     }
 
     private void handleFiltersInput(long chatId, String message) {
         TrackedResource resource = trackResources.get(chatId);
         try {
-            resource.setFilters(parseFilters(message));
+            if(!message.equals("-")) {
+                resource.setFilters(parseFilters(message));
+            }
             resource.setLastCheckedTime(Instant.now());
-
             saveTrackedResource(chatId, resource);
             resetUserState(chatId);
             botService.sendMessage(chatId, "Ссылка успешно добавлена!");

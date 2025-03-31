@@ -94,9 +94,13 @@ public class StackOverflowClient implements UpdateChecker {
     }
 
     private String buildFiltersParam(Map<String, String> filters) {
-        return filters.entrySet().stream()
-            .map(e -> "&" + e.getKey() + "=" + URLEncoder.encode(e.getValue(), StandardCharsets.UTF_8))
-            .collect(Collectors.joining());
+        if (!filters.isEmpty()) {
+            return "";
+        }else{
+            return filters.entrySet().stream()
+                .map(e -> "&" + e.getKey() + "=" + URLEncoder.encode(e.getValue(), StandardCharsets.UTF_8))
+                .collect(Collectors.joining());
+        }
     }
 
     private String buildAuthParams() {
