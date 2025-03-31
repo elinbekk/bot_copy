@@ -7,10 +7,11 @@ import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@RequiredArgsConstructor
 public class TrackedResource {
     private Long id;
     private Long chatId;

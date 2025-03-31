@@ -136,11 +136,5 @@ public class GithubClient implements UpdateChecker {
     private HttpResponse<String> sendRequest(HttpRequest request) throws IOException, InterruptedException {
         return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
     }
-
-    //todo: delete
-    @Override
-    public boolean hasUpdates(String url, Instant lastChecked) {
-        return false;
-    }
 }
 

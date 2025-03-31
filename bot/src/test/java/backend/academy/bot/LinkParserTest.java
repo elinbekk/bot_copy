@@ -13,7 +13,7 @@ public class LinkParserTest {
     void linkTypeCorrectDetectedTest() {
         CommandHandler handler = new CommandHandler(mock(BotService.class), mock(LinkRepository.class));
         assertAll(
-            () -> Assertions.assertEquals(LinkType.GITHUB, handler.detectLinkType("https://github.com/user/repo")),
+            () -> Assertions.assertEquals(LinkType.GITHUB_REPO, handler.detectLinkType("https://github.com/user/repo")),
             () -> Assertions.assertEquals(LinkType.STACKOVERFLOW, handler.detectLinkType("https://stackoverflow.com/questions/123")),
             () -> assertThrows(IllegalArgumentException.class,
                 () -> handler.detectLinkType("https://google.com"))

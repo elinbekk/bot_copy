@@ -1,5 +1,6 @@
 package backend.academy.scrapper;
 
+import backend.academy.bot.entity.TrackedResource;
 import backend.academy.scrapper.client.GithubClient;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
@@ -29,7 +30,10 @@ class GithubClientTest {
         wireMock.stubFor(get(urlEqualTo("/repos/owner/repo"))
             .willReturn(notFound()));
 
-        boolean result = client.hasUpdates("http://github.com/owner/repo", Instant.parse("2023-01-01T00:00:00Z"));
+        TrackedResource resource = new TrackedResource();
+        resource.setLink("http://github.com/owner/repo");
+        resource.setLastCheckedTime(Instant.parse("2023-01-01T00:00:00Z"));
+        boolean result = client.hasUpdates(resource);
         Assertions.assertFalse(result);
     }
 
@@ -40,7 +44,11 @@ class GithubClientTest {
         wireMock.stubFor(get(urlEqualTo("/repos/owner/repo"))
             .willReturn(okJson("{\"name\":\"repo\"}")));
 
-        boolean result = client.hasUpdates("http://github.com/owner/repo", Instant.parse("2023-01-01T00:00:00Z"));
+        TrackedResource resource = new TrackedResource();
+        resource.setLink("http://github.com/owner/repo");
+        resource.setLastCheckedTime(Instant.parse("2023-01-01T00:00:00Z"));
+        boolean result = client.hasUpdates(resource);
+
         Assertions.assertFalse(result);
     }
 

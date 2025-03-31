@@ -9,6 +9,7 @@ import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
@@ -53,30 +54,59 @@ public class StackOverflowClient implements UpdateChecker {
     }
 
     @Override
-    public boolean hasUpdates(String url, Instant lastChecked) {
-        try {
-            int questionId = extractQuestionId(url);
-            JsonNode question = getQuestion(questionId);
-            return isUpdated(String.valueOf(question), String.valueOf(lastChecked));
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to check updates for: " + url, e);
-        }
-    }
-
-    @Override
-    public boolean hasUpdates(TrackedResource trackedResource) {
-        return false;
-    }
-
-/*    @Override
     public boolean hasUpdates(TrackedResource resource) {
         try {
             JsonNode question = getQuestion(resource);
             return isUpdated(question, resource.getLastCheckedTime());
         } catch (Exception e) {
-            throw new RuntimeException("Failed to check updates for: " + resource.getUrl(), e);
+            throw new RuntimeException("Failed to check updates for: " + resource.getLink(), e);
         }
-    }*/
+    }
+
+    private JsonNode getQuestion(TrackedResource resource) throws Exception {
+        String url = buildUrlWithFilters(resource);
+        HttpRequest request = buildRequest(url);
+
+        HttpResponse<String> response = httpClient.send(
+            request,
+            HttpResponse.BodyHandlers.ofString()
+        );
+
+        checkForErrors(response);
+        return parseResponse(response.body());
+    }
+
+    private String buildUrlWithFilters(TrackedResource resource) {
+        int questionId = extractQuestionId(resource.getLink());
+        return String.format(
+            "%squestions/%d?site=stackoverflow%s%s%s",
+            apiBaseUrl,
+            questionId,
+            buildTagsParam(resource.getTags()),
+            buildFiltersParam(resource.getFilters()),
+            buildAuthParams()
+        );
+    }
+
+    private String buildTagsParam(Set<String> tags) {
+        return tags.isEmpty() ? ""
+            : "&tagged=" + String.join(";", tags);
+    }
+
+    private String buildFiltersParam(Map<String, String> filters) {
+        return filters.entrySet().stream()
+            .map(e -> "&" + e.getKey() + "=" + URLEncoder.encode(e.getValue(), StandardCharsets.UTF_8))
+            .collect(Collectors.joining());
+    }
+
+    private String buildAuthParams() {
+        return String.format("&key=%s&access_token=%s", soTokenKey, soAccessToken);
+    }
+
+    private boolean isUpdated(JsonNode question, Instant lastChecked) {
+        long lastActivity = question.get("last_activity_date").asLong();
+        return lastActivity > lastChecked.getEpochSecond();
+    }
 
     public JsonNode getQuestion(int questionId) {
         String url = buildUrl(questionId);
@@ -150,12 +180,4 @@ public class StackOverflowClient implements UpdateChecker {
         return items.get(0);
     }
 
-    public boolean isUpdated(String responseBody, String lastChecked) throws JsonProcessingException {
-        JsonNode root = new ObjectMapper().readTree(responseBody);
-        JsonNode item = root.get("items").get(0);
-        long lastActivity = item.get("last_activity_date").asLong();
-
-        Instant lastCheckedInstant = Instant.parse(lastChecked);
-        return lastActivity > lastCheckedInstant.getEpochSecond();
-    }
 }
