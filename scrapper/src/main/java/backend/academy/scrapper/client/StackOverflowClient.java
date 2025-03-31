@@ -103,7 +103,7 @@ public class StackOverflowClient implements UpdateChecker {
         return String.format("&key=%s&access_token=%s", soTokenKey, soAccessToken);
     }
 
-    private boolean isUpdated(JsonNode question, Instant lastChecked) {
+    public boolean isUpdated(JsonNode question, Instant lastChecked) {
         long lastActivity = question.get("last_activity_date").asLong();
         return lastActivity > lastChecked.getEpochSecond();
     }

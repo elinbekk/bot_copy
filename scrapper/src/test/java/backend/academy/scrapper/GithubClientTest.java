@@ -2,9 +2,11 @@ package backend.academy.scrapper;
 
 import backend.academy.bot.entity.TrackedResource;
 import backend.academy.scrapper.client.GithubClient;
+import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import java.time.Instant;
@@ -23,54 +25,56 @@ class GithubClientTest {
         .options(wireMockConfig().dynamicPort())
         .build();
 
-    @Test
-    void testHttp404Error() {
-        GithubClient client = new GithubClient("token");
+    private GithubClient client;
+    private TrackedResource resource;
 
-        wireMock.stubFor(get(urlEqualTo("/repos/owner/repo"))
-            .willReturn(notFound()));
+    @BeforeEach
+    void setUp() {
+        client = new GithubClient("token");
+        resource = createDefaultResource();
+    }
 
+    private TrackedResource createDefaultResource() {
         TrackedResource resource = new TrackedResource();
         resource.setLink("http://github.com/owner/repo");
         resource.setLastCheckedTime(Instant.parse("2023-01-01T00:00:00Z"));
+        return resource;
+    }
+
+    private void stubRepoRequest(ResponseDefinitionBuilder response) {
+        wireMock.stubFor(get(urlEqualTo("/repos/owner/repo"))
+            .willReturn(response));
+    }
+
+    @Test
+    void testHttp404Error() {
+        stubRepoRequest(notFound());
+
         boolean result = client.hasUpdates(resource);
         Assertions.assertFalse(result);
     }
 
     @Test
     void testMissingPushedAtField() {
-        GithubClient client = new GithubClient("token");
+        stubRepoRequest(okJson("{\"name\":\"repo\"}"));
 
-        wireMock.stubFor(get(urlEqualTo("/repos/owner/repo"))
-            .willReturn(okJson("{\"name\":\"repo\"}")));
-
-        TrackedResource resource = new TrackedResource();
-        resource.setLink("http://github.com/owner/repo");
-        resource.setLastCheckedTime(Instant.parse("2023-01-01T00:00:00Z"));
         boolean result = client.hasUpdates(resource);
-
         Assertions.assertFalse(result);
     }
 
     @Test
     void testHttp500Error() {
-        GithubClient client = new GithubClient("token");
+        stubRepoRequest(serverError());
 
-        wireMock.stubFor(get(urlEqualTo("/repos/owner/repo"))
-            .willReturn(serverError()));
-
-        boolean result = client.hasUpdates("http://github.com/owner/repo", Instant.parse("2023-01-01T00:00:00Z"));
+        boolean result = client.hasUpdates(resource);
         Assertions.assertFalse(result);
     }
 
     @Test
     void testRequestTimeout() {
-        GithubClient client = new GithubClient("token");
+        stubRepoRequest(ok().withFixedDelay(15000));
 
-        wireMock.stubFor(get(urlEqualTo("/repos/owner/repo"))
-            .willReturn(ok().withFixedDelay(15000))); // 15 секунд > 10
-
-        boolean result = client.hasUpdates("http://github.com/owner/repo", Instant.parse("2023-01-01T00:00:00Z"));
+        boolean result = client.hasUpdates(resource);
         Assertions.assertFalse(result);
     }
 }

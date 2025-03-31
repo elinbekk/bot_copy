@@ -35,8 +35,8 @@ public class LinkCheckerScheduler {
         //todo: когда при обновлении заходит в свитч
         resources.forEach(resource -> {
             boolean isUpdated = switch (resource.getLinkType()) {
-                case GITHUB_REPO, GITHUB_ISSUE, GITHUB_PR -> githubClient.hasUpdates(resource.getLink(), resource.getLastCheckedTime());
-                case STACKOVERFLOW -> stackoverflowClient.hasUpdates(resource.getLink(), resource.getLastCheckedTime());
+                case GITHUB_REPO, GITHUB_ISSUE, GITHUB_PR -> githubClient.hasUpdates(resource);
+                case STACKOVERFLOW -> stackoverflowClient.hasUpdates(resource);
             };
 
             if (isUpdated) {

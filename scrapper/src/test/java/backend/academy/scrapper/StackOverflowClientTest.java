@@ -2,12 +2,14 @@ package backend.academy.scrapper;
 
 import backend.academy.scrapper.client.StackOverflowClient;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import java.time.Instant;
 import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
@@ -84,16 +86,18 @@ public class StackOverflowClientTest {
 
     @Test
     void isUpdated_NewActivity_ReturnsTrue() throws Exception {
-        String json = "{ \"items\": [{\"last_activity_date\": 1672531222}] }";
-        boolean result = client.isUpdated(json, "2023-01-01T00:00:00Z");
+        String jsonData = "{ \"items\": [{\"last_activity_date\": 1672531222}] }";
+        JsonNode json = new ObjectMapper().readTree(jsonData);
+        boolean result = client.isUpdated(json, Instant.parse("2023-01-01T00:00:00Z"));
         Assertions.assertTrue(result);
     }
 
     @Test
     void isUpdated_OldActivity_ReturnsFalse() throws Exception {
-        String json = "{ \"items\": [{\"last_activity_date\": 1672531200}] }";
-        boolean result = client.isUpdated(json, "2024-01-01T00:00:00Z");
-        assertFalse(result);
+        String jsonData = "{ \"items\": [{\"last_activity_date\": 1672531200}] }";
+        JsonNode json = new ObjectMapper().readTree(jsonData);
+        boolean result = client.isUpdated(json, Instant.parse("2024-01-01T00:00:00Z"));
+        Assertions.assertFalse(result);
     }
 
     @Test
