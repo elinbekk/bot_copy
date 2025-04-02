@@ -15,6 +15,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -22,9 +24,9 @@ import static backend.academy.bot.entity.LinkType.GITHUB_ISSUE;
 import static backend.academy.bot.entity.LinkType.GITHUB_PR;
 import static backend.academy.bot.entity.LinkType.GITHUB_REPO;
 
-
 @Component
 public class GithubClient implements UpdateChecker {
+    private static final Logger log = LoggerFactory.getLogger(GithubClient.class);
     private final HttpClient httpClient;
     private final String apiToken;
 
@@ -37,25 +39,35 @@ public class GithubClient implements UpdateChecker {
     @Override
     public boolean hasUpdates(TrackedResource resource) {
         try {
+            log.debug("Начало проверки обновлений для: {}", resource.getLink());
             URI uri = buildUriWithFilters(resource);
+            log.debug("Сформированный URI: {}", uri);
+
             HttpRequest request = buildRequest(uri);
             HttpResponse<String> response = sendRequest(request);
+
+            log.debug("Статус ответа: {}", response.statusCode());
+            log.trace("Тело ответа: {}", response.body());
 
             JsonNode json = new ObjectMapper().readTree(response.body());
             Instant lastUpdate = parseUpdateTime(json, resource.getLinkType());
 
             return lastUpdate.isAfter(resource.getLastCheckedTime());
         } catch (Exception e) {
+            log.error("Ошибка при проверке обновлений: ", e);
             return false;
         }
     }
 
     private Instant parseUpdateTime(JsonNode json, LinkType linkType) {
-        return switch (linkType) {
-            case GITHUB_REPO -> Instant.parse(json.get("pushed_at").asText());
-            case GITHUB_ISSUE, GITHUB_PR -> Instant.parse(json.get("updated_at").asText());
+        String dateString = switch (linkType) {
+            case GITHUB_REPO -> json.get("pushed_at").asText();
+            case GITHUB_ISSUE, GITHUB_PR -> json.get("updated_at").asText();
             default -> throw new IllegalArgumentException("Unsupported link type");
         };
+
+        log.debug("Дата обновления из API: {}", dateString);
+        return Instant.parse(dateString);
     }
 
     private URI buildUriWithFilters(TrackedResource resource) throws URISyntaxException {
@@ -68,7 +80,7 @@ public class GithubClient implements UpdateChecker {
         if (resource.getFilters() != null) {
             resource.getFilters().forEach(builder::queryParam);
         }
-
+        log.info("Final URI: {}", builder.build().toUriString());
         return builder.build().toUri();
     }
 
