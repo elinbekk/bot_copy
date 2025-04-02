@@ -13,6 +13,17 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
+import static backend.academy.bot.BotMessages.HELP_MESSAGE;
+import static backend.academy.bot.BotMessages.LINK_DUPLICATED_MESSAGE;
+import static backend.academy.bot.BotMessages.LIST_EMPTY_MESSAGE;
+import static backend.academy.bot.BotMessages.LIST_MESSAGE;
+import static backend.academy.bot.BotMessages.START_MESSAGE;
+import static backend.academy.bot.BotMessages.TRACK_MESSAGE;
+import static backend.academy.bot.BotMessages.UNKNOWN_COMMAND_MESSAGE;
+import static backend.academy.bot.BotMessages.UNTRACK_MESSAGE;
+import static backend.academy.bot.BotMessages.WAITING_FOR_FILTERS_MESSAGE;
+import static backend.academy.bot.BotMessages.WAITING_FOR_LINK_MESSAGE;
+import static backend.academy.bot.BotMessages.WAITING_FOR_TAGS_MESSAGE;
 
 @Component
 public class CommandHandler {
@@ -62,28 +73,28 @@ public class CommandHandler {
         resource.setChatId(chatId);
 
         userStates.put(chatId, BotState.WAITING_FOR_TAGS);
-        botService.sendMessage(chatId, "Введите теги через пробел (опционально), если их нет, поставьте - :");
+        botService.sendMessage(chatId, WAITING_FOR_TAGS_MESSAGE);
     }
 
     private void handleTagsInput(long chatId, String message) {
         TrackedResource resource = trackResources.get(chatId);
-        if(!message.equals("-")) {
+        if (!message.equals("-")) {
             resource.setTags(parseTags(message));
         }
         userStates.put(chatId, BotState.WAITING_FOR_FILTERS);
-        botService.sendMessage(chatId, "Введите фильтры в формате key:value (опционально), если их нет, поставьте -:");
+        botService.sendMessage(chatId, WAITING_FOR_FILTERS_MESSAGE);
     }
 
     private void handleFiltersInput(long chatId, String message) {
         TrackedResource resource = trackResources.get(chatId);
         try {
-            if(!message.equals("-")) {
+            if (!message.equals("-")) {
                 resource.setFilters(parseFilters(message));
             }
             resource.setLastCheckedTime(Instant.now());
             saveTrackedResource(chatId, resource);
             resetUserState(chatId);
-            botService.sendMessage(chatId, "Ссылка успешно добавлена!");
+            botService.sendMessage(chatId, TRACK_MESSAGE);
         } catch (IllegalArgumentException e) {
             botService.sendMessage(chatId, "Ошибка: " + e.getMessage());
         }
@@ -92,13 +103,14 @@ public class CommandHandler {
 
     private void handleUntrackLink(long chatId, String message) {
         linkRepository.removeLink(chatId, message);
-        botService.sendMessage(chatId, "Ссылка успешно удалена!");
+        botService.sendMessage(chatId, UNTRACK_MESSAGE);
         resetUserState(chatId);
     }
 
     void saveTrackedResource(long chatId, TrackedResource resource) {
         if (linkRepository.existsByChatIdAndLink(chatId, resource.getLink())) {
-            throw new IllegalArgumentException("Эта ссылка уже отслеживается");
+            botService.sendMessage(chatId, LINK_DUPLICATED_MESSAGE);
+            throw new IllegalArgumentException();
         }
         linkRepository.addLink(chatId, resource);
     }
@@ -107,7 +119,7 @@ public class CommandHandler {
         List<TrackedResource> resources = linkRepository.getLinks(chatId);
 
         if (resources.isEmpty()) {
-            botService.sendMessage(chatId, "Список отслеживаемых ссылок пуст");
+            botService.sendMessage(chatId, LIST_EMPTY_MESSAGE);
             return;
         }
 
@@ -115,7 +127,7 @@ public class CommandHandler {
             .map(r -> formatResource(r))
             .collect(Collectors.joining("\n\n"));
 
-        botService.sendMessage(chatId, "Ваши отслеживаемые ссылки:\n" + response);
+        botService.sendMessage(chatId, LIST_MESSAGE + response);
     }
 
     String formatResource(TrackedResource resource) {
@@ -172,19 +184,13 @@ public class CommandHandler {
     }
 
     private void handleStartCommand(long chatId) {
-        botService.sendMessage(chatId, """
-            Привет! Я помогу отслеживать изменения на GitHub и Stack Overflow.
-            Доступные команды:
-            /track - начать отслеживание ссылки
-            /untrack - прекратить отслеживание
-            /list - показать отслеживаемые ссылки
-            /help - показать справку""");
+        botService.sendMessage(chatId, START_MESSAGE);
     }
 
     private void startTrackingProcess(long chatId) {
         userStates.put(chatId, BotState.WAITING_FOR_LINK);
         trackResources.put(chatId, new TrackedResource());
-        botService.sendMessage(chatId, "Введите ссылку для отслеживания:");
+        botService.sendMessage(chatId, WAITING_FOR_LINK_MESSAGE);
     }
 
     private void startUntrackingProcess(long chatId) {
@@ -213,15 +219,10 @@ public class CommandHandler {
     }
 
     private void showHelp(long chatId) {
-        botService.sendMessage(chatId, """
-            Доступные команды:
-            /track - добавить ссылку
-            /untrack - удалить ссылку
-            /list - показать все ссылки
-            /help - показать справку""");
+        botService.sendMessage(chatId, HELP_MESSAGE);
     }
 
     private void handleUnknownCommand(long chatId) {
-        botService.sendMessage(chatId, "Неизвестная команда. Используйте /help для списка команд");
+        botService.sendMessage(chatId, UNKNOWN_COMMAND_MESSAGE);
     }
 }

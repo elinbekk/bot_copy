@@ -1,11 +1,11 @@
 package backend.academy.bot.entity;
 
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
@@ -45,17 +45,18 @@ public class TrackedResource {
         this.link = link;
     }
 
-    public Set<String> getTags() {
-        return tags;
-    }
-
     public void setTags(Set<String> tags) {
         this.tags = tags;
     }
 
-    public Map<String, String> getFilters() {
-        return filters;
+    public Set<String> getTags() {
+        return tags != null ? tags : new HashSet<>();
     }
+
+    public Map<String, String> getFilters() {
+        return filters != null ? filters : new HashMap<>();
+    }
+
 
     public void setFilters(Map<String, String> filters) {
         this.filters = filters;

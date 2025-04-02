@@ -31,8 +31,6 @@ public class LinkCheckerScheduler {
             })
             .block();
 
-        //todo: тут где-то ошибка с нулл поинтер эксепшн. с гет линк тайп где-то. исправить
-        //todo: когда при обновлении заходит в свитч
         resources.forEach(resource -> {
             boolean isUpdated = switch (resource.getLinkType()) {
                 case GITHUB_REPO, GITHUB_ISSUE, GITHUB_PR -> githubClient.hasUpdates(resource);
