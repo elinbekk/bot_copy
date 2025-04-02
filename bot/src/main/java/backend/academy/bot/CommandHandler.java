@@ -66,6 +66,9 @@ public class CommandHandler {
 
     private void handleLinkInput(long chatId, String message) {
         validateUrl(message);
+        if (linkRepository.existsByChatIdAndLink(chatId, message)) {
+            throw new IllegalStateException("Ссылка уже отслеживается");
+        }
         TrackedResource resource = trackResources.get(chatId);
         LinkType linkType = detectLinkType(message);
         resource.setLink(message);
@@ -87,24 +90,29 @@ public class CommandHandler {
 
     private void handleFiltersInput(long chatId, String message) {
         TrackedResource resource = trackResources.get(chatId);
-        try {
-            if (!message.equals("-")) {
-                resource.setFilters(parseFilters(message));
-            }
-            resource.setLastCheckedTime(Instant.now());
-            saveTrackedResource(chatId, resource);
-            resetUserState(chatId);
-            botService.sendMessage(chatId, TRACK_MESSAGE);
-        } catch (IllegalArgumentException e) {
-            botService.sendMessage(chatId, "Ошибка: " + e.getMessage());
+        if (!message.equals("-")) {
+            resource.setFilters(parseFilters(message));
         }
+        resource.setLastCheckedTime(Instant.now());
+        saveTrackedResource(chatId, resource);
+        resetUserState(chatId);
+        botService.sendMessage(chatId, TRACK_MESSAGE);
     }
 
 
     private void handleUntrackLink(long chatId, String message) {
-        linkRepository.removeLink(chatId, message);
-        botService.sendMessage(chatId, UNTRACK_MESSAGE);
-        resetUserState(chatId);
+        try {
+            if (!linkRepository.existsByChatIdAndLink(chatId, message)) {
+                throw new IllegalArgumentException("Ссылка не найдена в вашем списке отслеживания");
+            }
+
+            linkRepository.removeLink(chatId, message);
+            botService.sendMessage(chatId, UNTRACK_MESSAGE);
+        } catch (IllegalArgumentException e) {
+            botService.sendMessage(chatId, "Ошибка: " + e.getMessage());
+        } finally {
+            resetUserState(chatId);
+        }
     }
 
     void saveTrackedResource(long chatId, TrackedResource resource) {
