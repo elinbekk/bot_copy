@@ -25,4 +25,13 @@ public class BotMessages {
     public static final String WAITING_FOR_LINK_MESSAGE = "Введите ссылку для отслеживания:";
     public static final String WAITING_FOR_TAGS_MESSAGE = "Введите теги через пробел (опционально), если их нет, поставьте - :";
     public static final String WAITING_FOR_FILTERS_MESSAGE = "Введите фильтры в формате key:value (опционально), если их нет, поставьте -:";
+
+    public static final String UPDATE_MESSAGE = """
+             Обновление в отслеживаемой ссылке!
+
+            Ссылка: %s
+            Описание: %s
+
+            Чтобы прекратить отслеживание, используйте /untrack %s
+            """;
 }

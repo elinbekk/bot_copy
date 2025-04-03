@@ -101,18 +101,13 @@ public class CommandHandler {
 
 
     private void handleUntrackLink(long chatId, String message) {
-        try {
-            if (!linkRepository.existsByChatIdAndLink(chatId, message)) {
-                throw new IllegalArgumentException("Ссылка не найдена в вашем списке отслеживания");
-            }
-
-            linkRepository.removeLink(chatId, message);
-            botService.sendMessage(chatId, UNTRACK_MESSAGE);
-        } catch (IllegalArgumentException e) {
-            botService.sendMessage(chatId, "Ошибка: " + e.getMessage());
-        } finally {
-            resetUserState(chatId);
+        if (!linkRepository.existsByChatIdAndLink(chatId, message)) {
+            throw new IllegalArgumentException("Ссылка не найдена в вашем списке отслеживания");
         }
+        linkRepository.removeLink(chatId, message);
+        botService.sendMessage(chatId, UNTRACK_MESSAGE);
+
+        resetUserState(chatId);
     }
 
     void saveTrackedResource(long chatId, TrackedResource resource) {

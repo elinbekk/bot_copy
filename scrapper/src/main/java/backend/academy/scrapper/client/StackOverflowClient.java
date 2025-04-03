@@ -1,7 +1,6 @@
 package backend.academy.scrapper.client;
 
 import backend.academy.bot.entity.TrackedResource;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
@@ -17,12 +16,15 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
 public class StackOverflowClient implements UpdateChecker {
+    private static final Logger log = LoggerFactory.getLogger(StackOverflowClient.class);
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
     private final String soTokenKey;
@@ -55,6 +57,7 @@ public class StackOverflowClient implements UpdateChecker {
 
     @Override
     public boolean hasUpdates(TrackedResource resource) {
+        log.debug("Начало проверки обновлений для: {}", resource.getLink());
         try {
             JsonNode question = getQuestion(resource);
             return isUpdated(question, resource.getLastCheckedTime());
@@ -65,12 +68,15 @@ public class StackOverflowClient implements UpdateChecker {
 
     private JsonNode getQuestion(TrackedResource resource) throws Exception {
         String url = buildUrlWithFilters(resource);
+        log.debug("Сформированный URL: {}", url);
         HttpRequest request = buildRequest(url);
 
         HttpResponse<String> response = httpClient.send(
             request,
             HttpResponse.BodyHandlers.ofString()
         );
+        log.debug("Статус ответа: {}", response.statusCode());
+        log.trace("Тело ответа: {}", response.body());
 
         checkForErrors(response);
         return parseResponse(response.body());
@@ -96,7 +102,7 @@ public class StackOverflowClient implements UpdateChecker {
     private String buildFiltersParam(Map<String, String> filters) {
         if (!filters.isEmpty()) {
             return "";
-        }else{
+        } else {
             return filters.entrySet().stream()
                 .map(e -> "&" + e.getKey() + "=" + URLEncoder.encode(e.getValue(), StandardCharsets.UTF_8))
                 .collect(Collectors.joining());
@@ -109,6 +115,7 @@ public class StackOverflowClient implements UpdateChecker {
 
     public boolean isUpdated(JsonNode question, Instant lastChecked) {
         long lastActivity = question.get("last_activity_date").asLong();
+        log.debug("Дата обновления из API: {}", lastActivity);
         return lastActivity > lastChecked.getEpochSecond();
     }
 

@@ -1,6 +1,7 @@
-package backend.academy.bot;
+package backend.academy.bot.controller;
 
 
+import backend.academy.bot.BotService;
 import backend.academy.bot.entity.LinkUpdate;
 import backend.academy.bot.entity.TrackedResource;
 import backend.academy.bot.repository.LinkRepository;
@@ -14,6 +15,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
+import static backend.academy.bot.BotMessages.UPDATE_MESSAGE;
 
 @RestController
 @RequestMapping("/api")
@@ -37,24 +39,14 @@ public class UpdateController {
 
     @PostMapping("/updates")
     public void handleUpdate(@RequestBody LinkUpdate update) {
-
         repository.updateLastChecked(update.url(), Instant.now());
-
-        // Формируем и отправляем сообщение
         String message = formatUpdateMessage(update);
         botService.sendMessage(update.chatId(), message);
     }
 
     private String formatUpdateMessage(LinkUpdate update) {
         return String.format(
-            """
-             Обновление в отслеживаемой ссылке!
-
-            Ссылка: %s
-            Описание: %s
-
-            Чтобы прекратить отслеживание, используйте /untrack %s
-            """,
+            UPDATE_MESSAGE,
             update.url(),
             update.description(),
             update.url()

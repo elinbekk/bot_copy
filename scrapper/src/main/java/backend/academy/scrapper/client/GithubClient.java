@@ -149,4 +149,3 @@ public class GithubClient implements UpdateChecker {
         return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
     }
 }
-
