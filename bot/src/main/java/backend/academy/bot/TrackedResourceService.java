@@ -48,7 +48,7 @@ public class TrackedResourceService {
         botService.sendMessage(chatId, LIST_MESSAGE + response);
     }
 
-    String formatResource(TrackedResource resource) {
+    public String formatResource(TrackedResource resource) {
         String filtersStr = resource.getFilters().entrySet().stream()
             .map(entry -> entry.getKey() + ": " + entry.getValue())
             .collect(Collectors.joining(", "));
