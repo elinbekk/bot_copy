@@ -15,6 +15,8 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 import static backend.academy.bot.BotMessages.HELP_MESSAGE;
 import static backend.academy.bot.BotMessages.LINK_DUPLICATED_MESSAGE;
+import static backend.academy.bot.BotMessages.LINK_INCORRECT_MESSAGE;
+import static backend.academy.bot.BotMessages.LINK_NOT_FOUND_MESSAGE;
 import static backend.academy.bot.BotMessages.LIST_EMPTY_MESSAGE;
 import static backend.academy.bot.BotMessages.LIST_MESSAGE;
 import static backend.academy.bot.BotMessages.START_MESSAGE;
@@ -31,10 +33,13 @@ public class CommandHandler {
     private final LinkRepository linkRepository;
     private final Map<Long, BotState> userStates = new HashMap<>();
     private final Map<Long, TrackedResource> trackResources = new HashMap<>();
+    private final InputParser inputParser = new InputParser();
+    private final TrackedResourceService trackedResourceService;
 
-    public CommandHandler(BotService botService, LinkRepository linkRepository) {
+    public CommandHandler(BotService botService, LinkRepository linkRepository, TrackedResourceService trackedResourceService) {
         this.botService = botService;
         this.linkRepository = linkRepository;
+        this.trackedResourceService = trackedResourceService;
     }
 
     public void handleCommand(long chatId, String message) {
@@ -58,7 +63,7 @@ public class CommandHandler {
             case "/start" -> handleStartCommand(chatId);
             case "/track" -> startTrackingProcess(chatId);
             case "/untrack" -> startUntrackingProcess(chatId);
-            case "/list" -> showTrackedLinks(chatId);
+            case "/list" -> trackedResourceService.showTrackedLinks(chatId);
             case "/help" -> showHelp(chatId);
             default -> handleUnknownCommand(chatId);
         }
@@ -67,7 +72,7 @@ public class CommandHandler {
     private void handleLinkInput(long chatId, String message) {
         validateUrl(message);
         if (linkRepository.existsByChatIdAndLink(chatId, message)) {
-            throw new IllegalStateException("Ссылка уже отслеживается");
+            throw new IllegalStateException(LINK_DUPLICATED_MESSAGE);
         }
         TrackedResource resource = trackResources.get(chatId);
         LinkType linkType = detectLinkType(message);
@@ -81,8 +86,9 @@ public class CommandHandler {
 
     private void handleTagsInput(long chatId, String message) {
         TrackedResource resource = trackResources.get(chatId);
+        Set<String> tagsFromMessage = inputParser.parseTags(message);
         if (!message.equals("-")) {
-            resource.setTags(parseTags(message));
+            resource.setTags(tagsFromMessage);
         }
         userStates.put(chatId, BotState.WAITING_FOR_FILTERS);
         botService.sendMessage(chatId, WAITING_FOR_FILTERS_MESSAGE);
@@ -91,18 +97,17 @@ public class CommandHandler {
     private void handleFiltersInput(long chatId, String message) {
         TrackedResource resource = trackResources.get(chatId);
         if (!message.equals("-")) {
-            resource.setFilters(parseFilters(message));
+            resource.setFilters(inputParser.parseFilters(message));
         }
         resource.setLastCheckedTime(Instant.now());
-        saveTrackedResource(chatId, resource);
+        trackedResourceService.saveTrackedResource(chatId, resource);
         resetUserState(chatId);
         botService.sendMessage(chatId, TRACK_MESSAGE);
     }
 
-
     private void handleUntrackLink(long chatId, String message) {
         if (!linkRepository.existsByChatIdAndLink(chatId, message)) {
-            throw new IllegalArgumentException("Ссылка не найдена в вашем списке отслеживания");
+            throw new IllegalArgumentException(LINK_NOT_FOUND_MESSAGE);
         }
         linkRepository.removeLink(chatId, message);
         botService.sendMessage(chatId, UNTRACK_MESSAGE);
@@ -110,79 +115,14 @@ public class CommandHandler {
         resetUserState(chatId);
     }
 
-    void saveTrackedResource(long chatId, TrackedResource resource) {
-        if (linkRepository.existsByChatIdAndLink(chatId, resource.getLink())) {
-            botService.sendMessage(chatId, LINK_DUPLICATED_MESSAGE);
-            throw new IllegalArgumentException();
-        }
-        linkRepository.addLink(chatId, resource);
-    }
-
-    private void showTrackedLinks(long chatId) {
-        List<TrackedResource> resources = linkRepository.getLinks(chatId);
-
-        if (resources.isEmpty()) {
-            botService.sendMessage(chatId, LIST_EMPTY_MESSAGE);
-            return;
-        }
-
-        String response = resources.stream()
-            .map(r -> formatResource(r))
-            .collect(Collectors.joining("\n\n"));
-
-        botService.sendMessage(chatId, LIST_MESSAGE + response);
-    }
-
-    String formatResource(TrackedResource resource) {
-        String filtersStr = resource.getFilters().entrySet().stream()
-            .map(entry -> entry.getKey() + ": " + entry.getValue())
-            .collect(Collectors.joining(", "));
-        return String.format(
-            "• %s\nТеги: %s\nФильтры: %s\nПоследняя проверка: %s",
-            resource.getLink(),
-            resource.getTags().isEmpty() ? "нет" : String.join(", ", resource.getTags()),
-            resource.getFilters().isEmpty() ? "нет" : filtersStr,
-            DateTimeFormatter.ISO_INSTANT.format(resource.getLastCheckedTime())
-        );
-    }
-
     private void resetUserState(long chatId) {
         userStates.remove(chatId);
         trackResources.remove(chatId);
     }
 
-    private Set<String> parseTags(String message) {
-        return Arrays.stream(message.split("\\s+"))
-            .filter(tag -> !tag.isBlank())
-            .collect(Collectors.toSet());
-    }
-
-    private Map<String, String> parseFilters(String message) {
-        Map<String, String> filters = new HashMap<>();
-
-        if (message == null || message.isBlank()) {
-            return filters;
-        }
-
-        Arrays.stream(message.split("\\s+"))
-            .filter(part -> !part.isBlank())
-            .forEach(part -> {
-                String[] keyValue = part.split(":", 2);
-                if (keyValue.length != 2) {
-                    throw new IllegalArgumentException(
-                        "Некорректный формат фильтра: " + part + "\n" +
-                            "Используйте формат: ключ:значение"
-                    );
-                }
-                filters.put(keyValue[0].trim(), keyValue[1].trim());
-            });
-
-        return filters;
-    }
-
     private void validateUrl(String url) {
         if (!url.startsWith("http")) {
-            throw new IllegalArgumentException("Некорректный формат ссылки");
+            throw new IllegalArgumentException(LINK_INCORRECT_MESSAGE);
         }
     }
 
@@ -201,6 +141,7 @@ public class CommandHandler {
         botService.sendMessage(chatId, "Введите ссылку для удаления:");
     }
 
+    //todo: вынести в сервис, строки в конст
     protected LinkType detectLinkType(String url) {
         if (url.contains("github.com")) {
             Pattern issuePattern = Pattern.compile("https?://github\\.com/[^/]+/[^/]+/issues/\\d+");

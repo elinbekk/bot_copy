@@ -27,7 +27,6 @@ public class LinkCheckerScheduler {
 
     @Scheduled(fixedRate = 5 * 60 * 1000)
     public void checkAllLinks() {
-        log.info("=== Начало проверки обновлений ===");
         List<TrackedResource> resources = botClient.get()
             .uri("/api/links?interval=5m")
             .retrieve()

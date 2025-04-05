@@ -13,9 +13,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 public class CommandHandlingTest {
+
     @Test
     void handleUnknownCommandSendsErrorMessageTest() {
         BotService botService = mock(BotService.class);
+
         CommandHandler handler = new CommandHandler(botService, mock(LinkRepository.class));
 
         handler.handleCommand(123L, "/unknown");
