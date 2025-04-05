@@ -11,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 
 @AllArgsConstructor
 @NoArgsConstructor
-@RequiredArgsConstructor
 public class TrackedResource {
     private Long id;
     private Long chatId;

@@ -2,23 +2,14 @@ package backend.academy.bot;
 
 import backend.academy.bot.entity.LinkType;
 import backend.academy.bot.entity.TrackedResource;
-import backend.academy.bot.repository.LinkRepository;
 import java.time.Instant;
-import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 import static backend.academy.bot.BotMessages.HELP_MESSAGE;
 import static backend.academy.bot.BotMessages.LINK_DUPLICATED_MESSAGE;
-import static backend.academy.bot.BotMessages.LINK_INCORRECT_MESSAGE;
 import static backend.academy.bot.BotMessages.LINK_NOT_FOUND_MESSAGE;
-import static backend.academy.bot.BotMessages.LIST_EMPTY_MESSAGE;
-import static backend.academy.bot.BotMessages.LIST_MESSAGE;
 import static backend.academy.bot.BotMessages.START_MESSAGE;
 import static backend.academy.bot.BotMessages.TRACK_MESSAGE;
 import static backend.academy.bot.BotMessages.UNKNOWN_COMMAND_MESSAGE;
@@ -30,15 +21,13 @@ import static backend.academy.bot.BotMessages.WAITING_FOR_TAGS_MESSAGE;
 @Component
 public class CommandHandler {
     private final BotService botService;
-    private final LinkRepository linkRepository;
     private final Map<Long, BotState> userStates = new HashMap<>();
     private final Map<Long, TrackedResource> trackResources = new HashMap<>();
     private final InputParser inputParser = new InputParser();
     private final TrackedResourceService trackedResourceService;
 
-    public CommandHandler(BotService botService, LinkRepository linkRepository, TrackedResourceService trackedResourceService) {
+    public CommandHandler(BotService botService, TrackedResourceService trackedResourceService) {
         this.botService = botService;
-        this.linkRepository = linkRepository;
         this.trackedResourceService = trackedResourceService;
     }
 
@@ -70,12 +59,12 @@ public class CommandHandler {
     }
 
     private void handleLinkInput(long chatId, String message) {
-        validateUrl(message);
-        if (linkRepository.existsByChatIdAndLink(chatId, message)) {
+        trackedResourceService.validateUrl(message);
+        if (trackedResourceService.isResourceAlreadyTracked(chatId, message)) {
             throw new IllegalStateException(LINK_DUPLICATED_MESSAGE);
         }
         TrackedResource resource = trackResources.get(chatId);
-        LinkType linkType = detectLinkType(message);
+        LinkType linkType = trackedResourceService.detectResourceType(message);
         resource.setLink(message);
         resource.setLinkType(linkType);
         resource.setChatId(chatId);
@@ -106,10 +95,10 @@ public class CommandHandler {
     }
 
     private void handleUntrackLink(long chatId, String message) {
-        if (!linkRepository.existsByChatIdAndLink(chatId, message)) {
+        if (!trackedResourceService.isResourceAlreadyTracked(chatId, message)) {
             throw new IllegalArgumentException(LINK_NOT_FOUND_MESSAGE);
         }
-        linkRepository.removeLink(chatId, message);
+        trackedResourceService.removeResource(chatId, message);
         botService.sendMessage(chatId, UNTRACK_MESSAGE);
 
         resetUserState(chatId);
@@ -118,12 +107,6 @@ public class CommandHandler {
     private void resetUserState(long chatId) {
         userStates.remove(chatId);
         trackResources.remove(chatId);
-    }
-
-    private void validateUrl(String url) {
-        if (!url.startsWith("http")) {
-            throw new IllegalArgumentException(LINK_INCORRECT_MESSAGE);
-        }
     }
 
     private void handleStartCommand(long chatId) {
@@ -139,27 +122,6 @@ public class CommandHandler {
     private void startUntrackingProcess(long chatId) {
         userStates.put(chatId, BotState.WAITING_FOR_UNTRACK_LINK);
         botService.sendMessage(chatId, "Введите ссылку для удаления:");
-    }
-
-    //todo: вынести в сервис, строки в конст
-    protected LinkType detectLinkType(String url) {
-        if (url.contains("github.com")) {
-            Pattern issuePattern = Pattern.compile("https?://github\\.com/[^/]+/[^/]+/issues/\\d+");
-            Pattern prPattern = Pattern.compile("https?://github\\.com/[^/]+/[^/]+/pull/\\d+");
-            Pattern repoPattern = Pattern.compile("https?://github\\.com/[^/]+/[^/]+(/)?(.git)?");
-
-            if (issuePattern.matcher(url).find()) {
-                return LinkType.GITHUB_ISSUE;
-            } else if (prPattern.matcher(url).find()) {
-                return LinkType.GITHUB_PR;
-            } else if (repoPattern.matcher(url).find()) {
-                return LinkType.GITHUB_REPO;
-            }
-        }
-        if (url.contains("stackoverflow.com")) {
-            return LinkType.STACKOVERFLOW;
-        }
-        throw new IllegalArgumentException("Неподдерживаемый тип ссылки");
     }
 
     private void showHelp(long chatId) {

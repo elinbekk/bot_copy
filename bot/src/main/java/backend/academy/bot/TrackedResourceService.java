@@ -2,8 +2,8 @@ package backend.academy.bot;
 
 import backend.academy.bot.entity.LinkType;
 import backend.academy.bot.entity.TrackedResource;
-import backend.academy.bot.repository.LinkRepository;
-import org.springframework.stereotype.Service;
+import backend.academy.bot.repository.TrackedResourceRepository;
+import org.springframework.stereotype.Component;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -12,15 +12,13 @@ import static backend.academy.bot.BotMessages.LINK_DUPLICATED_MESSAGE;
 import static backend.academy.bot.BotMessages.LINK_INCORRECT_MESSAGE;
 import static backend.academy.bot.BotMessages.LIST_EMPTY_MESSAGE;
 import static backend.academy.bot.BotMessages.LIST_MESSAGE;
-import static backend.academy.bot.BotMessages.START_MESSAGE;
-import static backend.academy.bot.BotMessages.WAITING_FOR_LINK_MESSAGE;
 
-@Service
+@Component
 public class TrackedResourceService {
-    private final LinkRepository linkRepository;
+    private final TrackedResourceRepository linkRepository;
     private final BotService botService;
 
-    public TrackedResourceService(LinkRepository linkRepository, BotService botService) {
+    public TrackedResourceService(TrackedResourceRepository linkRepository, BotService botService) {
         this.linkRepository = linkRepository;
         this.botService = botService;
     }
@@ -30,11 +28,11 @@ public class TrackedResourceService {
             botService.sendMessage(chatId, LINK_DUPLICATED_MESSAGE);
             throw new IllegalArgumentException();
         }
-        linkRepository.addLink(chatId, resource);
+        linkRepository.addResource(chatId, resource);
     }
 
     protected void showTrackedLinks(long chatId) {
-        List<TrackedResource> resources = linkRepository.getLinks(chatId);
+        List<TrackedResource> resources = linkRepository.getResourcesByChatId(chatId);
 
         if (resources.isEmpty()) {
             botService.sendMessage(chatId, LIST_EMPTY_MESSAGE);
@@ -61,13 +59,13 @@ public class TrackedResourceService {
         );
     }
 
-    private void validateUrl(String url) {
+    public void validateUrl(String url) {
         if (!url.startsWith("http")) {
             throw new IllegalArgumentException(LINK_INCORRECT_MESSAGE);
         }
     }
 
-    protected LinkType detectLinkType(String url) {
+    public  LinkType detectResourceType(String url) {
         if (url.contains("github.com")) {
             Pattern issuePattern = Pattern.compile("https?://github\\.com/[^/]+/[^/]+/issues/\\d+");
             Pattern prPattern = Pattern.compile("https?://github\\.com/[^/]+/[^/]+/pull/\\d+");
@@ -85,6 +83,14 @@ public class TrackedResourceService {
             return LinkType.STACKOVERFLOW;
         }
         throw new IllegalArgumentException("Неподдерживаемый тип ссылки");
+    }
+
+    public boolean isResourceAlreadyTracked(long chatId, String link) {
+        return linkRepository.existsByChatIdAndLink(chatId, link);
+    }
+
+    public void removeResource(long chatId, String link) {
+        linkRepository.deleteResource(chatId, link);
     }
 
 }

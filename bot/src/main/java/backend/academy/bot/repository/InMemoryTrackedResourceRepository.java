@@ -13,16 +13,16 @@ import backend.academy.bot.entity.TrackedResource;
 import org.springframework.stereotype.Component;
 
 @Component
-public class InMemoryLinkRepository implements LinkRepository {
+public class InMemoryTrackedResourceRepository implements TrackedResourceRepository {
     private final Map<Long, List<TrackedResource>> storage = new HashMap<>();
 
     @Override
-    public void addLink(long chatId, TrackedResource link) {
+    public void addResource(long chatId, TrackedResource link) {
         storage.computeIfAbsent(chatId, k -> new ArrayList<>()).add(link);
     }
 
     @Override
-    public void removeLink(long chatId, String url) {
+    public void deleteResource(long chatId, String url) {
         List<TrackedResource> resources = storage.get(chatId);
         if (resources != null) {
             resources.removeIf(resource -> resource.getLink().equals(url));
@@ -30,7 +30,7 @@ public class InMemoryLinkRepository implements LinkRepository {
     }
 
     @Override
-    public List<TrackedResource> getLinks(long chatId) {
+    public List<TrackedResource> getResourcesByChatId(long chatId) {
         return storage.getOrDefault(chatId, Collections.emptyList());
     }
 

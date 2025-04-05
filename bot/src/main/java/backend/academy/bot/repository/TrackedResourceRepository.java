@@ -6,10 +6,10 @@ import backend.academy.bot.entity.TrackedResource;
 import java.time.Instant;
 import java.util.List;
 
-public interface LinkRepository {
-    void addLink(long chatId, TrackedResource link);
-    void removeLink(long chatId, String url);
-    List<TrackedResource> getLinks(long chatId);
+public interface TrackedResourceRepository {
+    void addResource(long chatId, TrackedResource link);
+    void deleteResource(long chatId, String url);
+    List<TrackedResource> getResourcesByChatId(long chatId);
     List<TrackedResource> getAllLinks();
     boolean existsByChatIdAndLink(long chatId, String link);
     List<TrackedResource> findByLastCheckedBefore(Instant checkFrom, LinkType type);

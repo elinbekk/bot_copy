@@ -4,7 +4,7 @@ package backend.academy.bot.controller;
 import backend.academy.bot.BotService;
 import backend.academy.bot.entity.LinkUpdate;
 import backend.academy.bot.entity.TrackedResource;
-import backend.academy.bot.repository.LinkRepository;
+import backend.academy.bot.repository.TrackedResourceRepository;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,9 +21,9 @@ import static backend.academy.bot.BotMessages.UPDATE_MESSAGE;
 @RequestMapping("/api")
 public class UpdateController {
     private final BotService botService;
-    private final LinkRepository repository;
+    private final TrackedResourceRepository repository;
 
-    public UpdateController(BotService botService, LinkRepository repository) {
+    public UpdateController(BotService botService, TrackedResourceRepository repository) {
         this.botService = botService;
         this.repository = repository;
     }

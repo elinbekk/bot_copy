@@ -1,7 +1,7 @@
 package backend.academy.bot;
 
 import backend.academy.bot.entity.TrackedResource;
-import backend.academy.bot.repository.LinkRepository;
+import backend.academy.bot.repository.TrackedResourceRepository;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
@@ -21,16 +21,14 @@ public class CommandHandlingTest {
     @BeforeEach
     void setUp() {
         botService = mock(BotService.class);
-        LinkRepository linkRepository = mock(LinkRepository.class);
-        trackedResourceService = mock(TrackedResourceService.class);
+        TrackedResourceRepository linkRepository = mock(TrackedResourceRepository.class);
+        trackedResourceService = new TrackedResourceService(linkRepository, botService);
 
         commandHandler = new CommandHandler(
             botService,
-            linkRepository,
             trackedResourceService
         );
     }
-
 
     @Test
     void handleUnknownCommandSendsErrorMessageTest() {
