@@ -1,27 +1,22 @@
 package backend.academy.bot;
 
 import backend.academy.bot.entity.TrackedResource;
+import backend.academy.bot.repository.TrackedResourceRepository;
+import backend.academy.bot.service.BotService;
+import backend.academy.bot.service.TrackedResourceService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import backend.academy.bot.repository.InMemoryTrackedResourceRepository;
-import backend.academy.bot.repository.TrackedResourceRepository;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class ResourceSavingTest {
@@ -85,16 +80,15 @@ public class ResourceSavingTest {
 
     @Test
     void fullTrackingWorkflowSuccessTest() {
-        commandHandler.handleCommand(123L, "/track");
-        commandHandler.handleCommand(123L, "https://github.com/user/repo");
-        commandHandler.handleCommand(123L, "bug feature");
-        commandHandler.handleCommand(123L, "state:open");
+        commandHandler.handleState(123L, "/track");
+        commandHandler.handleState(123L, "https://github.com/user/repo");
+        commandHandler.handleState(123L, "bug feature");
+        commandHandler.handleState(123L, "state:open");
 
         List<TrackedResource> resources = resourceRepository.getResourcesByChatId(123L);
-//        Assertions.assertEquals(1, resources.size());
 
-        commandHandler.handleCommand(123L, "/untrack");
-        commandHandler.handleCommand(123L, "https://github.com/user/repo");
+        commandHandler.handleState(123L, "/untrack");
+        commandHandler.handleState(123L, "https://github.com/user/repo");
 
         assertTrue(resourceRepository.getResourcesByChatId(123L).isEmpty());
     }

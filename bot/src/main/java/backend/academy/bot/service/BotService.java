@@ -1,4 +1,4 @@
-package backend.academy.bot;
+package backend.academy.bot.service;
 
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.request.SendMessage;

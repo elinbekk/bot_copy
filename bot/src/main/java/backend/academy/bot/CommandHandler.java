@@ -2,6 +2,8 @@ package backend.academy.bot;
 
 import backend.academy.bot.entity.LinkType;
 import backend.academy.bot.entity.TrackedResource;
+import backend.academy.bot.service.BotService;
+import backend.academy.bot.service.TrackedResourceService;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,7 +23,7 @@ import static backend.academy.bot.BotMessages.WAITING_FOR_TAGS_MESSAGE;
 @Component
 public class CommandHandler {
     private final BotService botService;
-    private final Map<Long, BotState> userStates = new HashMap<>();
+    private final Map<Long, BotState> botStates = new HashMap<>();
     private final Map<Long, TrackedResource> trackResources = new HashMap<>();
     private final InputParser inputParser = new InputParser();
     private final TrackedResourceService trackedResourceService;
@@ -31,8 +33,12 @@ public class CommandHandler {
         this.trackedResourceService = trackedResourceService;
     }
 
-    public void handleCommand(long chatId, String message) {
-        BotState state = userStates.getOrDefault(chatId, BotState.INITIAL);
+    public Map<Long, BotState> getBotStates() {
+        return botStates;
+    }
+
+    public void handleState(long chatId, String message) {
+        BotState state = botStates.getOrDefault(chatId, BotState.INITIAL);
         try {
             switch (state) {
                 case INITIAL -> handleInitialState(chatId, message);
@@ -49,13 +55,23 @@ public class CommandHandler {
 
     private void handleInitialState(long chatId, String command) {
         switch (command) {
-            case "/start" -> handleStartCommand(chatId);
+            case "/start" -> processStartCommand(chatId);
             case "/track" -> startTrackingProcess(chatId);
             case "/untrack" -> startUntrackingProcess(chatId);
             case "/list" -> trackedResourceService.showTrackedLinks(chatId);
             case "/help" -> showHelp(chatId);
             default -> handleUnknownCommand(chatId);
         }
+    }
+
+    private void processStartCommand(long chatId) {
+        botService.sendMessage(chatId, START_MESSAGE);
+    }
+
+    private void startTrackingProcess(long chatId) {
+        botStates.put(chatId, BotState.WAITING_FOR_LINK);
+        trackResources.put(chatId, new TrackedResource());
+        botService.sendMessage(chatId, WAITING_FOR_LINK_MESSAGE);
     }
 
     private void handleLinkInput(long chatId, String message) {
@@ -69,7 +85,7 @@ public class CommandHandler {
         resource.setLinkType(linkType);
         resource.setChatId(chatId);
 
-        userStates.put(chatId, BotState.WAITING_FOR_TAGS);
+        botStates.put(chatId, BotState.WAITING_FOR_TAGS);
         botService.sendMessage(chatId, WAITING_FOR_TAGS_MESSAGE);
     }
 
@@ -79,7 +95,7 @@ public class CommandHandler {
         if (!message.equals("-")) {
             resource.setTags(tagsFromMessage);
         }
-        userStates.put(chatId, BotState.WAITING_FOR_FILTERS);
+        botStates.put(chatId, BotState.WAITING_FOR_FILTERS);
         botService.sendMessage(chatId, WAITING_FOR_FILTERS_MESSAGE);
     }
 
@@ -105,22 +121,12 @@ public class CommandHandler {
     }
 
     private void resetUserState(long chatId) {
-        userStates.remove(chatId);
+        botStates.remove(chatId);
         trackResources.remove(chatId);
     }
 
-    private void handleStartCommand(long chatId) {
-        botService.sendMessage(chatId, START_MESSAGE);
-    }
-
-    private void startTrackingProcess(long chatId) {
-        userStates.put(chatId, BotState.WAITING_FOR_LINK);
-        trackResources.put(chatId, new TrackedResource());
-        botService.sendMessage(chatId, WAITING_FOR_LINK_MESSAGE);
-    }
-
     private void startUntrackingProcess(long chatId) {
-        userStates.put(chatId, BotState.WAITING_FOR_UNTRACK_LINK);
+        botStates.put(chatId, BotState.WAITING_FOR_UNTRACK_LINK);
         botService.sendMessage(chatId, "Введите ссылку для удаления:");
     }
 

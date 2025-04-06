@@ -26,7 +26,7 @@ public class Bot {
         if (update.message() != null && update.message().text() != null) {
             long chatId = update.message().chat().id();
             String message = update.message().text();
-            commandHandler.handleCommand(chatId, message);
+            commandHandler.handleState(chatId, message);
         }
     }
 }

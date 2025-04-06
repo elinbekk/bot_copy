@@ -1,13 +1,12 @@
-package backend.academy.bot;
+package backend.academy.bot.config;
 
 
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.model.BotCommand;
 import com.pengrad.telegrambot.request.SetMyCommands;
 import jakarta.annotation.PostConstruct;
-import org.springframework.context.annotation.Configuration;
-import java.util.ArrayList;
 import java.util.List;
+import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class BotCommandsConfig {
@@ -21,10 +20,6 @@ public class BotCommandsConfig {
     public void init() {
         registerCommands();
     }
-
-//    public BotConfig(@Value("${telegram.bot.token}") String token) {
-//        this.telegramBot = new TelegramBot(token);
-//    }
 
     private void registerCommands() {
         List<BotCommand> commands = List.of(

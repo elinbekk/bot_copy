@@ -2,11 +2,14 @@ package backend.academy.bot;
 
 import backend.academy.bot.entity.TrackedResource;
 import backend.academy.bot.repository.TrackedResourceRepository;
+import backend.academy.bot.service.BotService;
+import backend.academy.bot.service.TrackedResourceService;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import static backend.academy.bot.BotMessages.START_MESSAGE;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
@@ -17,6 +20,7 @@ public class CommandHandlingTest {
     private BotService botService;
     private TrackedResourceService trackedResourceService;
     private CommandHandler commandHandler;
+    private final long testChatId = 123L;
 
     @BeforeEach
     void setUp() {
@@ -31,10 +35,15 @@ public class CommandHandlingTest {
     }
 
     @Test
-    void handleUnknownCommandSendsErrorMessageTest() {
-        commandHandler.handleCommand(123L, "/unknown");
+    void handleStartCommandSendsMessageTest() {
+        commandHandler.handleState(testChatId, "/start");
+        verify(botService).sendMessage(eq(testChatId), eq(START_MESSAGE));
+    }
 
-        verify(botService).sendMessage(eq(123L), contains("Неизвестная команда"));
+    @Test
+    void handleUnknownCommandSendsErrorMessageTest() {
+        commandHandler.handleState(testChatId, "/unknown");
+        verify(botService).sendMessage(eq(testChatId), contains("Неизвестная команда"));
     }
 
     @Test

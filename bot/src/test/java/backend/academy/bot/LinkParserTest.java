@@ -2,6 +2,8 @@ package backend.academy.bot;
 
 import backend.academy.bot.entity.LinkType;
 import backend.academy.bot.repository.TrackedResourceRepository;
+import backend.academy.bot.service.BotService;
+import backend.academy.bot.service.TrackedResourceService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,6 +25,8 @@ public class LinkParserTest {
     void linkTypeCorrectDetectedTest() {
         assertAll(
             () -> Assertions.assertEquals(LinkType.GITHUB_REPO, trackedResourceService.detectResourceType("https://github.com/user/repo")),
+            () -> Assertions.assertEquals(LinkType.GITHUB_ISSUE, trackedResourceService.detectResourceType("https://github.com/user/repo/issues/123")),
+            () -> Assertions.assertEquals(LinkType.GITHUB_PR, trackedResourceService.detectResourceType("https://github.com/user/repo/pull/4")),
             () -> Assertions.assertEquals(LinkType.STACKOVERFLOW, trackedResourceService.detectResourceType("https://stackoverflow.com/questions/123")),
             () -> assertThrows(IllegalArgumentException.class,
                 () -> trackedResourceService.detectResourceType("https://google.com"))

@@ -1,7 +1,7 @@
 package backend.academy.bot.controller;
 
 
-import backend.academy.bot.BotService;
+import backend.academy.bot.service.BotService;
 import backend.academy.bot.entity.LinkUpdate;
 import backend.academy.bot.entity.TrackedResource;
 import backend.academy.bot.repository.TrackedResourceRepository;

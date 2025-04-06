@@ -1,13 +1,14 @@
-package backend.academy.bot;
+package backend.academy.bot.service;
 
 import backend.academy.bot.entity.LinkType;
 import backend.academy.bot.entity.TrackedResource;
 import backend.academy.bot.repository.TrackedResourceRepository;
-import org.springframework.stereotype.Component;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import org.springframework.stereotype.Component;
+import static backend.academy.bot.BotMessages.FORMAT_LIST_MESSAGE;
 import static backend.academy.bot.BotMessages.LINK_DUPLICATED_MESSAGE;
 import static backend.academy.bot.BotMessages.LINK_INCORRECT_MESSAGE;
 import static backend.academy.bot.BotMessages.LIST_EMPTY_MESSAGE;
@@ -31,7 +32,7 @@ public class TrackedResourceService {
         linkRepository.addResource(chatId, resource);
     }
 
-    protected void showTrackedLinks(long chatId) {
+    public void showTrackedLinks(long chatId) {
         List<TrackedResource> resources = linkRepository.getResourcesByChatId(chatId);
 
         if (resources.isEmpty()) {
@@ -51,7 +52,7 @@ public class TrackedResourceService {
             .map(entry -> entry.getKey() + ": " + entry.getValue())
             .collect(Collectors.joining(", "));
         return String.format(
-            "• %s\nТеги: %s\nФильтры: %s\nПоследняя проверка: %s",
+            FORMAT_LIST_MESSAGE,
             resource.getLink(),
             resource.getTags().isEmpty() ? "нет" : String.join(", ", resource.getTags()),
             resource.getFilters().isEmpty() ? "нет" : filtersStr,
@@ -65,7 +66,7 @@ public class TrackedResourceService {
         }
     }
 
-    public  LinkType detectResourceType(String url) {
+    public LinkType detectResourceType(String url) {
         if (url.contains("github.com")) {
             Pattern issuePattern = Pattern.compile("https?://github\\.com/[^/]+/[^/]+/issues/\\d+");
             Pattern prPattern = Pattern.compile("https?://github\\.com/[^/]+/[^/]+/pull/\\d+");
