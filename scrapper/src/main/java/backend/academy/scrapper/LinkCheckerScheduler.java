@@ -5,8 +5,6 @@ import backend.academy.bot.entity.TrackedResource;
 import backend.academy.scrapper.client.GithubClient;
 import backend.academy.scrapper.client.StackOverflowClient;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -17,7 +15,6 @@ public class LinkCheckerScheduler {
     private final WebClient botClient;
     private final GithubClient githubClient;
     private final StackOverflowClient stackoverflowClient;
-    private static final Logger log = LoggerFactory.getLogger(LinkCheckerScheduler.class);
 
     public LinkCheckerScheduler(WebClient botClient, GithubClient githubClient, StackOverflowClient stackoverflowClient) {
         this.botClient = botClient;
