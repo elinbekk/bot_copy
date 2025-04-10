@@ -6,15 +6,16 @@ import com.pengrad.telegrambot.model.BotCommand;
 import com.pengrad.telegrambot.request.SetMyCommands;
 import jakarta.annotation.PostConstruct;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
+@RequiredArgsConstructor
+@EnableConfigurationProperties(BotCommandConfigProperties.class)
 public class BotCommandsConfig {
     private final TelegramBot telegramBot;
-
-    public BotCommandsConfig(TelegramBot telegramBot) {
-        this.telegramBot = telegramBot;
-    }
+    private final BotCommandConfigProperties commandsConfig;
 
     @PostConstruct
     public void init() {
@@ -22,16 +23,13 @@ public class BotCommandsConfig {
     }
 
     private void registerCommands() {
-        List<BotCommand> commands = List.of(
-            new BotCommand("start", "Начало работы"),
-            new BotCommand("track", "Отслеживание ссылки"),
-            new BotCommand("untrack", "Удаление ссылки"),
-            new BotCommand("list", "Список ссылок"),
-            new BotCommand("help", "Справка")
-        );
+        List<BotCommand> commands = commandsConfig.getCommands().stream()
+            .map(cmd -> new BotCommand(cmd.getCommand(), cmd.getDescription()))
+            .toList();
 
         SetMyCommands setCommands = new SetMyCommands(commands.toArray(new BotCommand[0]));
         telegramBot.execute(setCommands);
     }
+
 }
 

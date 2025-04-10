@@ -13,10 +13,4 @@ public record BotConfig(@NotEmpty String telegramToken) {
     public TelegramBot telegramBot() {
         return new TelegramBot(telegramToken);
     }
-
-
-   /* @Bean
-    public WebClient botClient() {
-        return WebClient.create(baseUrl);
-    }*/
 }

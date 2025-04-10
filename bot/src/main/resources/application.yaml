@@ -1,5 +1,17 @@
 app:
-  telegram-token: ${TELEGRAM_TOKEN} # env variable4
+  telegram-token: ${TELEGRAM_TOKEN} # env variable
+bot:
+  commands:
+    - command: start
+      description: Начало работы
+    - command: track
+      description: Отслеживание ссылки
+    - command: untrack
+      description: Удаление ссылки
+    - command: list
+      description: Список ссылок
+    - command: help
+      description: Справка
 spring:
   application:
     name: Bot
