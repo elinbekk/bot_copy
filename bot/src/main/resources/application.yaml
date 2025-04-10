@@ -1,6 +1,5 @@
 app:
   telegram-token: ${TELEGRAM_TOKEN} # env variable
-bot:
   commands:
     - command: start
       description: Начало работы

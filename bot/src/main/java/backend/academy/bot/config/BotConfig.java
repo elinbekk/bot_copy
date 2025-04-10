@@ -1,16 +1,23 @@
 package backend.academy.bot.config;
 
 import com.pengrad.telegrambot.TelegramBot;
-import jakarta.validation.constraints.NotEmpty;
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.validation.annotation.Validated;
+import org.springframework.context.annotation.Configuration;
 
-@Validated
-@ConfigurationProperties(prefix = "app", ignoreUnknownFields = false)
-public record BotConfig(@NotEmpty String telegramToken) {
+@Configuration
+@EnableConfigurationProperties(BotConfigProperties.class)
+public class BotConfig {
     @Bean
-    public TelegramBot telegramBot() {
-        return new TelegramBot(telegramToken);
+    public TelegramBot telegramBot(BotConfigProperties botConfigProperties) {
+        return new TelegramBot(botConfigProperties.telegramToken());
+    }
+
+    @Bean
+    public BotCommandsConfig botCommandsConfig(
+            TelegramBot bot,
+            BotConfigProperties properties
+    ) {
+        return new BotCommandsConfig(bot, properties);
     }
 }

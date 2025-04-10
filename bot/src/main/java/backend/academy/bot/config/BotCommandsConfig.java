@@ -1,34 +1,30 @@
 package backend.academy.bot.config;
 
-
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.model.BotCommand;
 import com.pengrad.telegrambot.request.SetMyCommands;
 import jakarta.annotation.PostConstruct;
-import java.util.List;
-import lombok.RequiredArgsConstructor;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
 
-@Configuration
-@RequiredArgsConstructor
-@EnableConfigurationProperties(BotCommandConfigProperties.class)
+import java.util.List;
+
 public class BotCommandsConfig {
-    private final TelegramBot telegramBot;
-    private final BotCommandConfigProperties commandsConfig;
+    private final TelegramBot bot;
+    private final BotConfigProperties config;
+
+    //знаю, что можно использовать аннотация ломбока, но они у меня не работают...
+    //ни геттеры, ни сеттеры, ни конструкторы........
+    public BotCommandsConfig(TelegramBot bot, BotConfigProperties config) {
+        this.bot = bot;
+        this.config = config;
+    }
 
     @PostConstruct
     public void init() {
-        registerCommands();
-    }
+        List<BotCommand> commands = config.commands().stream()
+                .map(c -> new BotCommand(c.command(), c.description()))
+                .toList();
 
-    private void registerCommands() {
-        List<BotCommand> commands = commandsConfig.getCommands().stream()
-            .map(cmd -> new BotCommand(cmd.getCommand(), cmd.getDescription()))
-            .toList();
-
-        SetMyCommands setCommands = new SetMyCommands(commands.toArray(new BotCommand[0]));
-        telegramBot.execute(setCommands);
+        bot.execute(new SetMyCommands(commands.toArray(BotCommand[]::new)));
     }
 
 }
