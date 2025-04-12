@@ -1,15 +1,13 @@
 package backend.academy.bot.repository;
 
+import backend.academy.bot.entity.LinkType;
+import backend.academy.bot.entity.TrackedResource;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-
-import backend.academy.bot.entity.LinkType;
-import backend.academy.bot.entity.TrackedResource;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -55,7 +53,7 @@ public class InMemoryTrackedResourceRepository implements TrackedResourceReposit
             .flatMap(List::stream)
             .filter(res -> res.getLastCheckedTime().isBefore(checkFrom))
             .filter(res -> type == null || res.getLinkType() == type)
-            .collect(Collectors.toList());
+            .toList();
     }
 
     @Override

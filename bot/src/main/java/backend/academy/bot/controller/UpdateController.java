@@ -39,31 +39,19 @@ public class UpdateController {
 
     @GetMapping("/links")
     public ResponseEntity<List<TrackedResource>> getLinksToCheck(@RequestParam String interval,
-                                                                 @RequestParam(required = false) LinkType type) {
+                                                                 @RequestParam(required = false) LinkType linkType) {
         try {
             Duration checkInterval = parseInterval(interval);
             Instant checkFrom = Instant.now(clock).minus(checkInterval);
 
-            List<TrackedResource> result = repository.getAllLinks().stream()
-                .filter(r -> r.getLastCheckedTime().isBefore(checkFrom))
-                .filter(r -> type == null || r.getLinkType() == type)
-                .toList();
-
+            List<TrackedResource> result = repository.findByLastCheckedBefore(checkFrom, linkType);
             return ResponseEntity.ok(result);
-
         } catch (ResponseStatusException e) {
             throw e;
         } catch (Exception e) {
             log.error("Error retrieving links", e);
             return ResponseEntity.internalServerError().build();
         }
-
-        /*Duration checkInterval = parseInterval(interval);
-        Instant checkFrom = Instant.now(clock).minus(checkInterval);
-
-        return repository.getAllLinks().stream()
-            .filter(r -> r.getLastCheckedTime().isBefore(checkFrom))
-            .toList();*/
     }
 
     @PostMapping("/updates")
