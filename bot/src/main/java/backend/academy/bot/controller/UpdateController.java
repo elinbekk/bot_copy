@@ -1,20 +1,20 @@
 package backend.academy.bot.controller;
 
 
-import backend.academy.bot.service.BotService;
 import backend.academy.bot.entity.LinkUpdate;
 import backend.academy.bot.entity.TrackedResource;
 import backend.academy.bot.repository.TrackedResourceRepository;
+import backend.academy.bot.service.BotService;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.List;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.List;
-import java.util.stream.Collectors;
 import static backend.academy.bot.BotMessages.UPDATE_MESSAGE;
 
 @RestController
@@ -22,19 +22,22 @@ import static backend.academy.bot.BotMessages.UPDATE_MESSAGE;
 public class UpdateController {
     private final BotService botService;
     private final TrackedResourceRepository repository;
+    private final Clock clock;
 
-    public UpdateController(BotService botService, TrackedResourceRepository repository) {
+    public UpdateController(BotService botService, TrackedResourceRepository repository, Clock clock) {
         this.botService = botService;
         this.repository = repository;
+        this.clock = clock;
     }
 
     @GetMapping("/links")
     public List<TrackedResource> getLinksToCheck(@RequestParam String interval) {
         Duration checkInterval = parseInterval(interval);
-        Instant checkFrom = Instant.now().minus(checkInterval);
+        Instant checkFrom = Instant.now(clock).minus(checkInterval);
+
         return repository.getAllLinks().stream()
             .filter(r -> r.getLastCheckedTime().isBefore(checkFrom))
-            .collect(Collectors.toList());
+            .toList();
     }
 
     @PostMapping("/updates")
