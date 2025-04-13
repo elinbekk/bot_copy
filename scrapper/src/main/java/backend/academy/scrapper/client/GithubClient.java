@@ -35,7 +35,6 @@ public class GithubClient implements UpdateChecker {
         this.apiToken = apiToken;
     }
 
-
     @Override
     public boolean hasUpdates(TrackedResource resource) {
         try {
@@ -63,7 +62,7 @@ public class GithubClient implements UpdateChecker {
         String dateString = switch (linkType) {
             case GITHUB_REPO -> json.get("pushed_at").asText();
             case GITHUB_ISSUE, GITHUB_PR -> json.get("updated_at").asText();
-            default -> throw new IllegalArgumentException("Unsupported link type");
+            default -> throw new IllegalArgumentException("Неподдерживаемый тип ссылки");
         };
 
         log.debug("Дата обновления из API: {}", dateString);
@@ -132,7 +131,7 @@ public class GithubClient implements UpdateChecker {
                 null
             );
         }
-        throw new IllegalArgumentException("Unsupported GitHub URL");
+        throw new IllegalArgumentException("Неподдерживаемый Github URL");
     }
 
     private HttpRequest buildRequest(URI uri) {

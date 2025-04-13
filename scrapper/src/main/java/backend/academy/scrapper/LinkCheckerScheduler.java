@@ -5,6 +5,7 @@ import backend.academy.bot.entity.TrackedResource;
 import backend.academy.scrapper.client.GithubClient;
 import backend.academy.scrapper.client.StackOverflowClient;
 import java.util.List;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
@@ -28,39 +29,48 @@ public class LinkCheckerScheduler {
     @Scheduled(fixedRate = 5 * 60 * 1000)
     public void checkAllLinks() {
         try {
-            List<TrackedResource> resources = botClient.get()
-                .uri(uriBuilder -> uriBuilder
-                    .path("/api/links")
-                    .queryParam("interval", "5m")
-                    .build())
-                .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<List<TrackedResource>>() {
-                })
-                .block();
-
-            resources.forEach(resource -> {
-                boolean isUpdated = switch (resource.getResourceType()) {
-                    case GITHUB_REPO, GITHUB_ISSUE, GITHUB_PR -> githubClient.hasUpdates(resource);
-                    case STACKOVERFLOW -> stackoverflowClient.hasUpdates(resource);
-                };
-
+            List<TrackedResource> resources = getTrackedResources();
+            for (TrackedResource resource : resources) {
+                boolean isUpdated = isUpdated(resource);
                 if (isUpdated) {
-                    botClient.post()
-                        .uri("/api/updates")
-                        .bodyValue(new LinkUpdate(
-                            resource.getChatId(),
-                            resource.getLink(),
-                            "Обнаружены изменения"
-                        ))
-                        .retrieve()
-                        .toBodilessEntity()
-                        .block();
+                    sendUpdateNotification(resource);
                 }
-            });
-
+            }
         } catch (Exception e) {
             log.error("Scheduler error", e);
         }
+    }
+
+    private void sendUpdateNotification(TrackedResource resource) {
+        botClient.post()
+            .uri("/api/updates")
+            .bodyValue(new LinkUpdate(
+                resource.getChatId(),
+                resource.getLink(),
+                "Обнаружены изменения"
+            ))
+            .retrieve()
+            .toBodilessEntity()
+            .block();
+    }
+
+    private boolean isUpdated(TrackedResource resource) {
+        return switch (resource.getResourceType()) {
+            case GITHUB_REPO, GITHUB_ISSUE, GITHUB_PR -> githubClient.hasUpdates(resource);
+            case STACKOVERFLOW -> stackoverflowClient.hasUpdates(resource);
+        };
+    }
+
+    private @Nullable List<TrackedResource> getTrackedResources() {
+        return botClient.get()
+            .uri(uriBuilder -> uriBuilder
+                .path("/api/links")
+                .queryParam("interval", "5m")
+                .build())
+            .retrieve()
+            .bodyToMono(new ParameterizedTypeReference<List<TrackedResource>>() {
+            })
+            .block();
     }
 }
 
