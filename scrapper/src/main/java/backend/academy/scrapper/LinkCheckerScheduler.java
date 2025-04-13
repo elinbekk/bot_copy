@@ -39,7 +39,7 @@ public class LinkCheckerScheduler {
                 .block();
 
             resources.forEach(resource -> {
-                boolean isUpdated = switch (resource.getLinkType()) {
+                boolean isUpdated = switch (resource.getResourceType()) {
                     case GITHUB_REPO, GITHUB_ISSUE, GITHUB_PR -> githubClient.hasUpdates(resource);
                     case STACKOVERFLOW -> stackoverflowClient.hasUpdates(resource);
                 };

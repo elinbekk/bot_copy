@@ -52,7 +52,7 @@ public class InMemoryTrackedResourceRepository implements TrackedResourceReposit
         return storage.values().stream()
             .flatMap(List::stream)
             .filter(res -> res.getLastCheckedTime().isBefore(checkFrom))
-            .filter(res -> type == null || res.getLinkType() == type)
+            .filter(res -> type == null || res.getResourceType() == type)
             .toList();
     }
 

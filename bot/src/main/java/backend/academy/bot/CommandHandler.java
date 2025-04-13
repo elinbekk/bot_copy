@@ -26,8 +26,8 @@ import static backend.academy.bot.BotMessages.WAITING_FOR_TAGS_MESSAGE;
 @Component
 public class CommandHandler {
     private final BotService botService;
-    private final Map<Long, BotState> botStates = new HashMap<>();
-    private final Map<Long, TrackedResource> trackResources = new ConcurrentHashMap<>();
+    private final Map<Long, BotState> botStates = new ConcurrentHashMap<>();
+    private final Map<Long, TrackedResource> trackResources = new HashMap<>();
     private final InputParser inputParser = new InputParser();
     private final TrackedResourceService trackedResourceService;
     private final ResourceTypeDetector resourceTypeDetector;
@@ -87,7 +87,7 @@ public class CommandHandler {
         TrackedResource resource = trackResources.get(chatId);
         LinkType linkType = resourceTypeDetector.detectResourceType(message);
         resource.setLink(message);
-        resource.setLinkType(linkType);
+        resource.setResourceType(linkType);
         resource.setChatId(chatId);
 
         botStates.put(chatId, BotState.WAITING_FOR_TAGS);

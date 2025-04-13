@@ -1,15 +1,11 @@
 package backend.academy.bot;
 
 import backend.academy.bot.entity.LinkType;
-import backend.academy.bot.repository.TrackedResourceRepository;
-import backend.academy.bot.service.BotService;
-import backend.academy.bot.service.TrackedResourceService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.mockito.Mockito.mock;
 
 public class LinkParserTest {
     private ResourceTypeDetector resourceTypeDetector;

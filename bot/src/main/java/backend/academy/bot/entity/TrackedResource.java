@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -15,7 +14,7 @@ public class TrackedResource {
     private Long id;
     private Long chatId;
     private String link;
-    private LinkType linkType;
+    private LinkType resourceType;
     private Set<String> tags = new HashSet<>();
     private Map<String, String> filters;
     private Instant lastCheckedTime = Instant.now();
@@ -69,11 +68,11 @@ public class TrackedResource {
         this.lastCheckedTime = lastCheckedTime;
     }
 
-    public LinkType getLinkType() {
-        return linkType;
+    public LinkType getResourceType() {
+        return resourceType;
     }
 
-    public void setLinkType(LinkType linkType) {
-        this.linkType = linkType;
+    public void setResourceType(LinkType resourceType) {
+        this.resourceType = resourceType;
     }
 }

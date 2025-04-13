@@ -50,7 +50,7 @@ public class GithubClient implements UpdateChecker {
             log.trace("Тело ответа: {}", response.body());
 
             JsonNode json = new ObjectMapper().readTree(response.body());
-            Instant lastUpdate = parseUpdateTime(json, resource.getLinkType());
+            Instant lastUpdate = parseUpdateTime(json, resource.getResourceType());
 
             return lastUpdate.isAfter(resource.getLastCheckedTime());
         } catch (Exception e) {
