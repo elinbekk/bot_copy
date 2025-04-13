@@ -4,10 +4,13 @@ import backend.academy.bot.entity.LinkType;
 import backend.academy.bot.entity.TrackedResource;
 import backend.academy.bot.service.BotService;
 import backend.academy.bot.service.TrackedResourceService;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.stereotype.Component;
 import static backend.academy.bot.BotMessages.HELP_MESSAGE;
 import static backend.academy.bot.BotMessages.LINK_DUPLICATED_MESSAGE;
@@ -24,17 +27,13 @@ import static backend.academy.bot.BotMessages.WAITING_FOR_TAGS_MESSAGE;
 public class CommandHandler {
     private final BotService botService;
     private final Map<Long, BotState> botStates = new HashMap<>();
-    private final Map<Long, TrackedResource> trackResources = new HashMap<>();
+    private final Map<Long, TrackedResource> trackResources = new ConcurrentHashMap<>();
     private final InputParser inputParser = new InputParser();
     private final TrackedResourceService trackedResourceService;
 
     public CommandHandler(BotService botService, TrackedResourceService trackedResourceService) {
         this.botService = botService;
         this.trackedResourceService = trackedResourceService;
-    }
-
-    public Map<Long, BotState> getBotStates() {
-        return botStates;
     }
 
     public void handleState(long chatId, String message) {
@@ -75,7 +74,11 @@ public class CommandHandler {
     }
 
     private void handleLinkInput(long chatId, String message) {
-        trackedResourceService.validateUrl(message);
+        try {
+            trackedResourceService.processInvalidURL(message);
+        } catch (MalformedURLException | URISyntaxException e) {
+            throw new RuntimeException();
+        }
         if (trackedResourceService.isResourceAlreadyTracked(chatId, message)) {
             throw new IllegalStateException(LINK_DUPLICATED_MESSAGE);
         }

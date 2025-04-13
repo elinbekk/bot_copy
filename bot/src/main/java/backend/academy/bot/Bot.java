@@ -16,9 +16,7 @@ public class Bot {
     }
 
     private int handleUpdates(List<Update> updates) {
-        for (Update update : updates) {
-            onUpdateReceived(update);
-        }
+        updates.forEach(this::onUpdateReceived);
         return UpdatesListener.CONFIRMED_UPDATES_ALL;
     }
 

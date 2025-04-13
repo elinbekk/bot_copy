@@ -3,6 +3,11 @@ package backend.academy.bot.service;
 import backend.academy.bot.entity.LinkType;
 import backend.academy.bot.entity.TrackedResource;
 import backend.academy.bot.repository.TrackedResourceRepository;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -27,7 +32,7 @@ public class TrackedResourceService {
     public void saveTrackedResource(long chatId, TrackedResource resource) {
         if (linkRepository.existsByChatIdAndLink(chatId, resource.getLink())) {
             botService.sendMessage(chatId, LINK_DUPLICATED_MESSAGE);
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException(LINK_DUPLICATED_MESSAGE);
         }
         linkRepository.addResource(chatId, resource);
     }
@@ -41,7 +46,7 @@ public class TrackedResourceService {
         }
 
         String response = resources.stream()
-            .map(r -> formatResource(r))
+            .map(this::formatResource)
             .collect(Collectors.joining("\n\n"));
 
         botService.sendMessage(chatId, LIST_MESSAGE + response);
@@ -51,18 +56,39 @@ public class TrackedResourceService {
         String filtersStr = resource.getFilters().entrySet().stream()
             .map(entry -> entry.getKey() + ": " + entry.getValue())
             .collect(Collectors.joining(", "));
+
+        ZonedDateTime zonedDateTime = resource.getLastCheckedTime()
+            .atZone(ZoneId.systemDefault());
+
+
+        String formattedTime = DateTimeFormatter
+            .ofPattern("dd.MM.yyyy HH:mm:ss z")
+            .format(zonedDateTime);
+
         return String.format(
             FORMAT_LIST_MESSAGE,
             resource.getLink(),
             resource.getTags().isEmpty() ? "нет" : String.join(", ", resource.getTags()),
             resource.getFilters().isEmpty() ? "нет" : filtersStr,
-            DateTimeFormatter.ISO_INSTANT.format(resource.getLastCheckedTime())
-        );
+            formattedTime);
     }
 
-    public void validateUrl(String url) {
-        if (!url.startsWith("http")) {
+
+
+    public void processInvalidURL(String url) throws MalformedURLException, URISyntaxException {
+        if (!isValidURL(url)) {
             throw new IllegalArgumentException(LINK_INCORRECT_MESSAGE);
+        }
+    }
+
+    boolean isValidURL(String url) throws MalformedURLException, URISyntaxException {
+        try {
+            new URL(url).toURI();
+            return true;
+        } catch (MalformedURLException e) {
+            return false;
+        } catch (URISyntaxException e) {
+            return false;
         }
     }
 
