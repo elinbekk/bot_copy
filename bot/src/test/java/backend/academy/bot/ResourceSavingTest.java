@@ -23,15 +23,19 @@ public class ResourceSavingTest {
     private TrackedResourceService trackedResourceService;
     private TrackedResourceRepository resourceRepository;
     private CommandHandler commandHandler;
-    private ResourceTypeDetector resourceTypeDetector;
+
+    private static final long testChatId = 123L;
 
     @BeforeEach
     void setUp() {
         BotService botService = mock(BotService.class);
         resourceRepository = mock(TrackedResourceRepository.class);
+
         trackedResourceService = new TrackedResourceService(resourceRepository, botService);
-        resourceTypeDetector = new ResourceTypeDetector();
-        commandHandler = new CommandHandler(botService, trackedResourceService, resourceTypeDetector);
+        ResourceTypeDetector resourceTypeDetector = new ResourceTypeDetector();
+        InputParser inputParser = new InputParser();
+
+        commandHandler = new CommandHandler(botService, inputParser, trackedResourceService, resourceTypeDetector);
 
     }
 
@@ -44,17 +48,16 @@ public class ResourceSavingTest {
 
         List<TrackedResource> savedResources = new ArrayList<>();
 
-        trackedResourceService.saveTrackedResource(123L, resource);
+        trackedResourceService.saveTrackedResource(testChatId, resource);
 
         doAnswer(invocation -> {
             savedResources.add(invocation.getArgument(1));
             return null;
         }).when(resourceRepository).addResource(anyLong(), any(TrackedResource.class));
 
-        // Настройка мока для getResourcesByChatId
-        when(resourceRepository.getResourcesByChatId(123L)).thenReturn(savedResources);
+        when(resourceRepository.getResourcesByChatId(testChatId)).thenReturn(savedResources);
 
-        trackedResourceService.saveTrackedResource(123L, resource);
+        trackedResourceService.saveTrackedResource(testChatId, resource);
         assertEquals(1, savedResources.size());
     }
 
@@ -62,36 +65,32 @@ public class ResourceSavingTest {
     void saveDuplicateLinkThrowsExceptionTest() {
         TrackedResource resource1 = new TrackedResource();
         resource1.setLink("https://github.com/user/repo");
-        resource1.setChatId(123L);
+        resource1.setChatId(testChatId);
 
         TrackedResource resource2 = new TrackedResource();
         resource2.setLink("https://github.com/user/repo");
-        resource2.setChatId(123L);
+        resource2.setChatId(testChatId);
 
-        trackedResourceService.saveTrackedResource(123L, resource1);
-
-
-
-        when(resourceRepository.existsByChatIdAndLink(123L, "https://github.com/user/repo")).thenReturn(true);
-
+        trackedResourceService.saveTrackedResource(testChatId, resource1);
+        when(resourceRepository.existsByChatIdAndLink(testChatId, "https://github.com/user/repo")).thenReturn(true);
 
         assertThrows(IllegalArgumentException.class, () ->
-            trackedResourceService.saveTrackedResource(123L, resource2)
+            trackedResourceService.saveTrackedResource(testChatId, resource2)
         );
     }
 
     @Test
     void fullTrackingWorkflowSuccessTest() {
-        commandHandler.handleState(123L, "/track");
-        commandHandler.handleState(123L, "https://github.com/user/repo");
-        commandHandler.handleState(123L, "bug feature");
-        commandHandler.handleState(123L, "state:open");
+        commandHandler.handleState(testChatId, "/track");
+        commandHandler.handleState(testChatId, "https://github.com/user/repo");
+        commandHandler.handleState(testChatId, "bug feature");
+        commandHandler.handleState(testChatId, "state:open");
 
-        List<TrackedResource> resources = resourceRepository.getResourcesByChatId(123L);
+        List<TrackedResource> resources = resourceRepository.getResourcesByChatId(testChatId);
 
-        commandHandler.handleState(123L, "/untrack");
-        commandHandler.handleState(123L, "https://github.com/user/repo");
+        commandHandler.handleState(testChatId, "/untrack");
+        commandHandler.handleState(testChatId, "https://github.com/user/repo");
 
-        assertTrue(resourceRepository.getResourcesByChatId(123L).isEmpty());
+        assertTrue(resourceRepository.getResourcesByChatId(testChatId).isEmpty());
     }
 }

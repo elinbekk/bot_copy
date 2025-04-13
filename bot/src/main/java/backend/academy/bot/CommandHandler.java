@@ -28,12 +28,13 @@ public class CommandHandler {
     private final BotService botService;
     private final Map<Long, BotState> botStates = new ConcurrentHashMap<>();
     private final Map<Long, TrackedResource> trackResources = new HashMap<>();
-    private final InputParser inputParser = new InputParser();
+    private final InputParser inputParser;
     private final TrackedResourceService trackedResourceService;
     private final ResourceTypeDetector resourceTypeDetector;
 
-    public CommandHandler(BotService botService, TrackedResourceService trackedResourceService, ResourceTypeDetector resourceTypeDetector) {
+    public CommandHandler(BotService botService, InputParser inputParser, TrackedResourceService trackedResourceService, ResourceTypeDetector resourceTypeDetector) {
         this.botService = botService;
+        this.inputParser = inputParser;
         this.trackedResourceService = trackedResourceService;
         this.resourceTypeDetector = resourceTypeDetector;
     }

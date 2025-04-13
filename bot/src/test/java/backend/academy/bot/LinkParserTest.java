@@ -1,29 +1,57 @@
 package backend.academy.bot;
 
 import backend.academy.bot.entity.LinkType;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import java.util.stream.Stream;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertAll;
 
-public class LinkParserTest {
-    private ResourceTypeDetector resourceTypeDetector;
+class LinkParserTest {
+    private final ResourceTypeDetector resourceTypeDetector = new ResourceTypeDetector();
 
-    @BeforeEach
-    void setUp() {
-        resourceTypeDetector = new ResourceTypeDetector();
+    @ParameterizedTest
+    @MethodSource("provideTestCases")
+    void linkTypeCorrectDetectedTest(String url, LinkType expectedType, boolean expectException) {
+        if (expectException) {
+            assertThrows(IllegalArgumentException.class,
+                () -> resourceTypeDetector.detectResourceType(url));
+        } else {
+            assertEquals(expectedType, resourceTypeDetector.detectResourceType(url));
+        }
     }
 
-    @Test
-    void linkTypeCorrectDetectedTest() {
-        assertAll(
-            () -> Assertions.assertEquals(LinkType.GITHUB_REPO, resourceTypeDetector.detectResourceType("https://github.com/user/repo")),
-            () -> Assertions.assertEquals(LinkType.GITHUB_ISSUE, resourceTypeDetector.detectResourceType("https://github.com/user/repo/issues/123")),
-            () -> Assertions.assertEquals(LinkType.GITHUB_PR, resourceTypeDetector.detectResourceType("https://github.com/user/repo/pull/4")),
-            () -> Assertions.assertEquals(LinkType.STACKOVERFLOW, resourceTypeDetector.detectResourceType("https://stackoverflow.com/questions/123")),
-            () -> assertThrows(IllegalArgumentException.class,
-                () -> resourceTypeDetector.detectResourceType("https://google.com"))
+    private static Stream<Arguments> provideTestCases() {
+        return Stream.of(
+            // Valid cases
+            Arguments.of(
+                "https://github.com/user/repo",
+                LinkType.GITHUB_REPO,
+                false
+            ),
+            Arguments.of(
+                "https://github.com/user/repo/issues/123",
+                LinkType.GITHUB_ISSUE,
+                false
+            ),
+            Arguments.of(
+                "https://github.com/user/repo/pull/4",
+                LinkType.GITHUB_PR,
+                false
+            ),
+            Arguments.of(
+                "https://stackoverflow.com/questions/123",
+                LinkType.STACKOVERFLOW,
+                false
+            ),
+
+            // Invalid case
+            Arguments.of(
+                "https://google.com",
+                null,
+                true
+            )
         );
     }
 }

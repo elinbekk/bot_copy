@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static backend.academy.bot.BotMessages.START_MESSAGE;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
@@ -17,10 +16,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 public class CommandHandlingTest {
-    private BotService botService;
-    private TrackedResourceService trackedResourceService;
-    private CommandHandler commandHandler;
-    private final long testChatId = 123L;
+    private static BotService botService;
+    private static TrackedResourceService trackedResourceService;
+    private static CommandHandler commandHandler;
+
+    private static final long testChatId = 123L;
 
     @BeforeEach
     void setUp() {
@@ -28,8 +28,11 @@ public class CommandHandlingTest {
         TrackedResourceRepository linkRepository = mock(TrackedResourceRepository.class);
         trackedResourceService = new TrackedResourceService(linkRepository, botService);
         ResourceTypeDetector resourceTypeDetector = new ResourceTypeDetector();
+        InputParser inputParser = new InputParser();
+
         commandHandler = new CommandHandler(
             botService,
+            inputParser,
             trackedResourceService,
             resourceTypeDetector
         );
@@ -37,7 +40,16 @@ public class CommandHandlingTest {
 
     @Test
     void handleStartCommandSendsMessageTest() {
+        final String START_MESSAGE = """
+        Привет! Я помогу отслеживать изменения на GitHub и Stack Overflow.
+        Доступные команды:
+        /track - начать отслеживание ссылки
+        /untrack - прекратить отслеживание
+        /list - показать отслеживаемые ссылки
+        /help - показать справку""";
+
         commandHandler.handleState(testChatId, "/start");
+
         verify(botService).sendMessage(eq(testChatId), eq(START_MESSAGE));
     }
 
