@@ -12,24 +12,22 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.Mockito.mock;
 
 public class LinkParserTest {
-    private TrackedResourceService trackedResourceService;
+    private ResourceTypeDetector resourceTypeDetector;
 
     @BeforeEach
     void setUp() {
-        BotService botService = mock(BotService.class);
-        TrackedResourceRepository linkRepository = mock(TrackedResourceRepository.class);
-        trackedResourceService = new TrackedResourceService(linkRepository, botService);
+        resourceTypeDetector = new ResourceTypeDetector();
     }
 
     @Test
     void linkTypeCorrectDetectedTest() {
         assertAll(
-            () -> Assertions.assertEquals(LinkType.GITHUB_REPO, trackedResourceService.detectResourceType("https://github.com/user/repo")),
-            () -> Assertions.assertEquals(LinkType.GITHUB_ISSUE, trackedResourceService.detectResourceType("https://github.com/user/repo/issues/123")),
-            () -> Assertions.assertEquals(LinkType.GITHUB_PR, trackedResourceService.detectResourceType("https://github.com/user/repo/pull/4")),
-            () -> Assertions.assertEquals(LinkType.STACKOVERFLOW, trackedResourceService.detectResourceType("https://stackoverflow.com/questions/123")),
+            () -> Assertions.assertEquals(LinkType.GITHUB_REPO, resourceTypeDetector.detectResourceType("https://github.com/user/repo")),
+            () -> Assertions.assertEquals(LinkType.GITHUB_ISSUE, resourceTypeDetector.detectResourceType("https://github.com/user/repo/issues/123")),
+            () -> Assertions.assertEquals(LinkType.GITHUB_PR, resourceTypeDetector.detectResourceType("https://github.com/user/repo/pull/4")),
+            () -> Assertions.assertEquals(LinkType.STACKOVERFLOW, resourceTypeDetector.detectResourceType("https://stackoverflow.com/questions/123")),
             () -> assertThrows(IllegalArgumentException.class,
-                () -> trackedResourceService.detectResourceType("https://google.com"))
+                () -> resourceTypeDetector.detectResourceType("https://google.com"))
         );
     }
 }

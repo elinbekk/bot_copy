@@ -27,10 +27,11 @@ public class CommandHandlingTest {
         botService = mock(BotService.class);
         TrackedResourceRepository linkRepository = mock(TrackedResourceRepository.class);
         trackedResourceService = new TrackedResourceService(linkRepository, botService);
-
+        ResourceTypeDetector resourceTypeDetector = new ResourceTypeDetector();
         commandHandler = new CommandHandler(
             botService,
-            trackedResourceService
+            trackedResourceService,
+            resourceTypeDetector
         );
     }
 

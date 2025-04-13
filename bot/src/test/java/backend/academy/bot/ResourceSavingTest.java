@@ -23,13 +23,15 @@ public class ResourceSavingTest {
     private TrackedResourceService trackedResourceService;
     private TrackedResourceRepository resourceRepository;
     private CommandHandler commandHandler;
+    private ResourceTypeDetector resourceTypeDetector;
 
     @BeforeEach
     void setUp() {
         BotService botService = mock(BotService.class);
         resourceRepository = mock(TrackedResourceRepository.class);
         trackedResourceService = new TrackedResourceService(resourceRepository, botService);
-        commandHandler = new CommandHandler(botService, trackedResourceService);
+        resourceTypeDetector = new ResourceTypeDetector();
+        commandHandler = new CommandHandler(botService, trackedResourceService, resourceTypeDetector);
 
     }
 

@@ -30,10 +30,12 @@ public class CommandHandler {
     private final Map<Long, TrackedResource> trackResources = new ConcurrentHashMap<>();
     private final InputParser inputParser = new InputParser();
     private final TrackedResourceService trackedResourceService;
+    private final ResourceTypeDetector resourceTypeDetector;
 
-    public CommandHandler(BotService botService, TrackedResourceService trackedResourceService) {
+    public CommandHandler(BotService botService, TrackedResourceService trackedResourceService, ResourceTypeDetector resourceTypeDetector) {
         this.botService = botService;
         this.trackedResourceService = trackedResourceService;
+        this.resourceTypeDetector = resourceTypeDetector;
     }
 
     public void handleState(long chatId, String message) {
@@ -83,7 +85,7 @@ public class CommandHandler {
             throw new IllegalStateException(LINK_DUPLICATED_MESSAGE);
         }
         TrackedResource resource = trackResources.get(chatId);
-        LinkType linkType = trackedResourceService.detectResourceType(message);
+        LinkType linkType = resourceTypeDetector.detectResourceType(message);
         resource.setLink(message);
         resource.setLinkType(linkType);
         resource.setChatId(chatId);

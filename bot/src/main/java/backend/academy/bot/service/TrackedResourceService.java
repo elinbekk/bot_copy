@@ -1,6 +1,5 @@
 package backend.academy.bot.service;
 
-import backend.academy.bot.entity.LinkType;
 import backend.academy.bot.entity.TrackedResource;
 import backend.academy.bot.repository.TrackedResourceRepository;
 import java.net.MalformedURLException;
@@ -10,7 +9,6 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 import static backend.academy.bot.BotMessages.FORMAT_LIST_MESSAGE;
@@ -23,6 +21,7 @@ import static backend.academy.bot.BotMessages.LIST_MESSAGE;
 public class TrackedResourceService {
     private final TrackedResourceRepository linkRepository;
     private final BotService botService;
+
 
     public TrackedResourceService(TrackedResourceRepository linkRepository, BotService botService) {
         this.linkRepository = linkRepository;
@@ -90,26 +89,6 @@ public class TrackedResourceService {
         } catch (URISyntaxException e) {
             return false;
         }
-    }
-
-    public LinkType detectResourceType(String url) {
-        if (url.contains("github.com")) {
-            Pattern issuePattern = Pattern.compile("https?://github\\.com/[^/]+/[^/]+/issues/\\d+");
-            Pattern prPattern = Pattern.compile("https?://github\\.com/[^/]+/[^/]+/pull/\\d+");
-            Pattern repoPattern = Pattern.compile("https?://github\\.com/[^/]+/[^/]+(/)?(.git)?");
-
-            if (issuePattern.matcher(url).find()) {
-                return LinkType.GITHUB_ISSUE;
-            } else if (prPattern.matcher(url).find()) {
-                return LinkType.GITHUB_PR;
-            } else if (repoPattern.matcher(url).find()) {
-                return LinkType.GITHUB_REPO;
-            }
-        }
-        if (url.contains("stackoverflow.com")) {
-            return LinkType.STACKOVERFLOW;
-        }
-        throw new IllegalArgumentException("Неподдерживаемый тип ссылки");
     }
 
     public boolean isResourceAlreadyTracked(long chatId, String link) {
