@@ -11,16 +11,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClient;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Component
 public class LinkCheckerScheduler {
     private static final Logger log = LoggerFactory.getLogger(LinkCheckerScheduler.class);
-    private final WebClient botClient;
+    private final RestClient botClient;
     private final GithubClient githubClient;
     private final StackOverflowClient stackoverflowClient;
 
-    public LinkCheckerScheduler(WebClient botClient, GithubClient githubClient, StackOverflowClient stackoverflowClient) {
+    public LinkCheckerScheduler(RestClient botClient, GithubClient githubClient, StackOverflowClient stackoverflowClient) {
         this.botClient = botClient;
         this.githubClient = githubClient;
         this.stackoverflowClient = stackoverflowClient;
@@ -44,14 +45,13 @@ public class LinkCheckerScheduler {
     private void sendUpdateNotification(TrackedResource resource) {
         botClient.post()
             .uri("/api/updates")
-            .bodyValue(new LinkUpdate(
+            .body(new LinkUpdate(
                 resource.getChatId(),
                 resource.getLink(),
                 "Обнаружены изменения"
             ))
             .retrieve()
-            .toBodilessEntity()
-            .block();
+            .toBodilessEntity();
     }
 
     private boolean isUpdated(TrackedResource resource) {
@@ -68,9 +68,7 @@ public class LinkCheckerScheduler {
                 .queryParam("interval", "5m")
                 .build())
             .retrieve()
-            .bodyToMono(new ParameterizedTypeReference<List<TrackedResource>>() {
-            })
-            .block();
+            .body(new ParameterizedTypeReference<>() {});
     }
 }
 
