@@ -1,12 +1,15 @@
 package backend.academy.scrapper;
 
 import backend.academy.scrapper.client.StackOverflowClient;
+import backend.academy.scrapper.config.StackoverflowProperties;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.net.http.HttpClient;
 import java.time.Instant;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
@@ -20,11 +23,14 @@ import static org.junit.Assert.assertTrue;
 
 public class StackOverflowClientTest extends WiremockIntegrationTest {
     private StackOverflowClient client;
+    private String baseUrl = wireMock.baseUrl() + "/2.3/";
+    private final StackoverflowProperties soProperties = new StackoverflowProperties("test-key", "test-token", baseUrl);
+    private HttpClient mockHttpClient = Mockito.mock(HttpClient.class);
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeEach
     void setup() {
-        String baseUrl = wireMock.baseUrl() + "/2.3/";
-        client = new StackOverflowClient("test-key", "test-token", baseUrl);
+        client = new StackOverflowClient(mockHttpClient, objectMapper, soProperties);
     }
 
     @Test
@@ -47,7 +53,7 @@ public class StackOverflowClientTest extends WiremockIntegrationTest {
             .withQueryParam("access_token", equalTo("test-token"))
             .willReturn(okJson("{ \"items\": [{\"last_activity_date\": 1672531200}] }")));
 
-        JsonNode result = client.getQuestion(123);
+        JsonNode result = client.getQuestionById(123);
         Assertions.assertTrue(result.has("last_activity_date"));
     }
 
@@ -56,7 +62,7 @@ public class StackOverflowClientTest extends WiremockIntegrationTest {
         wireMock.stubFor(get(anyUrl())
             .willReturn(notFound()));
 
-        assertThrows(RuntimeException.class, () -> client.getQuestion(123));
+        assertThrows(RuntimeException.class, () -> client.getQuestionById(123));
     }
 
     @Test
@@ -94,7 +100,7 @@ public class StackOverflowClientTest extends WiremockIntegrationTest {
         wireMock.stubFor(get(anyUrl())
             .willReturn(ok().withFixedDelay(20000)));
 
-        assertThrows(RuntimeException.class, () -> client.getQuestion(123));
+        assertThrows(RuntimeException.class, () -> client.getQuestionById(123));
     }
 
     @Test

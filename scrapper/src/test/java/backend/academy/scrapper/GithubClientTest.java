@@ -4,9 +4,10 @@ import backend.academy.bot.entity.TrackedResource;
 import backend.academy.scrapper.client.GithubClient;
 import backend.academy.scrapper.config.GithubProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.time.Instant;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,23 +21,35 @@ import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 import static com.github.tomakehurst.wiremock.client.WireMock.okJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.serverError;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
 
 class GithubClientTest extends WiremockIntegrationTest {
     private GithubClient client;
-    private TrackedResource resource;
-    HttpClient mockHttpClient = Mockito.mock(HttpClient.class);
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private TrackedResource trackedResource;
+    HttpClient mockHttpClient;
 
 
-    @BeforeEach
+/*    @BeforeEach
     void setUp() {
         GithubProperties githubProperties = new GithubProperties("test-token", wireMock.baseUrl());
-        client = new GithubClient( githubProperties,
+        client = new GithubClient(githubProperties,
             mockHttpClient,
             objectMapper
         );
         resource = createDefaultResource();
+    }*/
+
+    @BeforeEach
+    public void setUp() {
+        GithubProperties githubProperties = new GithubProperties("dummy-token", "https://api.github.com");
+        mockHttpClient = Mockito.mock(HttpClient.class);
+        ObjectMapper objectMapper = new ObjectMapper();
+        client = new GithubClient(githubProperties, mockHttpClient, objectMapper);
+        trackedResource = createDefaultResource();
     }
+
 
     private TrackedResource createDefaultResource() {
         TrackedResource resource = new TrackedResource();
@@ -54,16 +67,20 @@ class GithubClientTest extends WiremockIntegrationTest {
     }
 
     @Test
-    void hasUpdatesWhenRepoUpdatedTest() {
-        String responseJson = """
+    public void testHasUpdates_whenUpdateTimeAfterLastChecked_shouldReturnTrue() throws Exception {
+        String responseBody = """
             {
-                "id": 123,
-                "pushed_at": "2023-01-02T00:00:00Z",
-                "name": "repo"
-            }""";
-        stubRepoRequest(okJson(responseJson));
+                "pushed_at": "2025-04-16T12:00:00Z"
+            }
+            """;
+        HttpResponse httpResponse = Mockito.mock(HttpResponse.class);
+        when(httpResponse.statusCode()).thenReturn(200);
+        when(httpResponse.body()).thenReturn(responseBody);
 
-        boolean result = client.hasUpdates(resource);
+        when(mockHttpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
+            .thenReturn(httpResponse);
+
+        boolean result = client.hasUpdates(trackedResource);
         Assertions.assertTrue(result);
     }
 
@@ -71,7 +88,7 @@ class GithubClientTest extends WiremockIntegrationTest {
     void testHttp404Error() {
         stubRepoRequest(notFound());
 
-        boolean result = client.hasUpdates(resource);
+        boolean result = client.hasUpdates(trackedResource);
         Assertions.assertFalse(result);
     }
 
@@ -79,7 +96,7 @@ class GithubClientTest extends WiremockIntegrationTest {
     void testMissingPushedAtField() {
         stubRepoRequest(okJson("{\"name\":\"repo\"}"));
 
-        boolean result = client.hasUpdates(resource);
+        boolean result = client.hasUpdates(trackedResource);
         Assertions.assertFalse(result);
     }
 
@@ -87,7 +104,7 @@ class GithubClientTest extends WiremockIntegrationTest {
     void testHttp500Error() {
         stubRepoRequest(serverError());
 
-        boolean result = client.hasUpdates(resource);
+        boolean result = client.hasUpdates(trackedResource);
         Assertions.assertFalse(result);
     }
 
@@ -95,7 +112,7 @@ class GithubClientTest extends WiremockIntegrationTest {
     void testRequestTimeout() {
         stubRepoRequest(ok().withFixedDelay(15000));
 
-        boolean result = client.hasUpdates(resource);
+        boolean result = client.hasUpdates(trackedResource);
         Assertions.assertFalse(result);
     }
 }

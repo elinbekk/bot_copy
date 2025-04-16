@@ -19,9 +19,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @Component
 public class StackOverflowClient implements UpdateChecker {
@@ -29,35 +28,20 @@ public class StackOverflowClient implements UpdateChecker {
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
     private final StackoverflowProperties stackoverflowProperties;
-    private final String apiBaseUrl;
 
-    @Autowired
-    public StackOverflowClient(
-        //todo:почему value nullable? (двоеточие
-        // Нужно завести отдельные configurationProperties StackOverflowClientProperties. где будут key и token
-        HttpClient httpClient, ObjectMapper objectMapper, @Value("${stackoverflow.key:}") String key,
-        @Value("${stackoverflow.token:}") String token, StackoverflowProperties stackoverflowProperties
-    ) {
+    public StackOverflowClient(HttpClient httpClient,
+                               ObjectMapper objectMapper,
+                               StackoverflowProperties stackoverflowProperties) {
         this.httpClient = httpClient;
         this.objectMapper = objectMapper;
         this.stackoverflowProperties = stackoverflowProperties;
-        this.apiBaseUrl = "https://api.stackexchange.com/2.3/";
-    }
-
-    public StackOverflowClient(String key, String token, StackoverflowProperties stackoverflowProperties, String apiBaseUrl) {
-        this.stackoverflowProperties = stackoverflowProperties;
-        this.apiBaseUrl = apiBaseUrl;
-        this.httpClient = HttpClient.newBuilder()
-            .connectTimeout(Duration.ofSeconds(10))
-            .build();
-        this.objectMapper = new ObjectMapper();
     }
 
     @Override
     public boolean hasUpdates(TrackedResource resource) {
         log.debug("Начало проверки обновлений для: {}", resource.getLink());
         try {
-            JsonNode question = getQuestion(resource);
+            JsonNode question = getQuestionById(resource);
             return isUpdated(question, resource.getLastCheckedTime());
         } catch (Exception e) {
             throw new RuntimeException("Failed to check updates for: " + resource.getLink(), e);
@@ -67,10 +51,10 @@ public class StackOverflowClient implements UpdateChecker {
     //todo: вообще, мы можем из ответа stackoverflow согласно их API сами создать класс ответа
     // (какой-нибудь StackOverflowQuestion),
     // чтобы не возвращать JsonNode, а уже классный объект
-    private JsonNode getQuestion(TrackedResource resource) throws Exception {
-        String url = buildUrlWithFilters(resource);
-        log.debug("Сформированный URL: {}", url);
-        HttpRequest request = buildRequest(url);
+    private JsonNode getQuestionById(TrackedResource resource) throws Exception {
+        URI uri = buildUrlWithFilters(resource);
+        log.debug("Сформированный URL: {}", uri);
+        HttpRequest request = buildRequest(String.valueOf(uri));
 
         HttpResponse<String> response = httpClient.send(
             request,
@@ -83,17 +67,28 @@ public class StackOverflowClient implements UpdateChecker {
         return parseResponse(response.body());
     }
 
-    private String buildUrlWithFilters(TrackedResource resource) {
+
+    private URI buildUrlWithFilters(TrackedResource resource) {
         int questionId = extractQuestionId(resource.getLink());
-        return String.format(
-            "%squestions/%d?site=stackoverflow%s%s%s",
-            apiBaseUrl,
-            questionId,
-            buildTagsParam(resource.getTags()),
-            buildFiltersParam(resource.getFilters()),
-            buildAuthParams()
-        );
+
+        UriComponentsBuilder builder = UriComponentsBuilder
+            .fromUriString(stackoverflowProperties.apiUrl())
+            .path("/2.3/questions/{id}")
+            .queryParam("site", "stackoverflow")
+            .queryParam("filter", "withbody")
+            .queryParam("key", stackoverflowProperties.key())
+            .queryParam("access_token", stackoverflowProperties.accessToken());
+
+        if (!resource.getTags().isEmpty()) {
+            builder.queryParam("tagged", String.join(";", resource.getTags()));
+        }
+
+        if (!resource.getFilters().isEmpty()) {
+            resource.getFilters().forEach(builder::queryParam);
+        }
+        return builder.build(questionId);
     }
+
 
     //todo: можно для таких манипулаций с урлами попробовать использовать UriBuilder, чтобы не заниматься этим самому
     private String buildTagsParam(Set<String> tags) {
@@ -112,7 +107,7 @@ public class StackOverflowClient implements UpdateChecker {
     }
 
     private String buildAuthParams() {
-        return String.format("&key=%s&access_token=%s",stackoverflowProperties.key(), stackoverflowProperties.accessToken());
+        return String.format("&key=%s&access_token=%s", stackoverflowProperties.key(), stackoverflowProperties.accessToken());
     }
 
     public boolean isUpdated(JsonNode question, Instant lastChecked) {
@@ -121,7 +116,7 @@ public class StackOverflowClient implements UpdateChecker {
         return lastActivity > lastChecked.getEpochSecond();
     }
 
-    public JsonNode getQuestion(int questionId) {
+    public JsonNode getQuestionById(int questionId) {
         String url = buildUrl(questionId);
         HttpRequest request = buildRequest(url);
 
@@ -156,7 +151,7 @@ public class StackOverflowClient implements UpdateChecker {
     public String buildUrl(int questionId) {
         return String.format(
             "%squestions/%d?site=stackoverflow&filter=withbody&key=%s&access_token=%s",
-            apiBaseUrl,
+            stackoverflowProperties.apiUrl(),
             questionId,
             stackoverflowProperties.key(),
             stackoverflowProperties.accessToken()
