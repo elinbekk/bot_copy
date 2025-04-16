@@ -2,11 +2,16 @@ package backend.academy.scrapper;
 
 import backend.academy.bot.entity.TrackedResource;
 import backend.academy.scrapper.client.GithubClient;
+import backend.academy.scrapper.config.GithubProperties;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
+import java.net.http.HttpClient;
 import java.time.Instant;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import static backend.academy.bot.entity.LinkType.GITHUB_REPO;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
@@ -19,10 +24,17 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 class GithubClientTest extends WiremockIntegrationTest {
     private GithubClient client;
     private TrackedResource resource;
+    HttpClient mockHttpClient = Mockito.mock(HttpClient.class);
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
 
     @BeforeEach
     void setUp() {
-        client = new GithubClient("test-token");
+        GithubProperties githubProperties = new GithubProperties("test-token", wireMock.baseUrl());
+        client = new GithubClient( githubProperties,
+            mockHttpClient,
+            objectMapper
+        );
         resource = createDefaultResource();
     }
 

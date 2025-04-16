@@ -5,8 +5,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
 @Validated
-@ConfigurationProperties(prefix = "app")
-public record ScrapperConfig(@NotEmpty String baseUrl) {
+@ConfigurationProperties(prefix = "app.github")
+public record GithubProperties(
+    @NotEmpty String token,
+    @NotEmpty String apiUrl
+) {
 }
-
-

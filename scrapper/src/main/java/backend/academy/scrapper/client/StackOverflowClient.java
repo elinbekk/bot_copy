@@ -1,6 +1,7 @@
 package backend.academy.scrapper.client;
 
 import backend.academy.bot.entity.TrackedResource;
+import backend.academy.scrapper.config.StackoverflowProperties;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
@@ -27,27 +28,24 @@ public class StackOverflowClient implements UpdateChecker {
     private static final Logger log = LoggerFactory.getLogger(StackOverflowClient.class);
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
-    private final String soTokenKey;
-    private final String soAccessToken;
+    private final StackoverflowProperties stackoverflowProperties;
     private final String apiBaseUrl;
 
     @Autowired
     public StackOverflowClient(
-        @Value("${stackoverflow.key:}") String key,
-        @Value("${stackoverflow.token:}") String token
+        //todo:почему value nullable? (двоеточие
+        // Нужно завести отдельные configurationProperties StackOverflowClientProperties. где будут key и token
+        HttpClient httpClient, ObjectMapper objectMapper, @Value("${stackoverflow.key:}") String key,
+        @Value("${stackoverflow.token:}") String token, StackoverflowProperties stackoverflowProperties
     ) {
-        this.httpClient = HttpClient.newBuilder()
-            .connectTimeout(Duration.ofSeconds(10))
-            .build();
-        this.objectMapper = new ObjectMapper();
-        this.soTokenKey = key;
-        this.soAccessToken = token;
+        this.httpClient = httpClient;
+        this.objectMapper = objectMapper;
+        this.stackoverflowProperties = stackoverflowProperties;
         this.apiBaseUrl = "https://api.stackexchange.com/2.3/";
     }
 
-    public StackOverflowClient(String key, String token, String apiBaseUrl) {
-        this.soTokenKey = key;
-        this.soAccessToken = token;
+    public StackOverflowClient(String key, String token, StackoverflowProperties stackoverflowProperties, String apiBaseUrl) {
+        this.stackoverflowProperties = stackoverflowProperties;
         this.apiBaseUrl = apiBaseUrl;
         this.httpClient = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(10))
@@ -66,6 +64,9 @@ public class StackOverflowClient implements UpdateChecker {
         }
     }
 
+    //todo: вообще, мы можем из ответа stackoverflow согласно их API сами создать класс ответа
+    // (какой-нибудь StackOverflowQuestion),
+    // чтобы не возвращать JsonNode, а уже классный объект
     private JsonNode getQuestion(TrackedResource resource) throws Exception {
         String url = buildUrlWithFilters(resource);
         log.debug("Сформированный URL: {}", url);
@@ -94,13 +95,14 @@ public class StackOverflowClient implements UpdateChecker {
         );
     }
 
+    //todo: можно для таких манипулаций с урлами попробовать использовать UriBuilder, чтобы не заниматься этим самому
     private String buildTagsParam(Set<String> tags) {
         return tags.isEmpty() ? ""
             : "&tagged=" + String.join(";", tags);
     }
 
     private String buildFiltersParam(Map<String, String> filters) {
-        if (!filters.isEmpty()) {
+        if (filters.isEmpty()) {
             return "";
         } else {
             return filters.entrySet().stream()
@@ -110,7 +112,7 @@ public class StackOverflowClient implements UpdateChecker {
     }
 
     private String buildAuthParams() {
-        return String.format("&key=%s&access_token=%s", soTokenKey, soAccessToken);
+        return String.format("&key=%s&access_token=%s",stackoverflowProperties.key(), stackoverflowProperties.accessToken());
     }
 
     public boolean isUpdated(JsonNode question, Instant lastChecked) {
@@ -156,8 +158,8 @@ public class StackOverflowClient implements UpdateChecker {
             "%squestions/%d?site=stackoverflow&filter=withbody&key=%s&access_token=%s",
             apiBaseUrl,
             questionId,
-            soTokenKey,
-            soAccessToken
+            stackoverflowProperties.key(),
+            stackoverflowProperties.accessToken()
         );
     }
 
@@ -188,6 +190,8 @@ public class StackOverflowClient implements UpdateChecker {
             throw new RuntimeException("No question found");
         }
 
+        //todo:корректно ли только первый item брать?
+        // остальные нужно обрабатывать? (если нет, то опиши почему достаточно только один обрабатывать)
         return items.get(0);
     }
 

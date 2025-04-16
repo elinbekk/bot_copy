@@ -1,15 +1,21 @@
 package backend.academy.scrapper.config;
 
 import backend.academy.scrapper.client.BotClient;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.client.RestClient;
+import java.net.http.HttpClient;
+import java.time.Duration;
 
-@Configuration
+
 @Validated
-@EnableConfigurationProperties(ScrapperConfig.class)
+@Configuration
+@EnableConfigurationProperties({ScrapperConfig.class, GithubProperties.class, StackoverflowProperties.class})
 public class ClientConfig {
     private final ScrapperConfig scrapperConfig;
 
@@ -31,5 +37,15 @@ public class ClientConfig {
     @Bean
     public BotClient botClient(RestClient restClient) {
         return new BotClient(restClient);
+    }
+
+    @Bean
+    public ObjectMapper objectMapper() {
+        return new ObjectMapper();
+    }
+
+    @Bean
+    public HttpClient httpClient() {
+        return HttpClient.newHttpClient();
     }
 }

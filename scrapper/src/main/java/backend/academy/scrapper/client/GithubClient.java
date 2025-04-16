@@ -3,6 +3,7 @@ package backend.academy.scrapper.client;
 import backend.academy.bot.entity.LinkType;
 import backend.academy.bot.entity.TrackedResource;
 import backend.academy.scrapper.GithubResource;
+import backend.academy.scrapper.config.GithubProperties;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
@@ -17,7 +18,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 import static backend.academy.bot.entity.LinkType.GITHUB_ISSUE;
@@ -27,33 +27,44 @@ import static backend.academy.bot.entity.LinkType.GITHUB_REPO;
 @Component
 public class GithubClient implements UpdateChecker {
     private static final Logger log = LoggerFactory.getLogger(GithubClient.class);
-    private final HttpClient httpClient;
-    private final String apiToken;
 
-    public GithubClient(@Value("${github.token}") String apiToken) {
-        this.httpClient = HttpClient.newHttpClient();
-        this.apiToken = apiToken;
+    private final GithubProperties githubProperties;
+    private final HttpClient httpClient;
+    private final ObjectMapper objectMapper;
+
+    public GithubClient(
+        GithubProperties githubProperties,
+        HttpClient httpClient,
+        ObjectMapper objectMapper
+    ) {
+        this.githubProperties = githubProperties;
+        this.httpClient = httpClient;
+        this.objectMapper = objectMapper;
     }
 
     @Override
     public boolean hasUpdates(TrackedResource resource) {
         try {
-            log.debug("Начало проверки обновлений для: {}", resource.getLink());
+            log.info("Проверка обновлений: [chatId={}, link={}]",
+                resource.getChatId(), resource.getLink());
+
             URI uri = buildUriWithFilters(resource);
-            log.debug("Сформированный URI: {}", uri);
+            log.info("URI запроса: {}", uri);
 
             HttpRequest request = buildRequest(uri);
             HttpResponse<String> response = sendRequest(request);
 
-            log.debug("Статус ответа: {}", response.statusCode());
-            log.trace("Тело ответа: {}", response.body());
+            log.info("Response status [chatId={}, status={}]",
+                resource.getChatId(), response.statusCode());
+            log.info("Response body: {}", response.body());
 
-            JsonNode json = new ObjectMapper().readTree(response.body());
+            JsonNode json = objectMapper.readTree(response.body());
             Instant lastUpdate = parseUpdateTime(json, resource.getResourceType());
 
             return lastUpdate.isAfter(resource.getLastCheckedTime());
         } catch (Exception e) {
-            log.error("Ошибка при проверке обновлений: ", e);
+            log.error("Ошибка при проверке обновлений [chatId={}, link={}]",
+                resource.getChatId(), resource.getLink(), e);
             return false;
         }
     }
@@ -69,17 +80,16 @@ public class GithubClient implements UpdateChecker {
         return Instant.parse(dateString);
     }
 
-    private URI buildUriWithFilters(TrackedResource resource) throws URISyntaxException {
+    private URI buildUriWithFilters(TrackedResource resource) {
         GithubResource gitHubResource = parseGitHubUrl(resource.getLink());
         String basePath = buildBaseApiPath(gitHubResource);
 
         UriComponentsBuilder builder = UriComponentsBuilder
-            .fromUriString("https://api.github.com" + basePath);
+            .fromUriString(githubProperties.apiUrl() + basePath);
 
         if (resource.getFilters() != null) {
             resource.getFilters().forEach(builder::queryParam);
         }
-        log.info("Final URI: {}", builder.build().toUriString());
         return builder.build().toUri();
     }
 
@@ -100,7 +110,7 @@ public class GithubClient implements UpdateChecker {
         };
     }
 
-    private GithubResource parseGitHubUrl(String url) throws URISyntaxException {
+    private GithubResource parseGitHubUrl(String url) {
         Pattern repoPattern = Pattern.compile("https?://github.com/([^/]+)/([^/]+)/?");
         Pattern issuePattern = Pattern.compile("https?://github.com/([^/]+)/([^/]+)/issues/(\\d+)");
         Pattern prPattern = Pattern.compile("https?://github.com/([^/]+)/([^/]+)/pull/(\\d+)");
@@ -138,7 +148,7 @@ public class GithubClient implements UpdateChecker {
         return HttpRequest.newBuilder()
             .uri(uri)
             .header("Accept", "application/vnd.github.v3+json")
-            .header("Authorization", "token " + apiToken)
+            .header("Authorization", "token " + githubProperties.token())
             .timeout(Duration.ofSeconds(10))
             .GET()
             .build();
