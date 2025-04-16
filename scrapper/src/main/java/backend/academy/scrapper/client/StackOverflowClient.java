@@ -1,22 +1,19 @@
 package backend.academy.scrapper.client;
 
 import backend.academy.bot.entity.TrackedResource;
+import backend.academy.scrapper.StackOverflowQuestion;
+import backend.academy.scrapper.StackOverflowResponse;
 import backend.academy.scrapper.config.StackoverflowProperties;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
-import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Map;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -41,17 +38,14 @@ public class StackOverflowClient implements UpdateChecker {
     public boolean hasUpdates(TrackedResource resource) {
         log.debug("Начало проверки обновлений для: {}", resource.getLink());
         try {
-            JsonNode question = getQuestionById(resource);
+            StackOverflowQuestion question = getQuestion(resource);
             return isUpdated(question, resource.getLastCheckedTime());
         } catch (Exception e) {
             throw new RuntimeException("Failed to check updates for: " + resource.getLink(), e);
         }
     }
 
-    //todo: вообще, мы можем из ответа stackoverflow согласно их API сами создать класс ответа
-    // (какой-нибудь StackOverflowQuestion),
-    // чтобы не возвращать JsonNode, а уже классный объект
-    private JsonNode getQuestionById(TrackedResource resource) throws Exception {
+    private StackOverflowQuestion getQuestion(TrackedResource resource) throws Exception {
         URI uri = buildUrlWithFilters(resource);
         log.debug("Сформированный URL: {}", uri);
         HttpRequest request = buildRequest(String.valueOf(uri));
@@ -89,52 +83,10 @@ public class StackOverflowClient implements UpdateChecker {
         return builder.build(questionId);
     }
 
-
-    //todo: можно для таких манипулаций с урлами попробовать использовать UriBuilder, чтобы не заниматься этим самому
-    private String buildTagsParam(Set<String> tags) {
-        return tags.isEmpty() ? ""
-            : "&tagged=" + String.join(";", tags);
-    }
-
-    private String buildFiltersParam(Map<String, String> filters) {
-        if (filters.isEmpty()) {
-            return "";
-        } else {
-            return filters.entrySet().stream()
-                .map(e -> "&" + e.getKey() + "=" + URLEncoder.encode(e.getValue(), StandardCharsets.UTF_8))
-                .collect(Collectors.joining());
-        }
-    }
-
-    private String buildAuthParams() {
-        return String.format("&key=%s&access_token=%s", stackoverflowProperties.key(), stackoverflowProperties.accessToken());
-    }
-
-    public boolean isUpdated(JsonNode question, Instant lastChecked) {
-        long lastActivity = question.get("last_activity_date").asLong();
+    public boolean isUpdated(StackOverflowQuestion question, Instant lastChecked) {
+        long lastActivity = question.getLastActivityDate();
         log.debug("Дата обновления из API: {}", lastActivity);
         return lastActivity > lastChecked.getEpochSecond();
-    }
-
-    public JsonNode getQuestionById(int questionId) {
-        String url = buildUrl(questionId);
-        HttpRequest request = buildRequest(url);
-
-        try {
-            HttpResponse<String> response = httpClient.send(
-                request,
-                HttpResponse.BodyHandlers.ofString()
-            );
-
-            checkForErrors(response);
-            return parseResponse(response.body());
-
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new RuntimeException("Request interrupted", e);
-        } catch (Exception e) {
-            throw new RuntimeException("API request failed", e);
-        }
     }
 
     public int extractQuestionId(String url) {
@@ -177,17 +129,23 @@ public class StackOverflowClient implements UpdateChecker {
         }
     }
 
-    public JsonNode parseResponse(String body) throws Exception {
+/*    public JsonNode parseResponse(String body) throws Exception {
         JsonNode root = objectMapper.readTree(body);
         JsonNode items = root.get("items");
 
         if (items == null || items.isEmpty()) {
             throw new RuntimeException("No question found");
         }
-
         //todo:корректно ли только первый item брать?
         // остальные нужно обрабатывать? (если нет, то опиши почему достаточно только один обрабатывать)
         return items.get(0);
-    }
+    }*/
 
+    public StackOverflowQuestion parseResponse(String body) throws Exception {
+        StackOverflowResponse response = objectMapper.readValue(body, StackOverflowResponse.class);
+        if (response.getItems() == null || response.getItems().isEmpty()) {
+            throw new RuntimeException("No question found");
+        }
+        return response.getItems().getFirst();
+    }
 }
