@@ -1,5 +1,6 @@
 package backend.academy.scrapper;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class StackOverflowQuestion {
@@ -9,8 +10,13 @@ public class StackOverflowQuestion {
     @JsonProperty("title")
     private String title;
 
-    public StackOverflowQuestion(long lastActivity) {
-        this.lastActivityDate = lastActivity;
+    @JsonCreator
+    public StackOverflowQuestion(
+        @JsonProperty("last_activity_date") long lastActivityDate,
+        @JsonProperty("title") String title
+    ) {
+        this.lastActivityDate = lastActivityDate;
+        this.title = title;
     }
 
     public long getLastActivityDate() {

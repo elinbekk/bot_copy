@@ -4,8 +4,10 @@ import backend.academy.bot.entity.TrackedResource;
 import backend.academy.scrapper.StackOverflowQuestion;
 import backend.academy.scrapper.StackOverflowResponse;
 import backend.academy.scrapper.config.StackoverflowProperties;
-import com.fasterxml.jackson.databind.JsonNode;
+import backend.academy.scrapper.exception.StackOverflowException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -41,22 +43,29 @@ public class StackOverflowClient implements UpdateChecker {
             StackOverflowQuestion question = getQuestion(resource);
             return isUpdated(question, resource.getLastCheckedTime());
         } catch (Exception e) {
-            throw new RuntimeException("Failed to check updates for: " + resource.getLink(), e);
+            log.error("Ошибка проверки обновления для: {}", resource.getLink(), e);
+            throw new StackOverflowException(e.getMessage());
         }
     }
 
-    private StackOverflowQuestion getQuestion(TrackedResource resource) throws Exception {
+    private StackOverflowQuestion getQuestion(TrackedResource resource) {
         URI uri = buildUrlWithFilters(resource);
         log.debug("Сформированный URL: {}", uri);
+
         HttpRequest request = buildRequest(String.valueOf(uri));
 
-        HttpResponse<String> response = httpClient.send(
-            request,
-            HttpResponse.BodyHandlers.ofString()
-        );
-        log.debug("Статус ответа: {}", response.statusCode());
-        log.trace("Тело ответа: {}", response.body());
+        HttpResponse<String> response;
+        try {
+            response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        } catch (IOException | InterruptedException e) {
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+            throw new StackOverflowException(
+                "Не удалось выполнить HTTP‑запрос к " + uri, e);
+        }
 
+        log.trace("Чат:{} HTTP-статус {} / тело ответа: {}", resource.getChatId(), response.statusCode(), response.body());
         checkForErrors(response);
         return parseResponse(response.body());
     }
@@ -94,7 +103,7 @@ public class StackOverflowClient implements UpdateChecker {
         Matcher matcher = pattern.matcher(url);
 
         if (!matcher.find()) {
-            throw new IllegalArgumentException("Invalid StackOverflow URL: " + url);
+            throw new IllegalArgumentException("Неправильный StackOverflow URL: " + url);
         }
         return Integer.parseInt(matcher.group(1));
     }
@@ -123,29 +132,22 @@ public class StackOverflowClient implements UpdateChecker {
         int statusCode = response.statusCode();
 
         if (statusCode >= 400 && statusCode < 500) {
-            throw new RuntimeException("Client error: " + response.body());
+            throw new StackOverflowException("Ошибка клиента: " + response.body());
         } else if (statusCode >= 500) {
-            throw new RuntimeException("Server error: " + response.body());
+            throw new StackOverflowException("Ошибка сервера: " + response.body());
         }
     }
 
-/*    public JsonNode parseResponse(String body) throws Exception {
-        JsonNode root = objectMapper.readTree(body);
-        JsonNode items = root.get("items");
-
-        if (items == null || items.isEmpty()) {
-            throw new RuntimeException("No question found");
+    public StackOverflowQuestion parseResponse(String body) {
+        try {
+            StackOverflowResponse apiResp = objectMapper.readValue(body, StackOverflowResponse.class);
+            if (apiResp.getItems() == null || apiResp.getItems().isEmpty()) {
+                throw new StackOverflowException("В ответе нет ни одного вопроса");
+            }
+            return apiResp.getItems().getFirst();
+        } catch (JsonProcessingException e) {
+            throw new StackOverflowException(
+                "Не удалось распарсить JSON‑ответ: " + e.getOriginalMessage(), e);
         }
-        //todo:корректно ли только первый item брать?
-        // остальные нужно обрабатывать? (если нет, то опиши почему достаточно только один обрабатывать)
-        return items.get(0);
-    }*/
-
-    public StackOverflowQuestion parseResponse(String body) throws Exception {
-        StackOverflowResponse response = objectMapper.readValue(body, StackOverflowResponse.class);
-        if (response.getItems() == null || response.getItems().isEmpty()) {
-            throw new RuntimeException("No question found");
-        }
-        return response.getItems().getFirst();
     }
 }

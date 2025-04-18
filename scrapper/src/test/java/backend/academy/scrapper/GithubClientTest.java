@@ -28,18 +28,7 @@ import static org.mockito.Mockito.when;
 class GithubClientTest extends WiremockIntegrationTest {
     private GithubClient client;
     private TrackedResource trackedResource;
-    HttpClient mockHttpClient;
-
-
-/*    @BeforeEach
-    void setUp() {
-        GithubProperties githubProperties = new GithubProperties("test-token", wireMock.baseUrl());
-        client = new GithubClient(githubProperties,
-            mockHttpClient,
-            objectMapper
-        );
-        resource = createDefaultResource();
-    }*/
+    private HttpClient mockHttpClient;
 
     @BeforeEach
     public void setUp() {
@@ -49,7 +38,6 @@ class GithubClientTest extends WiremockIntegrationTest {
         client = new GithubClient(githubProperties, mockHttpClient, objectMapper);
         trackedResource = createDefaultResource();
     }
-
 
     private TrackedResource createDefaultResource() {
         TrackedResource resource = new TrackedResource();
@@ -67,7 +55,7 @@ class GithubClientTest extends WiremockIntegrationTest {
     }
 
     @Test
-    public void testHasUpdates_whenUpdateTimeAfterLastChecked_shouldReturnTrue() throws Exception {
+    public void hasUpdatesTest() throws Exception {
         String responseBody = """
             {
                 "pushed_at": "2025-04-16T12:00:00Z"
@@ -85,7 +73,7 @@ class GithubClientTest extends WiremockIntegrationTest {
     }
 
     @Test
-    void testHttp404Error() {
+    void http404ErrorTest() {
         stubRepoRequest(notFound());
 
         boolean result = client.hasUpdates(trackedResource);
@@ -93,7 +81,7 @@ class GithubClientTest extends WiremockIntegrationTest {
     }
 
     @Test
-    void testMissingPushedAtField() {
+    void missingPushedAtFieldTest() {
         stubRepoRequest(okJson("{\"name\":\"repo\"}"));
 
         boolean result = client.hasUpdates(trackedResource);
@@ -101,7 +89,7 @@ class GithubClientTest extends WiremockIntegrationTest {
     }
 
     @Test
-    void testHttp500Error() {
+    void http500ErrorTest() {
         stubRepoRequest(serverError());
 
         boolean result = client.hasUpdates(trackedResource);
@@ -109,7 +97,7 @@ class GithubClientTest extends WiremockIntegrationTest {
     }
 
     @Test
-    void testRequestTimeout() {
+    void requestTimeoutTest() {
         stubRepoRequest(ok().withFixedDelay(15000));
 
         boolean result = client.hasUpdates(trackedResource);

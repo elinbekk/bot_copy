@@ -46,6 +46,8 @@ public class ClientConfig {
 
     @Bean
     public HttpClient httpClient() {
-        return HttpClient.newHttpClient();
+        return HttpClient.newBuilder()
+            .connectTimeout(Duration.ofSeconds(10))
+            .build();
     }
 }
