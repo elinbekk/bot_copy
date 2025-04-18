@@ -9,9 +9,13 @@ import java.net.http.HttpClient;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
@@ -86,7 +90,6 @@ public class StackOverflowClientTest extends WiremockIntegrationTest {
         Assertions.assertEquals("Test1", result.getTitle());
     }
 
-
     @Test
     void isUpdated_NewActivity_ReturnsTrue() {
         StackOverflowQuestion question = client.parseResponse(jsonDataWithOneItem);
@@ -112,68 +115,51 @@ public class StackOverflowClientTest extends WiremockIntegrationTest {
         Assertions.assertTrue(ex.getMessage().contains("Не удалось выполнить HTTP‑запрос к"));
     }
 
-    @Test
-    void clientError4xxTest() {
+    @ParameterizedTest
+    @MethodSource("provideTestCases")
+    void parameterizedExceptionTest(
+        int statusCode,
+        String responseBody,
+        String expectedMessagePart
+    ) {
         int questionId = client.extractQuestionId(resource.getLink());
         wireMock.stubFor(get(urlPathEqualTo("/2.3/questions/" + questionId))
             .withQueryParam("key", equalTo("test-key"))
             .withQueryParam("access_token", equalTo("test-token"))
             .willReturn(aResponse()
-                .withStatus(404)
-                .withBody("Not Found")));
+                .withStatus(statusCode)
+                .withBody(responseBody)));
 
         StackOverflowException ex = assertThrows(
             StackOverflowException.class,
             () -> client.hasUpdates(resource)
         );
-        Assertions.assertTrue(ex.getMessage().contains("Ошибка клиента: Not Found"));
+        Assertions.assertTrue(ex.getMessage().contains(expectedMessagePart),
+            "Сообщение исключения должно содержать: " + expectedMessagePart);
     }
 
-    @Test
-    void serverError5xxTest() {
-        int questionId = client.extractQuestionId(resource.getLink());
-        wireMock.stubFor(get(urlPathEqualTo("/2.3/questions/" + questionId))
-            .willReturn(aResponse()
-                .withStatus(500)
-                .withBody("Oops")));
-
-        StackOverflowException ex = assertThrows(
-            StackOverflowException.class,
-            () -> client.hasUpdates(resource)
+    private static Stream<Arguments> provideTestCases() {
+        return Stream.of(
+            Arguments.of(
+                404,
+                "Not Found",
+                "Ошибка клиента: Not Found"
+            ),
+            Arguments.of(
+                500,
+                "Oops",
+                "Ошибка сервера"
+            ),
+            Arguments.of(
+                200,
+                "not a json",
+                "Не удалось распарсить JSON‑ответ"
+            ),
+            Arguments.of(
+                200,
+                "{ \"items\": [] }",
+                "В ответе нет ни одного вопроса"
+            )
         );
-        Assertions.assertTrue(ex.getMessage().contains("Ошибка сервера"));
-    }
-
-    @Test
-    void badJsonParsingTest() {
-        int questionId = client.extractQuestionId(resource.getLink());
-        wireMock.stubFor(get(urlPathEqualTo("/2.3/questions/" + questionId))
-            .willReturn(aResponse()
-                .withStatus(200)
-                .withHeader("Content-Type", "application/json")
-                .withBody("not a json")));
-
-        StackOverflowException ex = assertThrows(
-            StackOverflowException.class,
-            () -> client.hasUpdates(resource)
-        );
-        Assertions.assertTrue(ex.getMessage().contains("Не удалось распарсить JSON‑ответ"));
-    }
-
-    @Test
-    void noItemsThrowsTest() {
-        String body = "{ \"items\": [] }";
-        int questionId = client.extractQuestionId(resource.getLink());
-        wireMock.stubFor(get(urlPathEqualTo("/2.3/questions/" + questionId))
-            .willReturn(aResponse()
-                .withStatus(200)
-                .withHeader("Content-Type", "application/json")
-                .withBody(body)));
-
-        StackOverflowException ex = assertThrows(
-            StackOverflowException.class,
-            () -> client.hasUpdates(resource)
-        );
-        Assertions.assertTrue(ex.getMessage().contains("В ответе нет ни одного вопроса"));
     }
 }
