@@ -2,8 +2,7 @@ package backend.academy.bot.controller;
 
 
 import backend.academy.bot.entity.LinkType;
-import backend.academy.bot.entity.LinkUpdate;
-import backend.academy.bot.entity.TrackedResource;
+import backend.academy.bot.dto.LinkUpdate;
 import backend.academy.bot.repository.TrackedResourceRepository;
 import backend.academy.bot.service.BotService;
 import java.time.Clock;
@@ -28,12 +27,10 @@ import static backend.academy.bot.BotMessages.UPDATE_MESSAGE;
 public class LinkUpdateController {
     private static final Logger log = LoggerFactory.getLogger(LinkUpdateController.class);
     private final BotService botService;
-    private final TrackedResourceRepository repository;
     private final Clock clock;
 
-    public LinkUpdateController(BotService botService, TrackedResourceRepository repository, Clock clock) {
+    public LinkUpdateController(BotService botService, Clock clock) {
         this.botService = botService;
-        this.repository = repository;
         this.clock = clock;
     }
 

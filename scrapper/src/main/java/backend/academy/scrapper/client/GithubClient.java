@@ -1,8 +1,7 @@
 package backend.academy.scrapper.client;
 
 import backend.academy.bot.entity.LinkType;
-import backend.academy.bot.entity.TrackedResource;
-import backend.academy.scrapper.GithubResource;
+import backend.academy.scrapper.dto.GithubResource;
 import backend.academy.scrapper.config.GithubProperties;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

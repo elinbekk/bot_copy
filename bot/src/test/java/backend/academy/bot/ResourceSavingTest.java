@@ -1,6 +1,5 @@
 package backend.academy.bot;
 
-import backend.academy.bot.entity.TrackedResource;
 import backend.academy.bot.repository.TrackedResourceRepository;
 import backend.academy.bot.service.BotService;
 import backend.academy.bot.service.TrackedResourceService;
@@ -32,7 +31,7 @@ public class ResourceSavingTest {
         resourceRepository = mock(TrackedResourceRepository.class);
 
         trackedResourceService = new TrackedResourceService(resourceRepository, botService);
-        ResourceTypeDetector resourceTypeDetector = new ResourceTypeDetector();
+        LinkTypeDetector resourceTypeDetector = new LinkTypeDetector();
         InputParser inputParser = new InputParser();
 
         commandHandler = new CommandHandler(botService, inputParser, trackedResourceService, resourceTypeDetector);

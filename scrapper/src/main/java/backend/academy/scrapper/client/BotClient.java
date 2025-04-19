@@ -1,7 +1,6 @@
 package backend.academy.scrapper.client;
 
-import backend.academy.bot.entity.LinkUpdate;
-import backend.academy.bot.entity.TrackedResource;
+import backend.academy.bot.dto.LinkUpdate;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.web.client.RestClient;
@@ -27,7 +26,7 @@ public class BotClient {
     }
 
     public  @Nullable List<TrackedResource> getTrackedResources() {
-        return restClient.get()
+        return restClient.delete()
             .uri(uriBuilder -> uriBuilder
                 .path("/api/links")
                 .queryParam("interval", "5m")

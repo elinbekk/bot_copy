@@ -1,6 +1,5 @@
 package backend.academy.scrapper.client;
 
-import backend.academy.bot.entity.TrackedResource;
 import backend.academy.scrapper.StackOverflowQuestion;
 import backend.academy.scrapper.StackOverflowResponse;
 import backend.academy.scrapper.config.StackoverflowProperties;

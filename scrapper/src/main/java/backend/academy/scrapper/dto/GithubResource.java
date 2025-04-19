@@ -1,4 +1,4 @@
-package backend.academy.scrapper;
+package backend.academy.scrapper.dto;
 
 import backend.academy.bot.entity.LinkType;
 

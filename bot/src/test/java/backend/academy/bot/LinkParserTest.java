@@ -9,7 +9,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 
 class LinkParserTest {
-    private final ResourceTypeDetector resourceTypeDetector = new ResourceTypeDetector();
+    private final LinkTypeDetector resourceTypeDetector = new LinkTypeDetector();
 
     @ParameterizedTest
     @MethodSource("provideTestCases")

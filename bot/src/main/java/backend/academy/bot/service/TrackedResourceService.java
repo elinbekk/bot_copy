@@ -1,3 +1,4 @@
+/*
 package backend.academy.bot.service;
 
 import backend.academy.bot.entity.TrackedResource;
@@ -100,3 +101,4 @@ public class TrackedResourceService {
     }
 
 }
+*/

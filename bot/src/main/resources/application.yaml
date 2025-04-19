@@ -11,6 +11,7 @@ app:
       description: Список ссылок
     - command: help
       description: Справка
+  base-url: http://localhost:8080
 spring:
   application:
     name: Bot

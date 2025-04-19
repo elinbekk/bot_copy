@@ -1,42 +1,23 @@
 package backend.academy.bot;
 
-import backend.academy.bot.entity.LinkType;
-import backend.academy.bot.entity.TrackedResource;
+import backend.academy.bot.dto.LinkRequest;
 import backend.academy.bot.service.BotService;
-import backend.academy.bot.service.TrackedResourceService;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.time.Instant;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.stereotype.Component;
 import static backend.academy.bot.BotMessages.HELP_MESSAGE;
-import static backend.academy.bot.BotMessages.LINK_DUPLICATED_MESSAGE;
-import static backend.academy.bot.BotMessages.LINK_NOT_FOUND_MESSAGE;
 import static backend.academy.bot.BotMessages.START_MESSAGE;
-import static backend.academy.bot.BotMessages.TRACK_MESSAGE;
 import static backend.academy.bot.BotMessages.UNKNOWN_COMMAND_MESSAGE;
-import static backend.academy.bot.BotMessages.UNTRACK_MESSAGE;
-import static backend.academy.bot.BotMessages.WAITING_FOR_FILTERS_MESSAGE;
-import static backend.academy.bot.BotMessages.WAITING_FOR_LINK_MESSAGE;
-import static backend.academy.bot.BotMessages.WAITING_FOR_TAGS_MESSAGE;
 
 @Component
 public class CommandHandler {
-    private final BotService botService;
+    /*private final BotService botService;
     private final Map<Long, BotState> botStates = new ConcurrentHashMap<>();
-    private final Map<Long, TrackedResource> trackResources = new HashMap<>();
-    private final InputParser inputParser;
-    private final TrackedResourceService trackedResourceService;
-    private final ResourceTypeDetector resourceTypeDetector;
 
-    public CommandHandler(BotService botService, InputParser inputParser, TrackedResourceService trackedResourceService, ResourceTypeDetector resourceTypeDetector) {
+    public CommandHandler(BotService botService) {
         this.botService = botService;
-        this.inputParser = inputParser;
-        this.trackedResourceService = trackedResourceService;
-        this.resourceTypeDetector = resourceTypeDetector;
     }
 
     public void handleState(long chatId, String message) {
@@ -53,94 +34,150 @@ public class CommandHandler {
             botService.sendMessage(chatId, "Ошибка: " + e.getMessage());
             resetUserState(chatId);
         }
+    }*/
+
+    private final BotService botService;
+    private final ScrapperClient scrapperClient;
+    private final InputParser inputParser;
+    private final Map<Long, BotState> botStates = new ConcurrentHashMap<>();
+    private final Map<Long, SessionData> sessions = new ConcurrentHashMap<>();
+
+    public CommandHandler(BotService botService, ScrapperClient scrapperClient, InputParser inputParser) {
+        this.botService = botService;
+        this.scrapperClient = scrapperClient;
+        this.inputParser = inputParser;
     }
 
-    private void handleInitialState(long chatId, String command) {
-        switch (command) {
-            case "/start" -> processStartCommand(chatId);
-            case "/track" -> startTrackingProcess(chatId);
-            case "/untrack" -> startUntrackingProcess(chatId);
-            case "/list" -> trackedResourceService.showTrackedLinks(chatId);
-            case "/help" -> showHelp(chatId);
-            default -> handleUnknownCommand(chatId);
+    public void handleState(long chatId, String message) {
+        BotState state = botStates.getOrDefault(chatId, BotState.INITIAL);
+        switch (state) {
+            case INITIAL -> handleInitial(chatId, message);
+            case WAITING_FOR_LINK -> handleLink(chatId, message);
+            case WAITING_FOR_TAGS -> handleTags(chatId, message);
+            case WAITING_FOR_FILTERS -> handleFilters(chatId, message);
+            case WAITING_FOR_UNTRACK_LINK -> handleUntrack(chatId, message);
         }
     }
 
-    private void processStartCommand(long chatId) {
-        botService.sendMessage(chatId, START_MESSAGE);
+    private void handleInitial(long chatId, String msg) {
+        switch (msg) {
+            case "/start" -> botService.sendMessage(chatId, START_MESSAGE);
+            case "/help" -> botService.sendMessage(chatId, HELP_MESSAGE);
+            case "/track" -> startTracking(chatId);
+            case "/untrack" -> startUntracking(chatId);
+            case "/list" -> CompletableFuture.supplyAsync(() -> scrapperClient.getListLinks(chatId))
+                .thenAccept(links -> {
+                    if (links.isEmpty()) botService.sendMessage(chatId, "У вас нет активных подписок");
+                    else links.forEach(l -> botService.sendMessage(chatId, l.getUrl()));
+                });
+            default -> botService.sendMessage(chatId, UNKNOWN_COMMAND_MESSAGE);
+        }
     }
 
-    private void startTrackingProcess(long chatId) {
+    private void startTracking(long chatId) {
         botStates.put(chatId, BotState.WAITING_FOR_LINK);
-        trackResources.put(chatId, new TrackedResource());
-        botService.sendMessage(chatId, WAITING_FOR_LINK_MESSAGE);
+        sessions.put(chatId, new SessionData());
+        botService.sendMessage(chatId, "Введите ссылку для отслеживания:");
     }
 
-    private void handleLinkInput(long chatId, String message) {
-        try {
-            trackedResourceService.processInvalidURL(message);
-        } catch (MalformedURLException | URISyntaxException e) {
-            throw new RuntimeException();
-        }
-        if (trackedResourceService.isResourceAlreadyTracked(chatId, message)) {
-            throw new IllegalStateException(LINK_DUPLICATED_MESSAGE);
-        }
-        TrackedResource resource = trackResources.get(chatId);
-        LinkType linkType = resourceTypeDetector.detectResourceType(message);
-        resource.setLink(message);
-        resource.setResourceType(linkType);
-        resource.setChatId(chatId);
-
+    private void handleLink(long chatId, String url) {
+        sessions.get(chatId).setUrl(url);
         botStates.put(chatId, BotState.WAITING_FOR_TAGS);
-        botService.sendMessage(chatId, WAITING_FOR_TAGS_MESSAGE);
+        botService.sendMessage(chatId, "Введите тэги (через пробел или пустой):");
     }
 
-    private void handleTagsInput(long chatId, String message) {
-        TrackedResource resource = trackResources.get(chatId);
-        Set<String> tagsFromMessage = inputParser.parseTags(message);
-        if (!message.equals("-")) {
-            resource.setTags(tagsFromMessage);
-        }
+    private void handleTags(long chatId, String input) {
+        Set<String> tags = inputParser.parseTags(input);
+        sessions.get(chatId).setTags(tags);
         botStates.put(chatId, BotState.WAITING_FOR_FILTERS);
-        botService.sendMessage(chatId, WAITING_FOR_FILTERS_MESSAGE);
+        botService.sendMessage(chatId, "Введите фильтры (key:value через пробел или пустой):");
     }
 
-    private void handleFiltersInput(long chatId, String message) {
-        TrackedResource resource = trackResources.get(chatId);
-        if (!message.equals("-")) {
-            resource.setFilters(inputParser.parseFilters(message));
+    private void handleFilters(long chatId, String input) {
+        Map<String, String> filters = inputParser.parseFilters(input);
+        SessionData sd = sessions.get(chatId);
+        sd.setFilters(filters);
+        var req = new LinkRequest(sd.getUrl(), sd.getTags(), sd.getFilters());
+
+        CompletableFuture.supplyAsync(() -> scrapperClient.addLink(chatId, req))
+            .thenAccept(resp -> botService.sendMessage(chatId, "Ссылка добавлена: " + resp.getUrl()))
+            .exceptionally(err -> {
+                botService.sendMessage(chatId, "Ошибка: " + err.getMessage());
+                return null;
+            });
+
+        resetState(chatId);
         }
-        resource.setLastCheckedTime(Instant.now());
-        trackedResourceService.saveTrackedResource(chatId, resource);
-        resetUserState(chatId);
-        botService.sendMessage(chatId, TRACK_MESSAGE);
+
+    private void handleUntrack(long chatId, String url) {
+        var req = new LinkRequest(url, null, null);
+        CompletableFuture.runAsync(() -> scrapperClient.removeLink(chatId, req))
+            .thenRun(() -> botService.sendMessage(chatId, "Ссылка удалена: " + url))
+            .exceptionally(err -> {
+                botService.sendMessage(chatId, "Ошибка: " + err.getMessage());
+                return null;
+            });
+
+        resetState(chatId);
     }
 
-    private void handleUntrackLink(long chatId, String message) {
-        if (!trackedResourceService.isResourceAlreadyTracked(chatId, message)) {
-            throw new IllegalArgumentException(LINK_NOT_FOUND_MESSAGE);
-        }
-        trackedResourceService.removeResource(chatId, message);
-        botService.sendMessage(chatId, UNTRACK_MESSAGE);
-
-        resetUserState(chatId);
-    }
-
-    private void resetUserState(long chatId) {
-        botStates.remove(chatId);
-        trackResources.remove(chatId);
-    }
-
-    private void startUntrackingProcess(long chatId) {
+    private void startUntracking(long chatId) {
         botStates.put(chatId, BotState.WAITING_FOR_UNTRACK_LINK);
         botService.sendMessage(chatId, "Введите ссылку для удаления:");
+        }
+
+    private void resetState(Long chatId) {
+        botStates.remove(chatId);
+        sessions.remove(chatId);
     }
 
-    private void showHelp(long chatId) {
-        botService.sendMessage(chatId, HELP_MESSAGE);
-    }
+    static class SessionData {
+        String url;
+        Set<String> tags;
+        Map<String, String> filters;
 
-    private void handleUnknownCommand(long chatId) {
-        botService.sendMessage(chatId, UNKNOWN_COMMAND_MESSAGE);
+        public String getUrl() {
+            return url;
+        }
+
+        public void setUrl(String url) {
+            this.url = url;
+        }
+
+        public Set<String> getTags() {
+            return tags;
+        }
+
+        public void setTags(Set<String> tags) {
+            this.tags = tags;
+        }
+
+        public Map<String, String> getFilters() {
+            return filters;
+        }
+
+        public void setFilters(Map<String, String> filters) {
+            this.filters = filters;
+        }
     }
 }
+
+
+//private void resetUserState(long chatId) {
+//        botStates.remove(chatId);
+//    }
+//
+//    private void startUntrackingProcess(long chatId) {
+//        botStates.put(chatId, BotState.WAITING_FOR_UNTRACK_LINK);
+//        botService.sendMessage(chatId, "Введите ссылку для удаления:");
+//    }
+//
+//    private void showHelp(long chatId) {
+//        botService.sendMessage(chatId, HELP_MESSAGE);
+//    }
+//
+//    private void handleUnknownCommand(long chatId) {
+//        botService.sendMessage(chatId, UNKNOWN_COMMAND_MESSAGE);
+//    }
+//}
+

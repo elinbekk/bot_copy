@@ -33,20 +33,4 @@ public class LinkRequest {
     public Map<String, String> getFilters() {
         return filters;
     }
-
-    public void setLink(String link) {
-        this.link = link;
-    }
-
-    public void setLinkType(LinkType linkType) {
-        this.linkType = linkType;
-    }
-
-    public void setTags(Set<String> tags) {
-        this.tags = tags;
-    }
-
-    public void setFilters(Map<String, String> filters) {
-        this.filters = filters;
-    }
 }
