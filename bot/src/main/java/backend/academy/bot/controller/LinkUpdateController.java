@@ -25,13 +25,13 @@ import static backend.academy.bot.BotMessages.UPDATE_MESSAGE;
 
 @RestController
 @RequestMapping("/api")
-public class UpdateController {
-    private static final Logger log = LoggerFactory.getLogger(UpdateController.class);
+public class LinkUpdateController {
+    private static final Logger log = LoggerFactory.getLogger(LinkUpdateController.class);
     private final BotService botService;
     private final TrackedResourceRepository repository;
     private final Clock clock;
 
-    public UpdateController(BotService botService, TrackedResourceRepository repository, Clock clock) {
+    public LinkUpdateController(BotService botService, TrackedResourceRepository repository, Clock clock) {
         this.botService = botService;
         this.repository = repository;
         this.clock = clock;

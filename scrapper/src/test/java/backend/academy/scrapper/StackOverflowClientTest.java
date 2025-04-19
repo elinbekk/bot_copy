@@ -59,12 +59,6 @@ public class StackOverflowClientTest extends WiremockIntegrationTest {
         Assertions.assertEquals(12345, id);
     }
 
-    @Test
-    void buildedUrlContainsAuthParamsTest() {
-        String url = client.buildUrl(123);
-        Assertions.assertTrue(url.contains("key=test-key"));
-        Assertions.assertTrue(url.contains("access_token=test-token"));
-    }
 
     @Test
     void extractQuestionId_InvalidUrl_ThrowsException() {

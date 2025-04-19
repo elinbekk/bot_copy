@@ -108,17 +108,6 @@ public class StackOverflowClient implements UpdateChecker {
         return Integer.parseInt(matcher.group(1));
     }
 
-
-    public String buildUrl(int questionId) {
-        return String.format(
-            "%squestions/%d?site=stackoverflow&filter=withbody&key=%s&access_token=%s",
-            stackoverflowProperties.apiUrl(),
-            questionId,
-            stackoverflowProperties.key(),
-            stackoverflowProperties.accessToken()
-        );
-    }
-
     private HttpRequest buildRequest(String url) {
         return HttpRequest.newBuilder()
             .uri(URI.create(url))

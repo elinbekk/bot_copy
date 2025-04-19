@@ -15,7 +15,7 @@ public class TrackedResource {
     private Long chatId;
     private String link;
     private LinkType resourceType;
-    private Set<String> tags = new HashSet<>();
+    private Set<String> tags;
     private Map<String, String> filters;
     private Instant lastCheckedTime = Instant.now();
 
