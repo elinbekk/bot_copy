@@ -18,7 +18,7 @@ public class InMemoryLinkRepository implements LinkRepository {
     }
 
     @Override
-    public void add(Long chatId, Link link) {
+    public void saveLink(Long chatId, Link link) {
         store.computeIfAbsent(chatId, id -> new ArrayList<>());
         List<Link> links = store.get(chatId);
         boolean exists = links.stream().anyMatch(l -> l.getUrl().equals(link.getUrl()));

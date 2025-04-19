@@ -1,6 +1,5 @@
 package backend.academy.scrapper.entity;
 
-import backend.academy.bot.entity.LinkType;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
@@ -8,7 +7,7 @@ import java.util.Set;
 public class Link {
     private Long linkId;
     private String url;
-    private LinkType resourceType;
+    private LinkType linkType;
     private Set<String> tags;
     private Map<String, String> filters;
     private Instant lastCheckedTime = Instant.now();
@@ -16,7 +15,7 @@ public class Link {
     public Link(Long linkId, String url, LinkType resourceType, Set<String> tags, Map<String, String> filters, Instant lastCheckedTime) {
         this.linkId = linkId;
         this.url = url;
-        this.resourceType = resourceType;
+        this.linkType = resourceType;
         this.tags = tags;
         this.filters = filters;
         this.lastCheckedTime = lastCheckedTime;
@@ -38,12 +37,12 @@ public class Link {
         this.url = url;
     }
 
-    public LinkType getResourceType() {
-        return resourceType;
+    public LinkType getLinkType() {
+        return linkType;
     }
 
-    public void setResourceType(LinkType resourceType) {
-        this.resourceType = resourceType;
+    public void setLinkType(LinkType linkType) {
+        this.linkType = linkType;
     }
 
     public Set<String> getTags() {
