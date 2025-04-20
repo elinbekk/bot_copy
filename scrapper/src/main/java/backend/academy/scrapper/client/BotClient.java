@@ -1,11 +1,10 @@
 package backend.academy.scrapper.client;
 
-import backend.academy.scrapper.entity.Link;
-import backend.academy.scrapper.entity.LinkUpdate;
-import org.jetbrains.annotations.Nullable;
-import org.springframework.core.ParameterizedTypeReference;
+import backend.academy.scrapper.dto.LinkUpdate;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestClient;
-import java.util.List;
 
 public class BotClient {
     private final RestClient restClient;
@@ -14,26 +13,14 @@ public class BotClient {
         this.restClient = restClient;
     }
 
-    public void sendUpdateNotification(Link resource) {
-        restClient.post()
-            .uri("/api/updates")
-            .body(new LinkUpdate(
-                resource.getLinkId(), //todo
-                resource.getUrl(),
-                "Обнаружены изменения"
-            ))
-            .retrieve()
-            .toBodilessEntity();
-    }
-
-    public  @Nullable List<Link> getTrackedResources() {
-        return restClient.delete()
-            .uri(uriBuilder -> uriBuilder
-                .path("/api/links")
-                .queryParam("interval", "5m")
-                .build())
-            .retrieve()
-            .body(new ParameterizedTypeReference<>() {
-            });
+    public void sendUpdateNotification(LinkUpdate linkUpdate) {
+        try {
+            ResponseEntity<Void> response = restClient.post()
+                .uri("/updates")
+                .body(linkUpdate)
+                .retrieve()
+                .toBodilessEntity();
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
+        }
     }
 }

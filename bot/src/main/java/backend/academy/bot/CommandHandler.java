@@ -14,9 +14,11 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 import static backend.academy.bot.BotMessages.FORMAT_LIST_MESSAGE;
 import static backend.academy.bot.BotMessages.HELP_MESSAGE;
+import static backend.academy.bot.BotMessages.LINK_DUPLICATED_MESSAGE;
 import static backend.academy.bot.BotMessages.LIST_EMPTY_MESSAGE;
 import static backend.academy.bot.BotMessages.LIST_MESSAGE;
 import static backend.academy.bot.BotMessages.START_MESSAGE;
@@ -53,8 +55,9 @@ public class CommandHandler {
         }
     }
 
-    private void handleInitial(long chatId, String msg) {
-        switch (msg) {
+    private void handleInitial(long chatId, String message) {
+        scrapperClient.registerChat(chatId);
+        switch (message) {
             case "/start" -> botService.sendMessage(chatId, START_MESSAGE);
             case "/help" -> botService.sendMessage(chatId, HELP_MESSAGE);
             case "/track" -> startTracking(chatId);
@@ -82,12 +85,7 @@ public class CommandHandler {
             .map(entry -> entry.getKey() + ": " + entry.getValue())
             .collect(Collectors.joining(", "));
 
-        ZonedDateTime zonedDateTime = Instant.parse(link.getLastCheckedTime())
-            .atZone(ZoneId.systemDefault());
-
-        String formattedTime = DateTimeFormatter
-            .ofPattern("dd.MM.yyyy HH:mm:ss z")
-            .format(zonedDateTime);
+        String formattedTime = getFormattedTime(link);
 
         return String.format(
             FORMAT_LIST_MESSAGE,
@@ -96,6 +94,14 @@ public class CommandHandler {
             link.getFilters().isEmpty() ? "нет" : filtersStr,
             formattedTime
         );
+    }
+
+    private @NotNull String getFormattedTime(LinkResponse link) {
+        ZonedDateTime zonedDateTime = Instant.parse(link.getLastCheckedTime())
+            .atZone(ZoneId.systemDefault());
+        return DateTimeFormatter
+            .ofPattern("dd.MM.yyyy HH:mm:ss z")
+            .format(zonedDateTime);
     }
 
     private void startTracking(long chatId) {
@@ -119,13 +125,21 @@ public class CommandHandler {
     }
 
     private void handleFilters(long chatId, String input) {
-        Map<String, String> filters = inputParser.parseFilters(input);
         SessionData sd = sessions.get(chatId);
-        sd.setFilters(filters);
+        try {
+            Map<String, String> filters = inputParser.parseFilters(input);
+            sd.setFilters(filters);
+        } catch (IllegalArgumentException e) {
+            botService.sendMessage(chatId, e.getMessage());
+        }
         LinkRequest req = new LinkRequest(sd.getUrl(), sd.getLinkType(), sd.getTags(), sd.getFilters());
 
-        LinkResponse linkResponse = scrapperClient.addLink(chatId, req);
-        botService.sendMessage(chatId, "Ссылка добавлена: " + linkResponse.getLink());
+        try {
+            LinkResponse linkResponse = scrapperClient.addLink(chatId, req);
+            botService.sendMessage(chatId, "Ссылка добавлена: " + linkResponse.getLink());
+        } catch (DuplicateLinkException e) {
+            botService.sendMessage(chatId, LINK_DUPLICATED_MESSAGE);
+        }
         resetState(chatId);
     }
 

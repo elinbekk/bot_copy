@@ -1,6 +1,5 @@
 package backend.academy.bot.dto;
 
-import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
 

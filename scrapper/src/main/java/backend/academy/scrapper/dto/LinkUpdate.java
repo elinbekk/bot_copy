@@ -1,8 +1,8 @@
-package backend.academy.bot.dto;
+package backend.academy.scrapper.dto;
 
 import java.util.List;
 
-public class LinkUpdate{
+public class LinkUpdate {
     private String link;
     private String description;
     private List<Long> tgChatIds;
@@ -24,4 +24,3 @@ public class LinkUpdate{
         return tgChatIds;
     }
 }
-

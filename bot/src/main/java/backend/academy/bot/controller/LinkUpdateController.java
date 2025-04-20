@@ -21,69 +21,32 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 import static backend.academy.bot.BotMessages.UPDATE_MESSAGE;
 
-/*
+
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/updates")
 public class LinkUpdateController {
     private static final Logger log = LoggerFactory.getLogger(LinkUpdateController.class);
     private final BotService botService;
-    private final Clock clock;
 
     public LinkUpdateController(BotService botService, Clock clock) {
         this.botService = botService;
-        this.clock = clock;
     }
 
-    @GetMapping("/links")
-    public ResponseEntity<List<TrackedResource>> getLinksToCheck(@RequestParam String interval,
-                                                                 @RequestParam(required = false) LinkType linkType) {
-        try {
-            Duration checkInterval = parseInterval(interval);
-            Instant checkFrom = Instant.now(clock).minus(checkInterval);
-
-            List<TrackedResource> result = repository.findByLastCheckedBefore(checkFrom, linkType);
-            return ResponseEntity.ok(result);
-        } catch (ResponseStatusException e) {
-            throw e;
-        } catch (Exception e) {
-            log.error("Error retrieving links", e);
-            return ResponseEntity.internalServerError().build();
+    @PostMapping
+    public ResponseEntity<Void> receive(@RequestBody LinkUpdate upd) {
+        String text = formatUpdateMessage(upd);
+        for (Long chatId : upd.getTgChatIds()) {
+            botService.sendMessage(chatId, text);
         }
-    }
-
-    @PostMapping("/updates")
-    public ResponseEntity<?> handleUpdate(@RequestBody LinkUpdate update) {
-        try {
-            repository.updateLastChecked(update.url(), Instant.now(clock));
-            String message = formatUpdateMessage(update);
-            botService.sendMessage(update.chatId(), message);
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            log.error("Ошибка обновления:", e);
-            return ResponseEntity.internalServerError().build();
-        }
+        return ResponseEntity.ok().build();
     }
 
     private String formatUpdateMessage(LinkUpdate update) {
         return String.format(
             UPDATE_MESSAGE,
-            update.url(),
-            update.description(),
-            update.url()
+            update.getLink(),
+            update.getDescription()
         );
     }
-
-    private Duration parseInterval(String interval) {
-        return switch (interval.toLowerCase()) {
-            case "5m" -> Duration.ofMinutes(5);
-            case "1h" -> Duration.ofHours(1);
-            case "1d" -> Duration.ofDays(1);
-            default -> throw new ResponseStatusException(
-                HttpStatus.BAD_REQUEST,
-                "Неподдерживаемый интервал: " + interval + ". Допустимые значения: 5m, 1h, 1d"
-            );
-        };
-    }
-
 }
-*/
+

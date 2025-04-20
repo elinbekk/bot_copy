@@ -1,6 +1,5 @@
 package backend.academy.scrapper.entity;
 
-import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
 
@@ -12,7 +11,9 @@ public class Link {
     private Map<String, String> filters;
     private String lastCheckedTime;
 
-    public Link() {}
+    public Link() {
+    }
+
     public Link(Long linkId, String url, LinkType resourceType, Set<String> tags, Map<String, String> filters, String lastCheckedTime) {
         this.linkId = linkId;
         this.url = url;
