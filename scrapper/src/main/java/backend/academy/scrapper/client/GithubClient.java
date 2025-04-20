@@ -62,7 +62,7 @@ public class GithubClient implements UpdateChecker {
             JsonNode json = objectMapper.readTree(response.body());
             Instant lastUpdate = parseUpdateTime(json, link.getLinkType());
 
-            return lastUpdate.isAfter(link.getLastCheckedTime());
+            return lastUpdate.isAfter(Instant.parse(link.getLastCheckedTime()));
         } catch (Exception e) {
             /*log.error("Ошибка при проверке обновлений [chatId={}, link={}]",
                 link.getChatId(), link.getLink(), e);*/

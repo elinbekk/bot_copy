@@ -43,7 +43,7 @@ class GithubClientTest extends WiremockIntegrationTest {
         Link resource = new Link();
         resource.setUrl("http://github.com/owner/repo");
         resource.setLinkType(GITHUB_REPO);
-        resource.setLastCheckedTime(Instant.parse("2023-01-01T00:00:00Z"));
+        resource.setLastCheckedTime("2023-01-01T00:00:00Z");
         return resource;
     }
 

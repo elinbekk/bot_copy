@@ -8,13 +8,23 @@ public class LinkResponse {
     private String link;
     private Set<String> tags;
     private Map<String, String> filters;
+    private String lastCheckedTime;
 
     public LinkResponse() {}
-    public LinkResponse(Long id, String url, Set<String> tags, Map<String, String> filters) {
+
+    public LinkResponse(String url, Set<String> tags, Map<String, String> filters, String lastCheckedTime) {
+        this.link = url;
+        this.tags = tags;
+        this.filters = filters;
+        this.lastCheckedTime = lastCheckedTime;
+    }
+
+    public LinkResponse(Long id, String url, Set<String> tags, Map<String, String> filters, String lastCheckedTime) {
         this.id = id;
         this.link = url;
         this.tags = tags;
         this.filters = filters;
+        this.lastCheckedTime = lastCheckedTime;
     }
 
     public Long getId() {
@@ -31,5 +41,9 @@ public class LinkResponse {
 
     public Map<String, String> getFilters() {
         return filters;
+    }
+
+    public String getLastCheckedTime() {
+        return lastCheckedTime;
     }
 }

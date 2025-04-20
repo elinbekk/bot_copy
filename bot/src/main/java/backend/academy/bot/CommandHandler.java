@@ -2,7 +2,12 @@ package backend.academy.bot;
 
 import backend.academy.bot.dto.LinkRequest;
 import backend.academy.bot.dto.LinkResponse;
+import backend.academy.bot.entity.LinkType;
 import backend.academy.bot.service.BotService;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -16,19 +21,25 @@ import static backend.academy.bot.BotMessages.LIST_EMPTY_MESSAGE;
 import static backend.academy.bot.BotMessages.LIST_MESSAGE;
 import static backend.academy.bot.BotMessages.START_MESSAGE;
 import static backend.academy.bot.BotMessages.UNKNOWN_COMMAND_MESSAGE;
+import static backend.academy.bot.BotMessages.UNTRACK_MESSAGE;
+import static backend.academy.bot.BotMessages.WAITING_FOR_FILTERS_MESSAGE;
+import static backend.academy.bot.BotMessages.WAITING_FOR_LINK_MESSAGE;
+import static backend.academy.bot.BotMessages.WAITING_FOR_TAGS_MESSAGE;
 
 @Component
 public class CommandHandler {
     private final BotService botService;
     private final ScrapperClient scrapperClient;
     private final InputParser inputParser;
+    private final LinkTypeDetector linkTypeDetector;
     private final Map<Long, BotState> botStates = new ConcurrentHashMap<>();
     private final Map<Long, SessionData> sessions = new ConcurrentHashMap<>();
 
-    public CommandHandler(BotService botService, ScrapperClient scrapperClient, InputParser inputParser) {
+    public CommandHandler(BotService botService, ScrapperClient scrapperClient, InputParser inputParser, LinkTypeDetector linkTypeDetector) {
         this.botService = botService;
         this.scrapperClient = scrapperClient;
         this.inputParser = inputParser;
+        this.linkTypeDetector = linkTypeDetector;
     }
 
     public void handleState(long chatId, String message) {
@@ -60,47 +71,58 @@ public class CommandHandler {
             botService.sendMessage(chatId, LIST_EMPTY_MESSAGE);
         } else {
             String response = links.stream()
-                .map(this::formatResource)
+                .map(this::formatLink)
                 .collect(Collectors.joining("\n\n"));
             botService.sendMessage(chatId, LIST_MESSAGE + response);
         }
     }
 
-    public String formatResource(LinkResponse resource) {
-        String filtersStr = resource.getFilters().entrySet().stream()
+    public String formatLink(LinkResponse link) {
+        String filtersStr = link.getFilters().entrySet().stream()
             .map(entry -> entry.getKey() + ": " + entry.getValue())
             .collect(Collectors.joining(", "));
+
+        ZonedDateTime zonedDateTime = Instant.parse(link.getLastCheckedTime())
+            .atZone(ZoneId.systemDefault());
+
+        String formattedTime = DateTimeFormatter
+            .ofPattern("dd.MM.yyyy HH:mm:ss z")
+            .format(zonedDateTime);
+
         return String.format(
             FORMAT_LIST_MESSAGE,
-            resource.getLink(),
-            resource.getTags().isEmpty() ? "нет" : String.join(", ", resource.getTags()),
-            resource.getFilters().isEmpty() ? "нет" : filtersStr);
+            link.getLink(),
+            link.getTags().isEmpty() ? "нет" : String.join(", ", link.getTags()),
+            link.getFilters().isEmpty() ? "нет" : filtersStr,
+            formattedTime
+        );
     }
 
     private void startTracking(long chatId) {
         botStates.put(chatId, BotState.WAITING_FOR_LINK);
         sessions.put(chatId, new SessionData());
-        botService.sendMessage(chatId, "Введите ссылку для отслеживания:");
+        botService.sendMessage(chatId, WAITING_FOR_LINK_MESSAGE);
     }
 
     private void handleLink(long chatId, String url) {
         sessions.get(chatId).setUrl(url);
+        sessions.get(chatId).setLinkType(linkTypeDetector.detectResourceType(url));
         botStates.put(chatId, BotState.WAITING_FOR_TAGS);
-        botService.sendMessage(chatId, "Введите тэги (через пробел или пустой):");
+        botService.sendMessage(chatId, WAITING_FOR_TAGS_MESSAGE);
     }
 
     private void handleTags(long chatId, String input) {
         Set<String> tags = inputParser.parseTags(input);
         sessions.get(chatId).setTags(tags);
         botStates.put(chatId, BotState.WAITING_FOR_FILTERS);
-        botService.sendMessage(chatId, "Введите фильтры (key:value через пробел или пустой):");
+        botService.sendMessage(chatId, WAITING_FOR_FILTERS_MESSAGE);
     }
 
     private void handleFilters(long chatId, String input) {
         Map<String, String> filters = inputParser.parseFilters(input);
         SessionData sd = sessions.get(chatId);
         sd.setFilters(filters);
-        var req = new LinkRequest(sd.getUrl(), sd.getTags(), sd.getFilters());
+        LinkRequest req = new LinkRequest(sd.getUrl(), sd.getLinkType(), sd.getTags(), sd.getFilters());
 
         LinkResponse linkResponse = scrapperClient.addLink(chatId, req);
         botService.sendMessage(chatId, "Ссылка добавлена: " + linkResponse.getLink());
@@ -108,7 +130,7 @@ public class CommandHandler {
     }
 
     private void handleUntrack(long chatId, String url) {
-        var req = new LinkRequest(url, null, null);
+        LinkRequest req = new LinkRequest(url, null, null, null);
         CompletableFuture.runAsync(() -> scrapperClient.removeLink(chatId, req))
             .thenRun(() -> botService.sendMessage(chatId, "Ссылка удалена: " + url))
             .exceptionally(err -> {
@@ -121,8 +143,8 @@ public class CommandHandler {
 
     private void startUntracking(long chatId) {
         botStates.put(chatId, BotState.WAITING_FOR_UNTRACK_LINK);
-        botService.sendMessage(chatId, "Введите ссылку для удаления:");
-        }
+        botService.sendMessage(chatId, UNTRACK_MESSAGE);
+    }
 
     private void resetState(Long chatId) {
         botStates.remove(chatId);
@@ -131,6 +153,7 @@ public class CommandHandler {
 
     static class SessionData {
         String url;
+        LinkType linkType;
         Set<String> tags;
         Map<String, String> filters;
 
@@ -140,6 +163,14 @@ public class CommandHandler {
 
         public void setUrl(String url) {
             this.url = url;
+        }
+
+        public LinkType getLinkType() {
+            return linkType;
+        }
+
+        public void setLinkType(LinkType linkType) {
+            this.linkType = linkType;
         }
 
         public Set<String> getTags() {
@@ -159,23 +190,3 @@ public class CommandHandler {
         }
     }
 }
-
-
-//private void resetUserState(long chatId) {
-//        botStates.remove(chatId);
-//    }
-//
-//    private void startUntrackingProcess(long chatId) {
-//        botStates.put(chatId, BotState.WAITING_FOR_UNTRACK_LINK);
-//        botService.sendMessage(chatId, "Введите ссылку для удаления:");
-//    }
-//
-//    private void showHelp(long chatId) {
-//        botService.sendMessage(chatId, HELP_MESSAGE);
-//    }
-//
-//    private void handleUnknownCommand(long chatId) {
-//        botService.sendMessage(chatId, UNKNOWN_COMMAND_MESSAGE);
-//    }
-//}
-

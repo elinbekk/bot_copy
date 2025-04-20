@@ -50,7 +50,7 @@ public class StackOverflowClientTest extends WiremockIntegrationTest {
         resource.setUrl("https://stackoverflow.com/questions/12345/some-title");
         resource.setTags(Set.of("java"));
         resource.setFilters(Map.of("sort", "votes"));
-        resource.setLastCheckedTime(Instant.parse("2023-01-01T00:00:00Z"));
+        resource.setLastCheckedTime("2023-01-01T00:00:00Z");
     }
 
 

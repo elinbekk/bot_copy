@@ -41,7 +41,7 @@ public class StackOverflowClient implements UpdateChecker {
         log.debug("Начало проверки обновлений для: {}", resource.getUrl());
         try {
             StackOverflowQuestion question = getQuestion(resource);
-            return isUpdated(question, resource.getLastCheckedTime());
+            return isUpdated(question, Instant.parse(resource.getLastCheckedTime()));
         } catch (Exception e) {
             log.error("Ошибка проверки обновления для: {}", resource.getUrl(), e);
             throw new StackOverflowException(e.getMessage());

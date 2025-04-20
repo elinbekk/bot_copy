@@ -10,10 +10,10 @@ public class Link {
     private LinkType linkType;
     private Set<String> tags;
     private Map<String, String> filters;
-    private Instant lastCheckedTime = Instant.now();
+    private String lastCheckedTime;
 
     public Link() {}
-    public Link(Long linkId, String url, LinkType resourceType, Set<String> tags, Map<String, String> filters, Instant lastCheckedTime) {
+    public Link(Long linkId, String url, LinkType resourceType, Set<String> tags, Map<String, String> filters, String lastCheckedTime) {
         this.linkId = linkId;
         this.url = url;
         this.linkType = resourceType;
@@ -62,11 +62,11 @@ public class Link {
         this.filters = filters;
     }
 
-    public Instant getLastCheckedTime() {
+    public String getLastCheckedTime() {
         return lastCheckedTime;
     }
 
-    public void setLastCheckedTime(Instant lastCheckedTime) {
+    public void setLastCheckedTime(String lastCheckedTime) {
         this.lastCheckedTime = lastCheckedTime;
     }
 }

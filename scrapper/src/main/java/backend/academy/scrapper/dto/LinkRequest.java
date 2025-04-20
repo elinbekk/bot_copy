@@ -12,8 +12,9 @@ public class LinkRequest {
 
     public LinkRequest() {}
 
-    public LinkRequest(String link, Set<String> tags, Map<String, String> filters) {
+    public LinkRequest(String link, LinkType linkType, Set<String> tags, Map<String, String> filters) {
         this.link = link;
+        this.linkType = linkType;
         this.tags = tags;
         this.filters = filters;
     }

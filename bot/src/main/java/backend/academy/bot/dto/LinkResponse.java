@@ -1,5 +1,6 @@
 package backend.academy.bot.dto;
 
+import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
 
@@ -8,10 +9,7 @@ public class LinkResponse {
     private String link;
     private Set<String> tags;
     private Map<String, String> filters;
-
-    public Long getId() {
-        return id;
-    }
+    private String lastCheckedTime;
 
     public String getLink() {
         return link;
@@ -23,5 +21,9 @@ public class LinkResponse {
 
     public Map<String, String> getFilters() {
         return filters;
+    }
+
+    public String getLastCheckedTime() {
+        return lastCheckedTime;
     }
 }

@@ -4,6 +4,9 @@ import backend.academy.scrapper.dto.LinkRequest;
 import backend.academy.scrapper.dto.LinkResponse;
 import backend.academy.scrapper.entity.Link;
 import backend.academy.scrapper.repository.LinkRepository;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -14,9 +17,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
 
 @RestController
 @RequestMapping("/links")
@@ -28,9 +28,9 @@ public class LinkController {
         this.linkRepository = linkRepository;
     }
     @GetMapping
-    public ResponseEntity<List<Link>> getLinks(@RequestHeader("Tg-Chat-Id") Long chatId) {
-        List<Link> data = linkRepository.findAllByChatId(chatId).stream()
-            .map(link -> new Link(link.getLinkId(), link.getUrl(), link.getLinkType(), link.getTags(), link.getFilters(), link.getLastCheckedTime()))
+    public ResponseEntity<List<LinkResponse>> getLinks(@RequestHeader("Tg-Chat-Id") Long chatId) {
+        List<LinkResponse> data = linkRepository.findAllByChatId(chatId).stream()
+            .map(link -> new LinkResponse(link.getUrl(), link.getTags(), link.getFilters(), link.getLastCheckedTime()))
             .toList();
         return ResponseEntity.ok(new ArrayList<>(data));
     }
@@ -40,9 +40,13 @@ public class LinkController {
         @RequestHeader("Tg-Chat-Id") Long chatId,
         @RequestBody LinkRequest linkRequest
     ) {
-        Link model = new Link(null, linkRequest.getLink(), linkRequest.getLinkType(), linkRequest.getTags(), linkRequest.getFilters(), Instant.now());
+        Link model = new Link(null, linkRequest.getLink(), linkRequest.getLinkType(), linkRequest.getTags(),
+            linkRequest.getFilters(), String.valueOf(Instant.now()));
+
         linkRepository.saveLink(chatId, model);
-        LinkResponse resp = new LinkResponse(model.getLinkId(), model.getUrl(), model.getTags(), model.getFilters());
+        LinkResponse resp = new LinkResponse(model.getLinkId(), model.getUrl(), model.getTags(),
+            model.getFilters(), model.getLastCheckedTime());
+
         logger.info("SIZE:{}", linkRepository.findAllByChatId(chatId).size());
         logger.info("ADDED LINK:{}", model.getUrl());
         return ResponseEntity.ok(resp);
@@ -54,7 +58,7 @@ public class LinkController {
         @RequestBody LinkRequest req
     ) {
         linkRepository.remove(chatId, req.getLink());
-        LinkResponse resp = new LinkResponse(null, req.getLink(), null, null);
+        LinkResponse resp = new LinkResponse(null, req.getLink(), null, null, null);
         return ResponseEntity.ok(resp);
     }
 }
