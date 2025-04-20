@@ -5,14 +5,14 @@ import java.util.Set;
 
 public class LinkResponse {
     private Long id;
-    private String url;
+    private String link;
     private Set<String> tags;
     private Map<String, String> filters;
 
     public LinkResponse() {}
     public LinkResponse(Long id, String url, Set<String> tags, Map<String, String> filters) {
         this.id = id;
-        this.url = url;
+        this.link = url;
         this.tags = tags;
         this.filters = filters;
     }
@@ -21,8 +21,8 @@ public class LinkResponse {
         return id;
     }
 
-    public String getUrl() {
-        return url;
+    public String getLink() {
+        return link;
     }
 
     public Set<String> getTags() {

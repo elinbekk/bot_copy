@@ -1,4 +1,4 @@
-package backend.academy.scrapper;
+package backend.academy.scrapper.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

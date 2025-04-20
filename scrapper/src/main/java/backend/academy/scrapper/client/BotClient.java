@@ -1,6 +1,7 @@
 package backend.academy.scrapper.client;
 
-import backend.academy.bot.dto.LinkUpdate;
+import backend.academy.scrapper.entity.Link;
+import backend.academy.scrapper.entity.LinkUpdate;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.web.client.RestClient;
@@ -13,19 +14,19 @@ public class BotClient {
         this.restClient = restClient;
     }
 
-    public void sendUpdateNotification(TrackedResource resource) {
+    public void sendUpdateNotification(Link resource) {
         restClient.post()
             .uri("/api/updates")
             .body(new LinkUpdate(
-                resource.getChatId(),
-                resource.getLink(),
+                resource.getLinkId(), //todo
+                resource.getUrl(),
                 "Обнаружены изменения"
             ))
             .retrieve()
             .toBodilessEntity();
     }
 
-    public  @Nullable List<TrackedResource> getTrackedResources() {
+    public  @Nullable List<Link> getTrackedResources() {
         return restClient.delete()
             .uri(uriBuilder -> uriBuilder
                 .path("/api/links")

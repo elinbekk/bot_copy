@@ -5,7 +5,7 @@ import java.util.Set;
 
 public class LinkResponse {
     private Long id;
-    private String url;
+    private String link;
     private Set<String> tags;
     private Map<String, String> filters;
 
@@ -13,8 +13,8 @@ public class LinkResponse {
         return id;
     }
 
-    public String getUrl() {
-        return url;
+    public String getLink() {
+        return link;
     }
 
     public Set<String> getTags() {

@@ -2,6 +2,7 @@ package backend.academy.scrapper;
 
 import backend.academy.scrapper.client.GithubClient;
 import backend.academy.scrapper.config.GithubProperties;
+import backend.academy.scrapper.entity.Link;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import java.net.http.HttpClient;
@@ -12,7 +13,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import static backend.academy.bot.entity.LinkType.GITHUB_REPO;
+import static backend.academy.scrapper.entity.LinkType.GITHUB_REPO;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.notFound;
@@ -26,7 +27,7 @@ import static org.mockito.Mockito.when;
 
 class GithubClientTest extends WiremockIntegrationTest {
     private GithubClient client;
-    private TrackedResource trackedResource;
+    private Link link;
     private HttpClient mockHttpClient;
 
     @BeforeEach
@@ -35,13 +36,13 @@ class GithubClientTest extends WiremockIntegrationTest {
         mockHttpClient = Mockito.mock(HttpClient.class);
         ObjectMapper objectMapper = new ObjectMapper();
         client = new GithubClient(githubProperties, mockHttpClient, objectMapper);
-        trackedResource = createDefaultResource();
+        link = createDefaultResource();
     }
 
-    private TrackedResource createDefaultResource() {
-        TrackedResource resource = new TrackedResource();
-        resource.setLink("http://github.com/owner/repo");
-        resource.setResourceType(GITHUB_REPO);
+    private Link createDefaultResource() {
+        Link resource = new Link();
+        resource.setUrl("http://github.com/owner/repo");
+        resource.setLinkType(GITHUB_REPO);
         resource.setLastCheckedTime(Instant.parse("2023-01-01T00:00:00Z"));
         return resource;
     }
@@ -67,7 +68,7 @@ class GithubClientTest extends WiremockIntegrationTest {
         when(mockHttpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
             .thenReturn(httpResponse);
 
-        boolean result = client.hasUpdates(trackedResource);
+        boolean result = client.hasUpdates(link);
         Assertions.assertTrue(result);
     }
 
@@ -75,7 +76,7 @@ class GithubClientTest extends WiremockIntegrationTest {
     void http404ErrorTest() {
         stubRepoRequest(notFound());
 
-        boolean result = client.hasUpdates(trackedResource);
+        boolean result = client.hasUpdates(link);
         Assertions.assertFalse(result);
     }
 
@@ -83,7 +84,7 @@ class GithubClientTest extends WiremockIntegrationTest {
     void missingPushedAtFieldTest() {
         stubRepoRequest(okJson("{\"name\":\"repo\"}"));
 
-        boolean result = client.hasUpdates(trackedResource);
+        boolean result = client.hasUpdates(link);
         Assertions.assertFalse(result);
     }
 
@@ -91,7 +92,7 @@ class GithubClientTest extends WiremockIntegrationTest {
     void http500ErrorTest() {
         stubRepoRequest(serverError());
 
-        boolean result = client.hasUpdates(trackedResource);
+        boolean result = client.hasUpdates(link);
         Assertions.assertFalse(result);
     }
 
@@ -99,7 +100,7 @@ class GithubClientTest extends WiremockIntegrationTest {
     void requestTimeoutTest() {
         stubRepoRequest(ok().withFixedDelay(15000));
 
-        boolean result = client.hasUpdates(trackedResource);
+        boolean result = client.hasUpdates(link);
         Assertions.assertFalse(result);
     }
 }

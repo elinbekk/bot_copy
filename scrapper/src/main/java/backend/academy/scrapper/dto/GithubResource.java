@@ -1,6 +1,7 @@
 package backend.academy.scrapper.dto;
 
-import backend.academy.bot.entity.LinkType;
+
+import backend.academy.scrapper.entity.LinkType;
 
 public class GithubResource {
     private final LinkType type;

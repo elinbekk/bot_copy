@@ -1,41 +1,24 @@
 package backend.academy.bot;
 
 import backend.academy.bot.dto.LinkRequest;
+import backend.academy.bot.dto.LinkResponse;
 import backend.academy.bot.service.BotService;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
+import static backend.academy.bot.BotMessages.FORMAT_LIST_MESSAGE;
 import static backend.academy.bot.BotMessages.HELP_MESSAGE;
+import static backend.academy.bot.BotMessages.LIST_EMPTY_MESSAGE;
+import static backend.academy.bot.BotMessages.LIST_MESSAGE;
 import static backend.academy.bot.BotMessages.START_MESSAGE;
 import static backend.academy.bot.BotMessages.UNKNOWN_COMMAND_MESSAGE;
 
 @Component
 public class CommandHandler {
-    /*private final BotService botService;
-    private final Map<Long, BotState> botStates = new ConcurrentHashMap<>();
-
-    public CommandHandler(BotService botService) {
-        this.botService = botService;
-    }
-
-    public void handleState(long chatId, String message) {
-        BotState state = botStates.getOrDefault(chatId, BotState.INITIAL);
-        try {
-            switch (state) {
-                case INITIAL -> handleInitialState(chatId, message);
-                case WAITING_FOR_LINK -> handleLinkInput(chatId, message);
-                case WAITING_FOR_TAGS -> handleTagsInput(chatId, message);
-                case WAITING_FOR_FILTERS -> handleFiltersInput(chatId, message);
-                case WAITING_FOR_UNTRACK_LINK -> handleUntrackLink(chatId, message);
-            }
-        } catch (Exception e) {
-            botService.sendMessage(chatId, "Ошибка: " + e.getMessage());
-            resetUserState(chatId);
-        }
-    }*/
-
     private final BotService botService;
     private final ScrapperClient scrapperClient;
     private final InputParser inputParser;
@@ -65,13 +48,33 @@ public class CommandHandler {
             case "/help" -> botService.sendMessage(chatId, HELP_MESSAGE);
             case "/track" -> startTracking(chatId);
             case "/untrack" -> startUntracking(chatId);
-            case "/list" -> CompletableFuture.supplyAsync(() -> scrapperClient.getListLinks(chatId))
-                .thenAccept(links -> {
-                    if (links.isEmpty()) botService.sendMessage(chatId, "У вас нет активных подписок");
-                    else links.forEach(l -> botService.sendMessage(chatId, l.getUrl()));
-                });
+            case "/list" -> processListCommand(chatId);
+
             default -> botService.sendMessage(chatId, UNKNOWN_COMMAND_MESSAGE);
         }
+    }
+
+    private void processListCommand(long chatId) {
+        List<LinkResponse> links = scrapperClient.getListLinks(chatId);
+        if (links.isEmpty()) {
+            botService.sendMessage(chatId, LIST_EMPTY_MESSAGE);
+        } else {
+            String response = links.stream()
+                .map(this::formatResource)
+                .collect(Collectors.joining("\n\n"));
+            botService.sendMessage(chatId, LIST_MESSAGE + response);
+        }
+    }
+
+    public String formatResource(LinkResponse resource) {
+        String filtersStr = resource.getFilters().entrySet().stream()
+            .map(entry -> entry.getKey() + ": " + entry.getValue())
+            .collect(Collectors.joining(", "));
+        return String.format(
+            FORMAT_LIST_MESSAGE,
+            resource.getLink(),
+            resource.getTags().isEmpty() ? "нет" : String.join(", ", resource.getTags()),
+            resource.getFilters().isEmpty() ? "нет" : filtersStr);
     }
 
     private void startTracking(long chatId) {
@@ -99,15 +102,10 @@ public class CommandHandler {
         sd.setFilters(filters);
         var req = new LinkRequest(sd.getUrl(), sd.getTags(), sd.getFilters());
 
-        CompletableFuture.supplyAsync(() -> scrapperClient.addLink(chatId, req))
-            .thenAccept(resp -> botService.sendMessage(chatId, "Ссылка добавлена: " + resp.getUrl()))
-            .exceptionally(err -> {
-                botService.sendMessage(chatId, "Ошибка: " + err.getMessage());
-                return null;
-            });
-
+        LinkResponse linkResponse = scrapperClient.addLink(chatId, req);
+        botService.sendMessage(chatId, "Ссылка добавлена: " + linkResponse.getLink());
         resetState(chatId);
-        }
+    }
 
     private void handleUntrack(long chatId, String url) {
         var req = new LinkRequest(url, null, null);

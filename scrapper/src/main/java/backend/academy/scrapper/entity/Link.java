@@ -12,6 +12,7 @@ public class Link {
     private Map<String, String> filters;
     private Instant lastCheckedTime = Instant.now();
 
+    public Link() {}
     public Link(Long linkId, String url, LinkType resourceType, Set<String> tags, Map<String, String> filters, Instant lastCheckedTime) {
         this.linkId = linkId;
         this.url = url;

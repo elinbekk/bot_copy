@@ -19,7 +19,7 @@ public class ScrapperClient {
     private final String baseUrl;
 
     public ScrapperClient(RestTemplate restTemplate,
-                          @Value("${app.base-url:http://localhost:8080}") String baseUrl) {
+                          @Value("${app.base-url:http://localhost:8081}") String baseUrl) {
         this.restTemplate = restTemplate;
         this.baseUrl = baseUrl;
     }

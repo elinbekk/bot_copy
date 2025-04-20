@@ -4,6 +4,8 @@ import backend.academy.scrapper.dto.LinkRequest;
 import backend.academy.scrapper.dto.LinkResponse;
 import backend.academy.scrapper.entity.Link;
 import backend.academy.scrapper.repository.LinkRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,6 +22,7 @@ import java.util.List;
 @RequestMapping("/links")
 public class LinkController {
     private final LinkRepository linkRepository;
+    private Logger logger = LoggerFactory.getLogger(LinkController.class);
 
     public LinkController(LinkRepository linkRepository) {
         this.linkRepository = linkRepository;
@@ -29,7 +32,7 @@ public class LinkController {
         List<Link> data = linkRepository.findAllByChatId(chatId).stream()
             .map(link -> new Link(link.getLinkId(), link.getUrl(), link.getLinkType(), link.getTags(), link.getFilters(), link.getLastCheckedTime()))
             .toList();
-        return ResponseEntity.ok(new ArrayList<Link>(data));
+        return ResponseEntity.ok(new ArrayList<>(data));
     }
 
     @PostMapping
@@ -40,6 +43,8 @@ public class LinkController {
         Link model = new Link(null, linkRequest.getLink(), linkRequest.getLinkType(), linkRequest.getTags(), linkRequest.getFilters(), Instant.now());
         linkRepository.saveLink(chatId, model);
         LinkResponse resp = new LinkResponse(model.getLinkId(), model.getUrl(), model.getTags(), model.getFilters());
+        logger.info("SIZE:{}", linkRepository.findAllByChatId(chatId).size());
+        logger.info("ADDED LINK:{}", model.getUrl());
         return ResponseEntity.ok(resp);
     }
 

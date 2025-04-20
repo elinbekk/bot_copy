@@ -1,8 +1,9 @@
 package backend.academy.scrapper.client;
 
-import backend.academy.scrapper.StackOverflowQuestion;
-import backend.academy.scrapper.StackOverflowResponse;
+import backend.academy.scrapper.dto.StackOverflowQuestion;
+import backend.academy.scrapper.dto.StackOverflowResponse;
 import backend.academy.scrapper.config.StackoverflowProperties;
+import backend.academy.scrapper.entity.Link;
 import backend.academy.scrapper.exception.StackOverflowException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -36,18 +37,18 @@ public class StackOverflowClient implements UpdateChecker {
     }
 
     @Override
-    public boolean hasUpdates(TrackedResource resource) {
-        log.debug("Начало проверки обновлений для: {}", resource.getLink());
+    public boolean hasUpdates(Link resource) {
+        log.debug("Начало проверки обновлений для: {}", resource.getUrl());
         try {
             StackOverflowQuestion question = getQuestion(resource);
             return isUpdated(question, resource.getLastCheckedTime());
         } catch (Exception e) {
-            log.error("Ошибка проверки обновления для: {}", resource.getLink(), e);
+            log.error("Ошибка проверки обновления для: {}", resource.getUrl(), e);
             throw new StackOverflowException(e.getMessage());
         }
     }
 
-    private StackOverflowQuestion getQuestion(TrackedResource resource) {
+    private StackOverflowQuestion getQuestion(Link resource) {
         URI uri = buildUrlWithFilters(resource);
         log.debug("Сформированный URL: {}", uri);
 
@@ -64,14 +65,14 @@ public class StackOverflowClient implements UpdateChecker {
                 "Не удалось выполнить HTTP‑запрос к " + uri, e);
         }
 
-        log.trace("Чат:{} HTTP-статус {} / тело ответа: {}", resource.getChatId(), response.statusCode(), response.body());
+//        log.trace("Чат:{} HTTP-статус {} / тело ответа: {}", resource.getChatId(), response.statusCode(), response.body());
         checkForErrors(response);
         return parseResponse(response.body());
     }
 
 
-    private URI buildUrlWithFilters(TrackedResource resource) {
-        int questionId = extractQuestionId(resource.getLink());
+    private URI buildUrlWithFilters(Link resource) {
+        int questionId = extractQuestionId(resource.getUrl());
 
         UriComponentsBuilder builder = UriComponentsBuilder
             .fromUriString(stackoverflowProperties.apiUrl())

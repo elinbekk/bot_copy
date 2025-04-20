@@ -4,6 +4,7 @@ import backend.academy.scrapper.client.BotClient;
 import backend.academy.scrapper.client.GithubClient;
 import backend.academy.scrapper.client.StackOverflowClient;
 import java.util.List;
+import backend.academy.scrapper.entity.Link;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -25,8 +26,8 @@ public class LinkCheckerScheduler {
     @Scheduled(fixedRate = 5 * 60 * 1000)
     public void checkAllLinks() {
         try {
-            List<TrackedResource> resources = botClient.getTrackedResources();
-            for (TrackedResource resource : resources) {
+            List<Link> resources = botClient.getTrackedResources();
+            for (Link resource : resources) {
                 boolean isUpdated = isUpdated(resource);
                 if (isUpdated) {
                     botClient.sendUpdateNotification(resource);
@@ -37,8 +38,8 @@ public class LinkCheckerScheduler {
         }
     }
 
-    private boolean isUpdated(TrackedResource resource) {
-        return switch (resource.getResourceType()) {
+    private boolean isUpdated(Link resource) {
+        return switch (resource.getLinkType()) {
             case GITHUB_REPO, GITHUB_ISSUE, GITHUB_PR -> githubClient.hasUpdates(resource);
             case STACKOVERFLOW -> stackoverflowClient.hasUpdates(resource);
         };

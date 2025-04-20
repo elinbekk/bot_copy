@@ -3,7 +3,6 @@ package backend.academy.bot.controller;
 
 import backend.academy.bot.entity.LinkType;
 import backend.academy.bot.dto.LinkUpdate;
-import backend.academy.bot.repository.TrackedResourceRepository;
 import backend.academy.bot.service.BotService;
 import java.time.Clock;
 import java.time.Duration;
@@ -22,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 import static backend.academy.bot.BotMessages.UPDATE_MESSAGE;
 
+/*
 @RestController
 @RequestMapping("/api")
 public class LinkUpdateController {
@@ -86,3 +86,4 @@ public class LinkUpdateController {
     }
 
 }
+*/

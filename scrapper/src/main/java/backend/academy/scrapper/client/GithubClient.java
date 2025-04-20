@@ -1,8 +1,10 @@
 package backend.academy.scrapper.client;
 
-import backend.academy.bot.entity.LinkType;
-import backend.academy.scrapper.dto.GithubResource;
+
 import backend.academy.scrapper.config.GithubProperties;
+import backend.academy.scrapper.dto.GithubResource;
+import backend.academy.scrapper.entity.Link;
+import backend.academy.scrapper.entity.LinkType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
@@ -18,9 +20,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
-import static backend.academy.bot.entity.LinkType.GITHUB_ISSUE;
-import static backend.academy.bot.entity.LinkType.GITHUB_PR;
-import static backend.academy.bot.entity.LinkType.GITHUB_REPO;
+import static backend.academy.scrapper.entity.LinkType.GITHUB_ISSUE;
+import static backend.academy.scrapper.entity.LinkType.GITHUB_PR;
+import static backend.academy.scrapper.entity.LinkType.GITHUB_REPO;
+
 
 @Component
 public class GithubClient implements UpdateChecker {
@@ -41,28 +44,28 @@ public class GithubClient implements UpdateChecker {
     }
 
     @Override
-    public boolean hasUpdates(TrackedResource resource) {
+    public boolean hasUpdates(Link link) {
         try {
-            log.info("Проверка обновлений: [chatId={}, link={}]",
-                resource.getChatId(), resource.getLink());
+//            log.info("Проверка обновлений: [chatId={}, link={}]",
+//                resource.getChatId(), resource.getLink());
 
-            URI uri = buildUriWithFilters(resource);
+            URI uri = buildUriWithFilters(link);
             log.info("URI запроса: {}", uri);
 
             HttpRequest request = buildRequest(uri);
             HttpResponse<String> response = sendRequest(request);
 
-            log.info("Response status [chatId={}, status={}]",
-                resource.getChatId(), response.statusCode());
-            log.info("Response body: {}", response.body());
+//            log.info("Response status [chatId={}, status={}]",
+//                link.getChatId(), response.statusCode());
+//            log.info("Response body: {}", response.body());
 
             JsonNode json = objectMapper.readTree(response.body());
-            Instant lastUpdate = parseUpdateTime(json, resource.getResourceType());
+            Instant lastUpdate = parseUpdateTime(json, link.getLinkType());
 
-            return lastUpdate.isAfter(resource.getLastCheckedTime());
+            return lastUpdate.isAfter(link.getLastCheckedTime());
         } catch (Exception e) {
-            log.error("Ошибка при проверке обновлений [chatId={}, link={}]",
-                resource.getChatId(), resource.getLink(), e);
+            /*log.error("Ошибка при проверке обновлений [chatId={}, link={}]",
+                link.getChatId(), link.getLink(), e);*/
             return false;
         }
     }
@@ -78,8 +81,8 @@ public class GithubClient implements UpdateChecker {
         return Instant.parse(dateString);
     }
 
-    private URI buildUriWithFilters(TrackedResource resource) {
-        GithubResource gitHubResource = parseGitHubUrl(resource.getLink());
+    private URI buildUriWithFilters(Link resource) {
+        GithubResource gitHubResource = parseGitHubUrl(resource.getUrl());
         String basePath = buildBaseApiPath(gitHubResource);
 
         UriComponentsBuilder builder = UriComponentsBuilder

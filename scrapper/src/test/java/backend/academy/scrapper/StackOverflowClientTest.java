@@ -2,6 +2,8 @@ package backend.academy.scrapper;
 
 import backend.academy.scrapper.client.StackOverflowClient;
 import backend.academy.scrapper.config.StackoverflowProperties;
+import backend.academy.scrapper.dto.StackOverflowQuestion;
+import backend.academy.scrapper.entity.Link;
 import backend.academy.scrapper.exception.StackOverflowException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.http.HttpClient;
@@ -25,7 +27,7 @@ import static org.junit.Assert.assertThrows;
 
 public class StackOverflowClientTest extends WiremockIntegrationTest {
     private StackOverflowClient client;
-    private TrackedResource resource;
+    private Link resource;
     private final String jsonDataWithOneItem = """
         {
             "items": [
@@ -44,8 +46,8 @@ public class StackOverflowClientTest extends WiremockIntegrationTest {
 
         client = new StackOverflowClient(HttpClient.newHttpClient(), new ObjectMapper(), soProperties);
 
-        resource = new TrackedResource();
-        resource.setLink("https://stackoverflow.com/questions/12345/some-title");
+        resource = new Link();
+        resource.setUrl("https://stackoverflow.com/questions/12345/some-title");
         resource.setTags(Set.of("java"));
         resource.setFilters(Map.of("sort", "votes"));
         resource.setLastCheckedTime(Instant.parse("2023-01-01T00:00:00Z"));
@@ -115,7 +117,7 @@ public class StackOverflowClientTest extends WiremockIntegrationTest {
         String responseBody,
         String expectedMessagePart
     ) {
-        int questionId = client.extractQuestionId(resource.getLink());
+        int questionId = client.extractQuestionId(resource.getUrl());
         wireMock.stubFor(get(urlPathEqualTo("/2.3/questions/" + questionId))
             .withQueryParam("key", equalTo("test-key"))
             .withQueryParam("access_token", equalTo("test-token"))
