@@ -132,12 +132,10 @@ public class CommandHandler {
         }
     }
 
-    private boolean isValidURL(String url) throws MalformedURLException, URISyntaxException {
+    private void isValidURL(String url) throws MalformedURLException, URISyntaxException {
         try {
             new URL(url).toURI();
-            return true;
         } catch (MalformedURLException | URISyntaxException e) {
-            return false;
         }
     }
 
@@ -165,19 +163,16 @@ public class CommandHandler {
 
     private void handleUntrack(long chatId, String url) {
         LinkRequest req = new LinkRequest(url, null, null, null);
-        CompletableFuture.runAsync(() -> scrapperClient.removeLink(chatId, req))
-            .thenRun(() -> botService.sendMessage(chatId, "Ссылка удалена: " + url))
-            .exceptionally(err -> {
-                botService.sendMessage(chatId, "Ошибка: " + err.getMessage());
-                return null;
-            });
-
+        try{
+            scrapperClient.removeLink(chatId, req);
+            botService.sendMessage(chatId, "Ссылка удалена: " + url);
+        } catch (DuplicateLinkException e) {
+            botService.sendMessage(chatId, "Ошибка: " + e.getMessage());
+        }
         resetState(chatId);
     }
 
     private void startUntracking(long chatId) {
-        //todo: need to finish untrack command handling
-        // and process case when nothing tracked but entered untrack command
         botStates.put(chatId, BotState.WAITING_FOR_UNTRACK_LINK);
         botService.sendMessage(chatId, UNTRACK_MESSAGE);
     }

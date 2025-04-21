@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/links")
 public class LinkController {
     private final LinkRepository linkRepository;
-    private Logger logger = LoggerFactory.getLogger(LinkController.class);
+    private final Logger logger = LoggerFactory.getLogger(LinkController.class);
 
     public LinkController(LinkRepository linkRepository) {
         this.linkRepository = linkRepository;
@@ -42,14 +43,16 @@ public class LinkController {
     ) {
         Link model = new Link(null, linkRequest.getLink(), linkRequest.getLinkType(), linkRequest.getTags(),
             linkRequest.getFilters(), String.valueOf(Instant.now()));
-
-        linkRepository.saveLink(chatId, model);
-        LinkResponse resp = new LinkResponse(model.getLinkId(), model.getUrl(), model.getTags(),
-            model.getFilters(), model.getLastCheckedTime());
-
-        logger.info("SIZE:{}", linkRepository.findAllByChatId(chatId).size());
-        logger.info("ADDED LINK:{}", model.getUrl());
-        return ResponseEntity.ok(resp);
+        try{
+            linkRepository.saveLink(chatId, model);
+            LinkResponse resp = new LinkResponse(model.getLinkId(), model.getUrl(), model.getTags(),
+                model.getFilters(), model.getLastCheckedTime());
+            return ResponseEntity.ok(resp);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(null);
+        }
     }
 
     @DeleteMapping
@@ -57,9 +60,16 @@ public class LinkController {
         @RequestHeader("Tg-Chat-Id") Long chatId,
         @RequestBody LinkRequest req
     ) {
-        linkRepository.remove(chatId, req.getLink());
-        LinkResponse resp = new LinkResponse(null, req.getLink(), null, null, null);
-        return ResponseEntity.ok(resp);
+        try {
+            linkRepository.remove(chatId, req.getLink());
+            LinkResponse resp = new LinkResponse(null, req.getLink(), null, null, null);
+            return ResponseEntity.ok(resp);
+        }catch (IllegalArgumentException e) {
+            return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(null);
+        }
+
     }
 }
 

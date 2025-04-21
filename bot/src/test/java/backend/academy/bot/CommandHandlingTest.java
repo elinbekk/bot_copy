@@ -1,8 +1,8 @@
 package backend.academy.bot;
 
 
+import backend.academy.bot.dto.LinkResponse;
 import backend.academy.bot.service.BotService;
-import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,7 +13,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-/*
+
 public class CommandHandlingTest {
     private static BotService botService;
     private static CommandHandler commandHandler;
@@ -23,11 +23,13 @@ public class CommandHandlingTest {
     @BeforeEach
     void setUp() {
         botService = mock(BotService.class);
+        ScrapperClient scrapperClient = mock(ScrapperClient.class);
         LinkTypeDetector resourceTypeDetector = new LinkTypeDetector();
         InputParser inputParser = new InputParser();
 
         commandHandler = new CommandHandler(
             botService,
+            scrapperClient,
             inputParser,
             resourceTypeDetector
         );
@@ -53,22 +55,22 @@ public class CommandHandlingTest {
         commandHandler.handleState(testChatId, "/unknown");
         verify(botService).sendMessage(eq(testChatId), contains("Неизвестная команда"));
     }
-*/
 
-   /* @Test
+    @Test
     void listCommandFormattingTest() {
-        TrackedResource resource = new TrackedResource();
-        resource.setLink("https://example.com");
-        resource.setTags(Set.of("tag"));
-        resource.setFilters(Map.of("key", "value"));
-        resource.setLastCheckedTime(Instant.parse("2023-01-01T00:00:00Z"));
+        LinkResponse resource = new LinkResponse(
+            "https://example.com",
+            Set.of("tag"),
+            Map.of("key", "value"),
+            "2023-01-01T00:00:00Z"
+        );
 
-        String result = trackedResourceService.formatResource(resource);
+        String result = commandHandler.formatLink(resource);
 
         assertTrue(result.contains("example.com"));
         assertTrue(result.contains("tag"));
         assertTrue(result.contains("key: value"));
         assertTrue(result.contains("01.01.2023 03:00:00 MSK"));
-    }*/
+    }
 
-//}
+}

@@ -22,7 +22,7 @@ public class InMemoryLinkRepository implements LinkRepository {
     public void saveLink(Long chatId, Link link) {
         store.computeIfAbsent(chatId, id -> new ArrayList<>());
         List<Link> links = store.get(chatId);
-        boolean exists = linkIsAlreadyExists(chatId, link);
+        boolean exists = linkIsExists(chatId, link);
         if (exists) throw new IllegalArgumentException("Ссылка уже отслеживается");
         links.add(link);
     }
@@ -31,12 +31,12 @@ public class InMemoryLinkRepository implements LinkRepository {
     public void remove(Long chatId, String url) {
         List<Link> links = store.get(chatId);
         if (links == null || !links.removeIf(l -> l.getUrl().equals(url))) {
-            throw new IllegalStateException("Ссылка не найдена");
+            throw new IllegalArgumentException("Ссылка не найдена");
         }
     }
 
     @Override
-    public boolean linkIsAlreadyExists(Long chatId, Link link) {
+    public boolean linkIsExists(Long chatId, Link link) {
         List<Link> links = store.get(chatId);
         if (links == null) return false;
         return links.stream()

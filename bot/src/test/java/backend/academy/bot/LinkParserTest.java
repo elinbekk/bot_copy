@@ -2,10 +2,10 @@ package backend.academy.bot;
 
 import backend.academy.bot.entity.LinkType;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 
 class LinkParserTest {
@@ -18,13 +18,12 @@ class LinkParserTest {
             assertThrows(IllegalArgumentException.class,
                 () -> resourceTypeDetector.detectResourceType(url));
         } else {
-            assertEquals(expectedType, resourceTypeDetector.detectResourceType(url));
+            Assertions.assertEquals(expectedType, resourceTypeDetector.detectResourceType(url));
         }
     }
 
     private static Stream<Arguments> provideTestCases() {
         return Stream.of(
-            // Valid cases
             Arguments.of(
                 "https://github.com/user/repo",
                 LinkType.GITHUB_REPO,
@@ -45,8 +44,6 @@ class LinkParserTest {
                 LinkType.STACKOVERFLOW,
                 false
             ),
-
-            // Invalid case
             Arguments.of(
                 "https://google.com",
                 null,

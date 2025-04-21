@@ -11,6 +11,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import static backend.academy.bot.BotMessages.LINK_DUPLICATED_MESSAGE;
@@ -61,7 +62,7 @@ public class ScrapperClient {
                 LinkResponse.class
             );
             return response.getBody();
-        } catch (RestClientException e) {
+        } catch (HttpClientErrorException.Conflict e) {
             throw new DuplicateLinkException(LINK_DUPLICATED_MESSAGE);
         }
     }
@@ -73,12 +74,16 @@ public class ScrapperClient {
         headers.set("Tg-Chat-Id", String.valueOf(chatId));
         HttpEntity<LinkRequest> requestEntity = new HttpEntity<>(request, headers);
 
-        restTemplate.exchange(
-            url,
-            HttpMethod.DELETE,
-            requestEntity,
-            Void.class
-        );
+        try {
+            restTemplate.exchange(
+                url,
+                HttpMethod.DELETE,
+                requestEntity,
+                Void.class
+            );
+        } catch (HttpClientErrorException e) {
+            throw new LinkNotFoundException(e.getMessage());
+        }
     }
 }
 

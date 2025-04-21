@@ -10,6 +10,13 @@ public class LinkResponse {
     private Map<String, String> filters;
     private String lastCheckedTime;
 
+    public LinkResponse(String link, Set<String> tags, Map<String, String> filters, String lastCheckedTime) {
+        this.link = link;
+        this.tags = tags;
+        this.filters = filters;
+        this.lastCheckedTime = lastCheckedTime;
+    }
+
     public String getLink() {
         return link;
     }
