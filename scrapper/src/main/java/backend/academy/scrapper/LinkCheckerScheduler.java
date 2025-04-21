@@ -3,11 +3,11 @@ package backend.academy.scrapper;
 import backend.academy.scrapper.client.BotClient;
 import backend.academy.scrapper.client.GithubClient;
 import backend.academy.scrapper.client.StackOverflowClient;
-import java.util.List;
-import java.util.Set;
 import backend.academy.scrapper.dto.LinkUpdate;
 import backend.academy.scrapper.entity.Link;
 import backend.academy.scrapper.repository.LinkRepository;
+import java.util.List;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -31,17 +31,22 @@ public class LinkCheckerScheduler {
     @Scheduled(fixedRate = 2 * 60 * 1000)
     public void checkAllLinks() {
         try {
-            Set<Long> allChatIDs= linkRepository.findAllChatIds();
+            Set<Long> allChatIDs = linkRepository.findAllChatIds();
             for(Long chatID : allChatIDs) {
                 List<Link> resources = linkRepository.findAllByChatId(chatID);
+                log.info("SIZE: {}", resources.size());
                 for (Link resource : resources) {
                     boolean isUpdated = isUpdated(resource);
+                    log.info("URL for link update:{}", resource.getUrl());
+                    log.info("chat ID: {}", chatID);
                     if (isUpdated) {
                         LinkUpdate upd = new LinkUpdate(
                             resource.getUrl(),
                             "Обнаружены изменения",
                             List.of(chatID)
                         );
+                        log.info("Updating link: {}", upd.getLink());
+                        log.info("Updating ch: {}", upd.getTgChatIds().toArray());
                         botClient.sendUpdateNotification(upd);
                     }
                 }

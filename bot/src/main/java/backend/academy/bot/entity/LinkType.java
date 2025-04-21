@@ -34,7 +34,7 @@ public enum LinkType {
                 return type;
             }
         }
-        throw new IllegalArgumentException("Неподдерживаемы тип ссылки: " + url);
+        throw new IllegalArgumentException("Неподдерживаемый тип ссылки: " + url);
     }
 
     public String getDescription() {

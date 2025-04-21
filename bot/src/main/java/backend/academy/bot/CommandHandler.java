@@ -4,6 +4,9 @@ import backend.academy.bot.dto.LinkRequest;
 import backend.academy.bot.dto.LinkResponse;
 import backend.academy.bot.entity.LinkType;
 import backend.academy.bot.service.BotService;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -19,6 +22,7 @@ import org.springframework.stereotype.Component;
 import static backend.academy.bot.BotMessages.FORMAT_LIST_MESSAGE;
 import static backend.academy.bot.BotMessages.HELP_MESSAGE;
 import static backend.academy.bot.BotMessages.LINK_DUPLICATED_MESSAGE;
+import static backend.academy.bot.BotMessages.LINK_INCORRECT_MESSAGE;
 import static backend.academy.bot.BotMessages.LIST_EMPTY_MESSAGE;
 import static backend.academy.bot.BotMessages.LIST_MESSAGE;
 import static backend.academy.bot.BotMessages.START_MESSAGE;
@@ -46,17 +50,22 @@ public class CommandHandler {
 
     public void handleState(long chatId, String message) {
         BotState state = botStates.getOrDefault(chatId, BotState.INITIAL);
-        switch (state) {
-            case INITIAL -> handleInitial(chatId, message);
-            case WAITING_FOR_LINK -> handleLink(chatId, message);
-            case WAITING_FOR_TAGS -> handleTags(chatId, message);
-            case WAITING_FOR_FILTERS -> handleFilters(chatId, message);
-            case WAITING_FOR_UNTRACK_LINK -> handleUntrack(chatId, message);
+        try {
+            switch (state) {
+                case INITIAL -> handleInitial(chatId, message);
+                case WAITING_FOR_LINK -> handleLink(chatId, message);
+                case WAITING_FOR_TAGS -> handleTags(chatId, message);
+                case WAITING_FOR_FILTERS -> handleFilters(chatId, message);
+                case WAITING_FOR_UNTRACK_LINK -> handleUntrack(chatId, message);
+            }
+        } catch (Exception e) {
+            botService.sendMessage(chatId, "Ошибка:" + e.getMessage());
+            resetState(chatId);
         }
     }
 
     private void handleInitial(long chatId, String message) {
-        scrapperClient.registerChat(chatId);
+//        scrapperClient.registerChat(chatId);
         switch (message) {
             case "/start" -> botService.sendMessage(chatId, START_MESSAGE);
             case "/help" -> botService.sendMessage(chatId, HELP_MESSAGE);
@@ -111,27 +120,38 @@ public class CommandHandler {
     }
 
     private void handleLink(long chatId, String url) {
-        sessions.get(chatId).setUrl(url);
-        sessions.get(chatId).setLinkType(linkTypeDetector.detectResourceType(url));
-        botStates.put(chatId, BotState.WAITING_FOR_TAGS);
-        botService.sendMessage(chatId, WAITING_FOR_TAGS_MESSAGE);
+        try {
+            isValidURL(url);
+            sessions.get(chatId).setUrl(url);
+            sessions.get(chatId).setLinkType(linkTypeDetector.detectResourceType(url));
+            botStates.put(chatId, BotState.WAITING_FOR_TAGS);
+            botService.sendMessage(chatId, WAITING_FOR_TAGS_MESSAGE);
+        } catch (MalformedURLException | URISyntaxException e) {
+            botService.sendMessage(chatId, LINK_INCORRECT_MESSAGE);
+            throw new RuntimeException(e);
+        }
     }
 
-    private void handleTags(long chatId, String input) {
-        Set<String> tags = inputParser.parseTags(input);
+    private boolean isValidURL(String url) throws MalformedURLException, URISyntaxException {
+        try {
+            new URL(url).toURI();
+            return true;
+        } catch (MalformedURLException | URISyntaxException e) {
+            return false;
+        }
+    }
+
+    private void handleTags(long chatId, String message) {
+        Set<String> tags = inputParser.parseTags(message);
         sessions.get(chatId).setTags(tags);
         botStates.put(chatId, BotState.WAITING_FOR_FILTERS);
         botService.sendMessage(chatId, WAITING_FOR_FILTERS_MESSAGE);
     }
 
     private void handleFilters(long chatId, String input) {
+        Map<String, String> filters = inputParser.parseFilters(input);
         SessionData sd = sessions.get(chatId);
-        try {
-            Map<String, String> filters = inputParser.parseFilters(input);
-            sd.setFilters(filters);
-        } catch (IllegalArgumentException e) {
-            botService.sendMessage(chatId, e.getMessage());
-        }
+        sd.setFilters(filters);
         LinkRequest req = new LinkRequest(sd.getUrl(), sd.getLinkType(), sd.getTags(), sd.getFilters());
 
         try {
@@ -156,6 +176,8 @@ public class CommandHandler {
     }
 
     private void startUntracking(long chatId) {
+        //todo: need to finish untrack command handling
+        // and process case when nothing tracked but entered untrack command
         botStates.put(chatId, BotState.WAITING_FOR_UNTRACK_LINK);
         botService.sendMessage(chatId, UNTRACK_MESSAGE);
     }
