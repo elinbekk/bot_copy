@@ -40,12 +40,12 @@ public class CommandHandlingTest {
     @Test
     void handleStartCommandSendsMessageTest() {
         final String START_MESSAGE = """
-        Привет! Я помогу отслеживать изменения на GitHub и Stack Overflow.
-        Доступные команды:
-        /track - начать отслеживание ссылки
-        /untrack - прекратить отслеживание
-        /list - показать отслеживаемые ссылки
-        /help - показать справку""";
+            Привет! Я помогу отслеживать изменения на GitHub и Stack Overflow.
+            Доступные команды:
+            /track - начать отслеживание ссылки
+            /untrack - прекратить отслеживание
+            /list - показать отслеживаемые ссылки
+            /help - показать справку""";
 
         commandHandler.handleState(testChatId, "/start");
 

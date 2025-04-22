@@ -1,0 +1,448 @@
+
+19:24:02 [INFO]
+19:24:02 [INFO] root ............................................... SUCCESS [  2.564 s]
+19:24:02 [INFO] bot ................................................ FAILURE [  6.339 s]
+19:24:02 [INFO] scrapper ........................................... FAILURE [  4.098 s]
+19:24:02 [INFO] report ............................................. SKIPPED
+19:24:02 [INFO] ------------------------------------------------------------------------
+19:24:02 [INFO] BUILD FAILURE
+19:24:02 [INFO] ------------------------------------------------------------------------
+19:24:02 [INFO] Total time:  14.095 s
+19:24:02 [INFO] Finished at: 2025-04-22T19:24:02Z
+19:24:02 [INFO] ------------------------------------------------------------------------
+19:24:02 [ERROR] Failed to execute goal com.diffplug.spotless:spotless-maven-plugin:2.44.2:check (default-cli) on project bot: The following files had format violations:
+19:24:02 [ERROR]     src/main/java/backend/academy/bot/Bot.java
+19:24:02 [ERROR]         @@ -28,7 +28,3 @@
+19:24:02 [ERROR]          ········}
+19:24:02 [ERROR]          ····}
+19:24:02 [ERROR]          }
+19:24:02 [ERROR]         -
+19:24:02 [ERROR]         -
+19:24:02 [ERROR]         -
+19:24:02 [ERROR]         -
+19:24:02 [ERROR]     src/main/java/backend/academy/bot/config/BotCommandsConfig.java
+19:24:02 [ERROR]         @@ -4,15 +4,14 @@
+19:24:02 [ERROR]          import·com.pengrad.telegrambot.model.BotCommand;
+19:24:02 [ERROR]          import·com.pengrad.telegrambot.request.SetMyCommands;
+19:24:02 [ERROR]          import·jakarta.annotation.PostConstruct;
+19:24:02 [ERROR]         -
+19:24:02 [ERROR]          import·java.util.List;
+19:24:02 [ERROR]
+19:24:02 [ERROR]          public·class·BotCommandsConfig·{
+19:24:02 [ERROR]          ····private·final·TelegramBot·bot;
+19:24:02 [ERROR]          ····private·final·BotConfigProperties·config;
+19:24:02 [ERROR]
+19:24:02 [ERROR]         -····//знаю,·что·можно·использовать·аннотация·ломбока,·но·они·у·меня·не·работают...
+19:24:02 [ERROR]         -····//ни·геттеры,·ни·сеттеры,·ни·конструкторы........
+19:24:02 [ERROR]         +····//·знаю,·что·можно·использовать·аннотация·ломбока,·но·они·у·меня·не·работают...
+19:24:02 [ERROR]         +····//·ни·геттеры,·ни·сеттеры,·ни·конструкторы........
+19:24:02 [ERROR]          ····public·BotCommandsConfig(TelegramBot·bot,·BotConfigProperties·config)·{
+19:24:02 [ERROR]          ········this.bot·=·bot;
+19:24:02 [ERROR]          ········this.config·=·config;
+19:24:02 [ERROR]         @@ -26,6 +25,4 @@
+19:24:02 [ERROR]
+19:24:02 [ERROR]          ········bot.execute(new·SetMyCommands(commands.toArray(BotCommand[]::new)));
+19:24:02 [ERROR]          ····}
+19:24:02 [ERROR]         -
+19:24:02 [ERROR]          }
+19:24:02 [ERROR]         -
+19:24:02 [ERROR]     src/main/java/backend/academy/bot/config/BotConfig.java
+19:24:02 [ERROR]         @@ -1,8 +1,5 @@
+19:24:02 [ERROR]          package·backend.academy.bot.config;
+19:24:02 [ERROR]
+19:24:02 [ERROR]         -import·com.fasterxml.jackson.databind.ObjectMapper;
+19:24:02 [ERROR]         -import·com.fasterxml.jackson.databind.SerializationFeature;
+19:24:02 [ERROR]         -import·com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+19:24:02 [ERROR]          import·com.pengrad.telegrambot.TelegramBot;
+19:24:02 [ERROR]          import·org.springframework.boot.context.properties.EnableConfigurationProperties;
+19:24:02 [ERROR]          import·org.springframework.context.annotation.Bean;
+19:24:02 [ERROR]         @@ -18,10 +15,7 @@
+19:24:02 [ERROR]          ····}
+19:24:02 [ERROR]
+19:24:02 [ERROR]          ····@Bean
+19:24:02 [ERROR]         -····public·BotCommandsConfig·ubotCommandsConfig(
+19:24:02 [ERROR]     ... (7 more lines that didn't fit)
+19:24:02 [ERROR] Violations also present in 13 other files.
+19:24:02 [ERROR] Run 'mvn spotless:apply' to fix these violations.
+19:24:02 [ERROR] -> [Help 1]
+org.apache.maven.lifecycle.LifecycleExecutionException: Failed to execute goal com.diffplug.spotless:spotless-maven-plugin:2.44.2:check (default-cli) on project bot: The following files had format violations:
+    src/main/java/backend/academy/bot/Bot.java
+        @@ -28,7 +28,3 @@
+         ········}
+         ····}
+         }
+        -
+        -
+        -
+        -
+    src/main/java/backend/academy/bot/config/BotCommandsConfig.java
+        @@ -4,15 +4,14 @@
+         import·com.pengrad.telegrambot.model.BotCommand;
+         import·com.pengrad.telegrambot.request.SetMyCommands;
+         import·jakarta.annotation.PostConstruct;
+        -
+         import·java.util.List;
+
+         public·class·BotCommandsConfig·{
+         ····private·final·TelegramBot·bot;
+         ····private·final·BotConfigProperties·config;
+
+        -····//знаю,·что·можно·использовать·аннотация·ломбока,·но·они·у·меня·не·работают...
+        -····//ни·геттеры,·ни·сеттеры,·ни·конструкторы........
+        +····//·знаю,·что·можно·использовать·аннотация·ломбока,·но·они·у·меня·не·работают...
+        +····//·ни·геттеры,·ни·сеттеры,·ни·конструкторы........
+         ····public·BotCommandsConfig(TelegramBot·bot,·BotConfigProperties·config)·{
+         ········this.bot·=·bot;
+         ········this.config·=·config;
+        @@ -26,6 +25,4 @@
+
+         ········bot.execute(new·SetMyCommands(commands.toArray(BotCommand[]::new)));
+         ····}
+        -
+         }
+        -
+    src/main/java/backend/academy/bot/config/BotConfig.java
+        @@ -1,8 +1,5 @@
+         package·backend.academy.bot.config;
+
+        -import·com.fasterxml.jackson.databind.ObjectMapper;
+        -import·com.fasterxml.jackson.databind.SerializationFeature;
+        -import·com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+         import·com.pengrad.telegrambot.TelegramBot;
+         import·org.springframework.boot.context.properties.EnableConfigurationProperties;
+         import·org.springframework.context.annotation.Bean;
+        @@ -18,10 +15,7 @@
+         ····}
+
+         ····@Bean
+        -····public·BotCommandsConfig·ubotCommandsConfig(
+    ... (7 more lines that didn't fit)
+Violations also present in 13 other files.
+Run 'mvn spotless:apply' to fix these violations.
+    at org.apache.maven.lifecycle.internal.MojoExecutor.doExecute2 (MojoExecutor.java:333)
+    at org.apache.maven.lifecycle.internal.MojoExecutor.doExecute (MojoExecutor.java:316)
+    at org.apache.maven.lifecycle.internal.MojoExecutor.execute (MojoExecutor.java:212)
+    at org.apache.maven.lifecycle.internal.MojoExecutor.execute (MojoExecutor.java:174)
+    at org.apache.maven.lifecycle.internal.MojoExecutor.access$000 (MojoExecutor.java:75)
+    at org.apache.maven.lifecycle.internal.MojoExecutor$1.run (MojoExecutor.java:162)
+    at org.apache.maven.plugin.DefaultMojosExecutionStrategy.execute (DefaultMojosExecutionStrategy.java:39)
+    at org.apache.maven.lifecycle.internal.MojoExecutor.execute (MojoExecutor.java:159)
+    at org.apache.maven.lifecycle.internal.LifecycleModuleBuilder.buildProject (LifecycleModuleBuilder.java:105)
+    at org.apache.maven.lifecycle.internal.LifecycleModuleBuilder.buildProject (LifecycleModuleBuilder.java:73)
+    at org.apache.maven.lifecycle.internal.builder.singlethreaded.SingleThreadedBuilder.build (SingleThreadedBuilder.java:53)
+    at org.apache.maven.lifecycle.internal.LifecycleStarter.execute (LifecycleStarter.java:118)
+    at org.apache.maven.DefaultMaven.doExecute (DefaultMaven.java:261)
+    at org.apache.maven.DefaultMaven.doExecute (DefaultMaven.java:173)
+    at org.apache.maven.DefaultMaven.execute (DefaultMaven.java:101)
+    at org.apache.maven.cli.MavenCli.execute (MavenCli.java:906)
+    at org.apache.maven.cli.MavenCli.doMain (MavenCli.java:283)
+    at org.apache.maven.cli.MavenCli.main (MavenCli.java:206)
+    at jdk.internal.reflect.DirectMethodHandleAccessor.invoke (DirectMethodHandleAccessor.java:103)
+    at java.lang.reflect.Method.invoke (Method.java:580)
+    at org.codehaus.plexus.classworlds.launcher.Launcher.launchEnhanced (Launcher.java:255)
+    at org.codehaus.plexus.classworlds.launcher.Launcher.launch (Launcher.java:201)
+    at org.codehaus.plexus.classworlds.launcher.Launcher.mainWithExitCode (Launcher.java:361)
+    at org.codehaus.plexus.classworlds.launcher.Launcher.main (Launcher.java:314)
+Caused by: org.apache.maven.plugin.MojoExecutionException: The following files had format violations:
+    src/main/java/backend/academy/bot/Bot.java
+        @@ -28,7 +28,3 @@
+         ········}
+         ····}
+         }
+        -
+        -
+        -
+        -
+    src/main/java/backend/academy/bot/config/BotCommandsConfig.java
+        @@ -4,15 +4,14 @@
+         import·com.pengrad.telegrambot.model.BotCommand;
+         import·com.pengrad.telegrambot.request.SetMyCommands;
+         import·jakarta.annotation.PostConstruct;
+        -
+         import·java.util.List;
+
+         public·class·BotCommandsConfig·{
+         ····private·final·TelegramBot·bot;
+         ····private·final·BotConfigProperties·config;
+
+        -····//знаю,·что·можно·использовать·аннотация·ломбока,·но·они·у·меня·не·работают...
+        -····//ни·геттеры,·ни·сеттеры,·ни·конструкторы........
+        +····//·знаю,·что·можно·использовать·аннотация·ломбока,·но·они·у·меня·не·работают...
+        +····//·ни·геттеры,·ни·сеттеры,·ни·конструкторы........
+         ····public·BotCommandsConfig(TelegramBot·bot,·BotConfigProperties·config)·{
+         ········this.bot·=·bot;
+         ········this.config·=·config;
+        @@ -26,6 +25,4 @@
+
+         ········bot.execute(new·SetMyCommands(commands.toArray(BotCommand[]::new)));
+         ····}
+        -
+         }
+        -
+    src/main/java/backend/academy/bot/config/BotConfig.java
+        @@ -1,8 +1,5 @@
+         package·backend.academy.bot.config;
+
+        -import·com.fasterxml.jackson.databind.ObjectMapper;
+        -import·com.fasterxml.jackson.databind.SerializationFeature;
+        -import·com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+         import·com.pengrad.telegrambot.TelegramBot;
+         import·org.springframework.boot.context.properties.EnableConfigurationProperties;
+         import·org.springframework.context.annotation.Bean;
+        @@ -18,10 +15,7 @@
+         ····}
+
+         ····@Bean
+        -····public·BotCommandsConfig·ubotCommandsConfig(
+    ... (7 more lines that didn't fit)
+Violations also present in 13 other files.
+Run 'mvn spotless:apply' to fix these violations.
+    at com.diffplug.spotless.maven.SpotlessCheckMojo.process (SpotlessCheckMojo.java:111)
+    at com.diffplug.spotless.maven.AbstractSpotlessMojo.execute (AbstractSpotlessMojo.java:255)
+    at org.apache.maven.plugin.DefaultBuildPluginManager.executeMojo (DefaultBuildPluginManager.java:126)
+    at org.apache.maven.lifecycle.internal.MojoExecutor.doExecute2 (MojoExecutor.java:328)
+    at org.apache.maven.lifecycle.internal.MojoExecutor.doExecute (MojoExecutor.java:316)
+    at org.apache.maven.lifecycle.internal.MojoExecutor.execute (MojoExecutor.java:212)
+    at org.apache.maven.lifecycle.internal.MojoExecutor.execute (MojoExecutor.java:174)
+    at org.apache.maven.lifecycle.internal.MojoExecutor.access$000 (MojoExecutor.java:75)
+    at org.apache.maven.lifecycle.internal.MojoExecutor$1.run (MojoExecutor.java:162)
+    at org.apache.maven.plugin.DefaultMojosExecutionStrategy.execute (DefaultMojosExecutionStrategy.java:39)
+    at org.apache.maven.lifecycle.internal.MojoExecutor.execute (MojoExecutor.java:159)
+    at org.apache.maven.lifecycle.internal.LifecycleModuleBuilder.buildProject (LifecycleModuleBuilder.java:105)
+    at org.apache.maven.lifecycle.internal.LifecycleModuleBuilder.buildProject (LifecycleModuleBuilder.java:73)
+    at org.apache.maven.lifecycle.internal.builder.singlethreaded.SingleThreadedBuilder.build (SingleThreadedBuilder.java:53)
+    at org.apache.maven.lifecycle.internal.LifecycleStarter.execute (LifecycleStarter.java:118)
+    at org.apache.maven.DefaultMaven.doExecute (DefaultMaven.java:261)
+    at org.apache.maven.DefaultMaven.doExecute (DefaultMaven.java:173)
+    at org.apache.maven.DefaultMaven.execute (DefaultMaven.java:101)
+    at org.apache.maven.cli.MavenCli.execute (MavenCli.java:906)
+    at org.apache.maven.cli.MavenCli.doMain (MavenCli.java:283)
+    at org.apache.maven.cli.MavenCli.main (MavenCli.java:206)
+    at jdk.internal.reflect.DirectMethodHandleAccessor.invoke (DirectMethodHandleAccessor.java:103)
+    at java.lang.reflect.Method.invoke (Method.java:580)
+    at org.codehaus.plexus.classworlds.launcher.Launcher.launchEnhanced (Launcher.java:255)
+    at org.codehaus.plexus.classworlds.launcher.Launcher.launch (Launcher.java:201)
+    at org.codehaus.plexus.classworlds.launcher.Launcher.mainWithExitCode (Launcher.java:361)
+    at org.codehaus.plexus.classworlds.launcher.Launcher.main (Launcher.java:314)
+19:24:02 [ERROR] Failed to execute goal com.diffplug.spotless:spotless-maven-plugin:2.44.2:check (default-cli) on project scrapper: The following files had format violations:
+19:24:02 [ERROR]     src/main/java/backend/academy/scrapper/client/BotClient.java
+19:24:02 [ERROR]         @@ -2,7 +2,6 @@
+19:24:02 [ERROR]
+19:24:02 [ERROR]          import·backend.academy.scrapper.dto.LinkUpdate;
+19:24:02 [ERROR]          import·lombok.extern.slf4j.Slf4j;
+19:24:02 [ERROR]         -import·org.springframework.http.ResponseEntity;
+19:24:02 [ERROR]          import·org.springframework.web.client.HttpClientErrorException;
+19:24:02 [ERROR]          import·org.springframework.web.client.HttpServerErrorException;
+19:24:02 [ERROR]          import·org.springframework.web.client.RestClient;
+19:24:02 [ERROR]         @@ -17,11 +16,7 @@
+19:24:02 [ERROR]
+19:24:02 [ERROR]          ····public·void·sendUpdateNotification(LinkUpdate·linkUpdate)·{
+19:24:02 [ERROR]          ········try·{
+19:24:02 [ERROR]         -············restClient.post()
+19:24:02 [ERROR]         -················.uri("/updates")
+19:24:02 [ERROR]         -················.body(linkUpdate)
+19:24:02 [ERROR]         -················.retrieve()
+19:24:02 [ERROR]         -················.toBodilessEntity();
+19:24:02 [ERROR]         +············restClient.post().uri("/updates").body(linkUpdate).retrieve().toBodilessEntity();
+19:24:02 [ERROR]          ········}·catch·(HttpClientErrorException·|·HttpServerErrorException·e)·{
+19:24:02 [ERROR]          ············log.error("Chat·Id:·{}{}",·linkUpdate.getTgChatIds(),·e.getMessage());
+19:24:02 [ERROR]          ········}
+19:24:02 [ERROR]     src/main/java/backend/academy/scrapper/client/GithubClient.java
+19:24:02 [ERROR]         @@ -1,5 +1,8 @@
+19:24:02 [ERROR]          package·backend.academy.scrapper.client;
+19:24:02 [ERROR]
+19:24:02 [ERROR]         +import·static·backend.academy.scrapper.entity.LinkType.GITHUB_ISSUE;
+19:24:02 [ERROR]         +import·static·backend.academy.scrapper.entity.LinkType.GITHUB_PR;
+19:24:02 [ERROR]         +import·static·backend.academy.scrapper.entity.LinkType.GITHUB_REPO;
+19:24:02 [ERROR]
+19:24:02 [ERROR]          import·backend.academy.scrapper.config.GithubProperties;
+19:24:02 [ERROR]          import·backend.academy.scrapper.dto.GithubResource;
+19:24:02 [ERROR]         @@ -20,10 +23,6 @@
+19:24:02 [ERROR]          import·org.slf4j.LoggerFactory;
+19:24:02 [ERROR]          import·org.springframework.stereotype.Component;
+19:24:02 [ERROR]          import·org.springframework.web.util.UriComponentsBuilder;
+19:24:02 [ERROR]         -import·static·backend.academy.scrapper.entity.LinkType.GITHUB_ISSUE;
+19:24:02 [ERROR]         -import·static·backend.academy.scrapper.entity.LinkType.GITHUB_PR;
+19:24:02 [ERROR]         -import·static·backend.academy.scrapper.entity.LinkType.GITHUB_REPO;
+19:24:02 [ERROR]         -
+19:24:02 [ERROR]
+19:24:02 [ERROR]          @Component
+19:24:02 [ERROR]          public·class·GithubClient·implements·UpdateChecker·{
+19:24:02 [ERROR]         @@ -33,11 +32,7 @@
+19:24:02 [ERROR]          ····private·final·HttpClient·httpClient;
+19:24:02 [ERROR]          ····private·final·ObjectMapper·objectMapper;
+19:24:02 [ERROR]
+19:24:02 [ERROR]         -····public·GithubClient(
+19:24:02 [ERROR]         -········GithubProperties·githubProperties,
+19:24:02 [ERROR]         -········HttpClient·httpClient,
+19:24:02 [ERROR]     ... (133 more lines that didn't fit)
+19:24:02 [ERROR] Violations also present in 20 other files.
+19:24:02 [ERROR] Run 'mvn spotless:apply' to fix these violations.
+19:24:02 [ERROR] -> [Help 1]
+org.apache.maven.lifecycle.LifecycleExecutionException: Failed to execute goal com.diffplug.spotless:spotless-maven-plugin:2.44.2:check (default-cli) on project scrapper: The following files had format violations:
+    src/main/java/backend/academy/scrapper/client/BotClient.java
+        @@ -2,7 +2,6 @@
+
+         import·backend.academy.scrapper.dto.LinkUpdate;
+         import·lombok.extern.slf4j.Slf4j;
+        -import·org.springframework.http.ResponseEntity;
+         import·org.springframework.web.client.HttpClientErrorException;
+         import·org.springframework.web.client.HttpServerErrorException;
+         import·org.springframework.web.client.RestClient;
+        @@ -17,11 +16,7 @@
+
+         ····public·void·sendUpdateNotification(LinkUpdate·linkUpdate)·{
+         ········try·{
+        -············restClient.post()
+        -················.uri("/updates")
+        -················.body(linkUpdate)
+        -················.retrieve()
+        -················.toBodilessEntity();
+        +············restClient.post().uri("/updates").body(linkUpdate).retrieve().toBodilessEntity();
+         ········}·catch·(HttpClientErrorException·|·HttpServerErrorException·e)·{
+         ············log.error("Chat·Id:·{}{}",·linkUpdate.getTgChatIds(),·e.getMessage());
+         ········}
+    src/main/java/backend/academy/scrapper/client/GithubClient.java
+        @@ -1,5 +1,8 @@
+         package·backend.academy.scrapper.client;
+
+        +import·static·backend.academy.scrapper.entity.LinkType.GITHUB_ISSUE;
+        +import·static·backend.academy.scrapper.entity.LinkType.GITHUB_PR;
+        +import·static·backend.academy.scrapper.entity.LinkType.GITHUB_REPO;
+
+         import·backend.academy.scrapper.config.GithubProperties;
+         import·backend.academy.scrapper.dto.GithubResource;
+        @@ -20,10 +23,6 @@
+         import·org.slf4j.LoggerFactory;
+         import·org.springframework.stereotype.Component;
+         import·org.springframework.web.util.UriComponentsBuilder;
+        -import·static·backend.academy.scrapper.entity.LinkType.GITHUB_ISSUE;
+        -import·static·backend.academy.scrapper.entity.LinkType.GITHUB_PR;
+        -import·static·backend.academy.scrapper.entity.LinkType.GITHUB_REPO;
+        -
+
+         @Component
+         public·class·GithubClient·implements·UpdateChecker·{
+        @@ -33,11 +32,7 @@
+         ····private·final·HttpClient·httpClient;
+         ····private·final·ObjectMapper·objectMapper;
+
+        -····public·GithubClient(
+        -········GithubProperties·githubProperties,
+        -········HttpClient·httpClient,
+    ... (133 more lines that didn't fit)
+Violations also present in 20 other files.
+Run 'mvn spotless:apply' to fix these violations.
+    at org.apache.maven.lifecycle.internal.MojoExecutor.doExecute2 (MojoExecutor.java:333)
+    at org.apache.maven.lifecycle.internal.MojoExecutor.doExecute (MojoExecutor.java:316)
+    at org.apache.maven.lifecycle.internal.MojoExecutor.execute (MojoExecutor.java:212)
+    at org.apache.maven.lifecycle.internal.MojoExecutor.execute (MojoExecutor.java:174)
+    at org.apache.maven.lifecycle.internal.MojoExecutor.access$000 (MojoExecutor.java:75)
+    at org.apache.maven.lifecycle.internal.MojoExecutor$1.run (MojoExecutor.java:162)
+    at org.apache.maven.plugin.DefaultMojosExecutionStrategy.execute (DefaultMojosExecutionStrategy.java:39)
+    at org.apache.maven.lifecycle.internal.MojoExecutor.execute (MojoExecutor.java:159)
+    at org.apache.maven.lifecycle.internal.LifecycleModuleBuilder.buildProject (LifecycleModuleBuilder.java:105)
+    at org.apache.maven.lifecycle.internal.LifecycleModuleBuilder.buildProject (LifecycleModuleBuilder.java:73)
+    at org.apache.maven.lifecycle.internal.builder.singlethreaded.SingleThreadedBuilder.build (SingleThreadedBuilder.java:53)
+    at org.apache.maven.lifecycle.internal.LifecycleStarter.execute (LifecycleStarter.java:118)
+    at org.apache.maven.DefaultMaven.doExecute (DefaultMaven.java:261)
+    at org.apache.maven.DefaultMaven.doExecute (DefaultMaven.java:173)
+    at org.apache.maven.DefaultMaven.execute (DefaultMaven.java:101)
+    at org.apache.maven.cli.MavenCli.execute (MavenCli.java:906)
+    at org.apache.maven.cli.MavenCli.doMain (MavenCli.java:283)
+    at org.apache.maven.cli.MavenCli.main (MavenCli.java:206)
+    at jdk.internal.reflect.DirectMethodHandleAccessor.invoke (DirectMethodHandleAccessor.java:103)
+    at java.lang.reflect.Method.invoke (Method.java:580)
+    at org.codehaus.plexus.classworlds.launcher.Launcher.launchEnhanced (Launcher.java:255)
+    at org.codehaus.plexus.classworlds.launcher.Launcher.launch (Launcher.java:201)
+    at org.codehaus.plexus.classworlds.launcher.Launcher.mainWithExitCode (Launcher.java:361)
+    at org.codehaus.plexus.classworlds.launcher.Launcher.main (Launcher.java:314)
+Caused by: org.apache.maven.plugin.MojoExecutionException: The following files had format violations:
+    src/main/java/backend/academy/scrapper/client/BotClient.java
+        @@ -2,7 +2,6 @@
+
+         import·backend.academy.scrapper.dto.LinkUpdate;
+         import·lombok.extern.slf4j.Slf4j;
+        -import·org.springframework.http.ResponseEntity;
+         import·org.springframework.web.client.HttpClientErrorException;
+         import·org.springframework.web.client.HttpServerErrorException;
+         import·org.springframework.web.client.RestClient;
+        @@ -17,11 +16,7 @@
+
+         ····public·void·sendUpdateNotification(LinkUpdate·linkUpdate)·{
+         ········try·{
+        -············restClient.post()
+        -················.uri("/updates")
+        -················.body(linkUpdate)
+        -················.retrieve()
+        -················.toBodilessEntity();
+        +············restClient.post().uri("/updates").body(linkUpdate).retrieve().toBodilessEntity();
+         ········}·catch·(HttpClientErrorException·|·HttpServerErrorException·e)·{
+         ············log.error("Chat·Id:·{}{}",·linkUpdate.getTgChatIds(),·e.getMessage());
+         ········}
+    src/main/java/backend/academy/scrapper/client/GithubClient.java
+        @@ -1,5 +1,8 @@
+         package·backend.academy.scrapper.client;
+
+        +import·static·backend.academy.scrapper.entity.LinkType.GITHUB_ISSUE;
+        +import·static·backend.academy.scrapper.entity.LinkType.GITHUB_PR;
+        +import·static·backend.academy.scrapper.entity.LinkType.GITHUB_REPO;
+
+         import·backend.academy.scrapper.config.GithubProperties;
+         import·backend.academy.scrapper.dto.GithubResource;
+        @@ -20,10 +23,6 @@
+         import·org.slf4j.LoggerFactory;
+         import·org.springframework.stereotype.Component;
+         import·org.springframework.web.util.UriComponentsBuilder;
+        -import·static·backend.academy.scrapper.entity.LinkType.GITHUB_ISSUE;
+        -import·static·backend.academy.scrapper.entity.LinkType.GITHUB_PR;
+        -import·static·backend.academy.scrapper.entity.LinkType.GITHUB_REPO;
+        -
+
+         @Component
+         public·class·GithubClient·implements·UpdateChecker·{
+        @@ -33,11 +32,7 @@
+         ····private·final·HttpClient·httpClient;
+         ····private·final·ObjectMapper·objectMapper;
+
+        -····public·GithubClient(
+        -········GithubProperties·githubProperties,
+        -········HttpClient·httpClient,
+    ... (133 more lines that didn't fit)
+Violations also present in 20 other files.
+Run 'mvn spotless:apply' to fix these violations.
+    at com.diffplug.spotless.maven.SpotlessCheckMojo.process (SpotlessCheckMojo.java:111)
+    at com.diffplug.spotless.maven.AbstractSpotlessMojo.execute (AbstractSpotlessMojo.java:255)
+    at org.apache.maven.plugin.DefaultBuildPluginManager.executeMojo (DefaultBuildPluginManager.java:126)
+    at org.apache.maven.lifecycle.internal.MojoExecutor.doExecute2 (MojoExecutor.java:328)
+    at org.apache.maven.lifecycle.internal.MojoExecutor.doExecute (MojoExecutor.java:316)
+    at org.apache.maven.lifecycle.internal.MojoExecutor.execute (MojoExecutor.java:212)
+    at org.apache.maven.lifecycle.internal.MojoExecutor.execute (MojoExecutor.java:174)
+    at org.apache.maven.lifecycle.internal.MojoExecutor.access$000 (MojoExecutor.java:75)
+    at org.apache.maven.lifecycle.internal.MojoExecutor$1.run (MojoExecutor.java:162)
+    at org.apache.maven.plugin.DefaultMojosExecutionStrategy.execute (DefaultMojosExecutionStrategy.java:39)
+    at org.apache.maven.lifecycle.internal.MojoExecutor.execute (MojoExecutor.java:159)
+    at org.apache.maven.lifecycle.internal.LifecycleModuleBuilder.buildProject (LifecycleModuleBuilder.java:105)
+    at org.apache.maven.lifecycle.internal.LifecycleModuleBuilder.buildProject (LifecycleModuleBuilder.java:73)
+    at org.apache.maven.lifecycle.internal.builder.singlethreaded.SingleThreadedBuilder.build (SingleThreadedBuilder.java:53)
+    at org.apache.maven.lifecycle.internal.LifecycleStarter.execute (LifecycleStarter.java:118)
+    at org.apache.maven.DefaultMaven.doExecute (DefaultMaven.java:261)
+    at org.apache.maven.DefaultMaven.doExecute (DefaultMaven.java:173)
+    at org.apache.maven.DefaultMaven.execute (DefaultMaven.java:101)
+    at org.apache.maven.cli.MavenCli.execute (MavenCli.java:906)
+    at org.apache.maven.cli.MavenCli.doMain (MavenCli.java:283)
+    at org.apache.maven.cli.MavenCli.main (MavenCli.java:206)
+    at jdk.internal.reflect.DirectMethodHandleAccessor.invoke (DirectMethodHandleAccessor.java:103)
+    at java.lang.reflect.Method.invoke (Method.java:580)
+    at org.codehaus.plexus.classworlds.launcher.Launcher.launchEnhanced (Launcher.java:255)
+    at org.codehaus.plexus.classworlds.launcher.Launcher.launch (Launcher.java:201)
+    at org.codehaus.plexus.classworlds.launcher.Launcher.mainWithExitCode (Launcher.java:361)
+    at org.codehaus.plexus.classworlds.launcher.Launcher.main (Launcher.java:314)
+19:24:02 [ERROR]
+19:24:02 [ERROR] Re-run Maven using the -X switch to enable full debug logging.
+19:24:02 [ERROR]
+19:24:02 [ERROR] For more information about the errors and possible solutions, please read the following articles:
+19:24:02 [ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoExecutionException
+19:24:02 [ERROR]
+19:24:02 [ERROR] After correcting the problems, you can resume the build with the command
+19:24:02 [ERROR]   mvn <args> -rf :bot

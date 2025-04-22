@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/links")
 public class LinkController {
     private final LinkRepository linkRepository;
-    private final Logger logger = LoggerFactory.getLogger(LinkController.class);
 
     public LinkController(LinkRepository linkRepository) {
         this.linkRepository = linkRepository;

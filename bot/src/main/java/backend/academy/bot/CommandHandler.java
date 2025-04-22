@@ -22,6 +22,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import static backend.academy.bot.constant.BotMessages.FORMAT_LIST_MESSAGE;
 import static backend.academy.bot.constant.BotMessages.HELP_MESSAGE;
@@ -38,6 +40,7 @@ import static backend.academy.bot.constant.BotMessages.WAITING_FOR_TAGS_MESSAGE;
 
 @Component
 public class CommandHandler {
+    Logger log = LoggerFactory.getLogger(CommandHandler.class);
     private final BotService botService;
     private final ScrapperClient scrapperClient;
     private final InputParser inputParser;
@@ -141,6 +144,7 @@ public class CommandHandler {
         try {
             new URL(url).toURI();
         } catch (MalformedURLException | URISyntaxException e) {
+            log.error(e.getMessage());
         }
     }
 

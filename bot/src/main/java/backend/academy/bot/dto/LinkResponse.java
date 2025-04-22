@@ -17,6 +17,10 @@ public class LinkResponse {
         this.lastCheckedTime = lastCheckedTime;
     }
 
+    public Long getId() {
+        return id;
+    }
+
     public String getLink() {
         return link;
     }
