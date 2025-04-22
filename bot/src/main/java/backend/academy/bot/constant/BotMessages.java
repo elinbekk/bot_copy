@@ -1,7 +1,8 @@
 package backend.academy.bot.constant;
 
 public class BotMessages {
-    public static final String START_MESSAGE = """
+    public static final String START_MESSAGE =
+            """
         Привет! Я помогу отслеживать изменения на GitHub и Stack Overflow.
         Доступные команды:
         /track - начать отслеживание ссылки
@@ -9,7 +10,8 @@ public class BotMessages {
         /list - показать отслеживаемые ссылки
         /help - показать справку""";
 
-    public static final String HELP_MESSAGE = """
+    public static final String HELP_MESSAGE =
+            """
         Доступные команды:
         /track - добавить ссылку
         /untrack - удалить ссылку
@@ -24,12 +26,15 @@ public class BotMessages {
     public static final String LIST_EMPTY_MESSAGE = "Список отслеживаемых ссылок пуст";
     public static final String LINK_DUPLICATED_MESSAGE = "Эта ссылка уже отслеживается";
     public static final String LINK_NOT_FOUND_MESSAGE = "Этой ссылки нет в вашем списке отслеживания";
-    public static final String LINK_INCORRECT_MESSAGE= "Некорректный формат ссылки";
+    public static final String LINK_INCORRECT_MESSAGE = "Некорректный формат ссылки";
     public static final String WAITING_FOR_LINK_MESSAGE = "Введите ссылку для отслеживания:";
-    public static final String WAITING_FOR_TAGS_MESSAGE = "Введите теги через пробел (опционально), если их нет, поставьте - :";
-    public static final String WAITING_FOR_FILTERS_MESSAGE = "Введите фильтры в формате key:value (опционально), если их нет, поставьте -:";
+    public static final String WAITING_FOR_TAGS_MESSAGE =
+            "Введите теги через пробел (опционально), если их нет, поставьте - :";
+    public static final String WAITING_FOR_FILTERS_MESSAGE =
+            "Введите фильтры в формате key:value (опционально), если их нет, поставьте -:";
 
-    public static final String UPDATE_MESSAGE = """
+    public static final String UPDATE_MESSAGE =
+            """
              Обновление в отслеживаемой ссылке!
 
             Ссылка: %s

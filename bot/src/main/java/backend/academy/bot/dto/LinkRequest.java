@@ -21,7 +21,6 @@ public class LinkRequest {
         return link;
     }
 
-
     public LinkType getLinkType() {
         return linkType;
     }

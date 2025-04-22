@@ -2,13 +2,12 @@ package backend.academy.bot.dto;
 
 import java.util.List;
 
-public class LinkUpdate{
+public class LinkUpdate {
     private String link;
     private String description;
     private List<Long> tgChatIds;
 
-    public LinkUpdate() {
-    }
+    public LinkUpdate() {}
 
     public LinkUpdate(String link, String description, List<Long> tgChatIds) {}
 
@@ -24,4 +23,3 @@ public class LinkUpdate{
         return tgChatIds;
     }
 }
-

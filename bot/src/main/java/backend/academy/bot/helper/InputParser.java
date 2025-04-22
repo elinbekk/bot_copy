@@ -14,8 +14,8 @@ public class InputParser {
         Set<String> tags = new HashSet<>();
         if (!message.equals("-")) {
             tags = Arrays.stream(message.split("\\s+"))
-                .filter(tag -> !tag.isBlank())
-                .collect(Collectors.toSet());
+                    .filter(tag -> !tag.isBlank())
+                    .collect(Collectors.toSet());
         }
         return tags;
     }
@@ -27,18 +27,14 @@ public class InputParser {
             return filters;
         }
 
-        Arrays.stream(message.split("\\s+"))
-            .filter(part -> !part.isBlank())
-            .forEach(part -> {
-                String[] keyValue = part.split(":", 2);
-                if (keyValue.length != 2) {
-                    throw new IllegalArgumentException(
-                        "Некорректный формат фильтра: " + part + "\n" +
-                            "Используйте формат: ключ:значение"
-                    );
-                }
-                filters.put(keyValue[0].trim(), keyValue[1].trim());
-            });
+        Arrays.stream(message.split("\\s+")).filter(part -> !part.isBlank()).forEach(part -> {
+            String[] keyValue = part.split(":", 2);
+            if (keyValue.length != 2) {
+                throw new IllegalArgumentException(
+                        "Некорректный формат фильтра: " + part + "\n" + "Используйте формат: ключ:значение");
+            }
+            filters.put(keyValue[0].trim(), keyValue[1].trim());
+        });
 
         return filters;
     }

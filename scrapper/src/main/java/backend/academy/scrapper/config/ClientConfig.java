@@ -1,17 +1,14 @@
 package backend.academy.scrapper.config;
 
 import backend.academy.scrapper.client.BotClient;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import java.net.http.HttpClient;
+import java.time.Duration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.client.RestClient;
-import java.net.http.HttpClient;
-import java.time.Duration;
-
 
 @Validated
 @Configuration
@@ -26,12 +23,12 @@ public class ClientConfig {
     @Bean
     public RestClient restClient() {
         return RestClient.builder()
-            .baseUrl(scrapperConfig.baseUrl())
-            .defaultHeader("Accept", "application/json")
-            .requestInterceptor((request, body, execution) -> {
-                return execution.execute(request, body);
-            })
-            .build();
+                .baseUrl(scrapperConfig.baseUrl())
+                .defaultHeader("Accept", "application/json")
+                .requestInterceptor((request, body, execution) -> {
+                    return execution.execute(request, body);
+                })
+                .build();
     }
 
     @Bean
@@ -46,8 +43,6 @@ public class ClientConfig {
 
     @Bean
     public HttpClient httpClient() {
-        return HttpClient.newBuilder()
-            .connectTimeout(Duration.ofSeconds(10))
-            .build();
+        return HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
     }
 }

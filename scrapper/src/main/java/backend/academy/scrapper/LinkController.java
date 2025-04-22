@@ -7,8 +7,6 @@ import backend.academy.scrapper.repository.LinkRepository;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -27,48 +25,45 @@ public class LinkController {
     public LinkController(LinkRepository linkRepository) {
         this.linkRepository = linkRepository;
     }
+
     @GetMapping
     public ResponseEntity<List<LinkResponse>> getLinks(@RequestHeader("Tg-Chat-Id") Long chatId) {
         List<LinkResponse> data = linkRepository.findAllByChatId(chatId).stream()
-            .map(link -> new LinkResponse(link.getUrl(), link.getTags(), link.getFilters(), link.getLastCheckedTime()))
-            .toList();
+                .map(link ->
+                        new LinkResponse(link.getUrl(), link.getTags(), link.getFilters(), link.getLastCheckedTime()))
+                .toList();
         return ResponseEntity.ok(new ArrayList<>(data));
     }
 
     @PostMapping
     public ResponseEntity<LinkResponse> addLink(
-        @RequestHeader("Tg-Chat-Id") Long chatId,
-        @RequestBody LinkRequest linkRequest
-    ) {
-        Link model = new Link(null, linkRequest.getLink(), linkRequest.getLinkType(), linkRequest.getTags(),
-            linkRequest.getFilters(), String.valueOf(Instant.now()));
-        try{
+            @RequestHeader("Tg-Chat-Id") Long chatId, @RequestBody LinkRequest linkRequest) {
+        Link model = new Link(
+                null,
+                linkRequest.getLink(),
+                linkRequest.getLinkType(),
+                linkRequest.getTags(),
+                linkRequest.getFilters(),
+                String.valueOf(Instant.now()));
+        try {
             linkRepository.saveLink(chatId, model);
-            LinkResponse resp = new LinkResponse(model.getLinkId(), model.getUrl(), model.getTags(),
-                model.getFilters(), model.getLastCheckedTime());
+            LinkResponse resp = new LinkResponse(
+                    model.getLinkId(), model.getUrl(), model.getTags(), model.getFilters(), model.getLastCheckedTime());
             return ResponseEntity.ok(resp);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity
-                .status(HttpStatus.CONFLICT)
-                .body(null);
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
         }
     }
 
     @DeleteMapping
     public ResponseEntity<LinkResponse> removeLink(
-        @RequestHeader("Tg-Chat-Id") Long chatId,
-        @RequestBody LinkRequest req
-    ) {
+            @RequestHeader("Tg-Chat-Id") Long chatId, @RequestBody LinkRequest req) {
         try {
             linkRepository.remove(chatId, req.getLink());
             LinkResponse resp = new LinkResponse(null, req.getLink(), null, null, null);
             return ResponseEntity.ok(resp);
-        }catch (IllegalArgumentException e) {
-            return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(null);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
-
     }
 }
-

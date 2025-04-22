@@ -1,8 +1,8 @@
 package backend.academy.scrapper.client;
 
+import backend.academy.scrapper.config.StackoverflowProperties;
 import backend.academy.scrapper.dto.StackOverflowQuestion;
 import backend.academy.scrapper.dto.StackOverflowResponse;
-import backend.academy.scrapper.config.StackoverflowProperties;
 import backend.academy.scrapper.entity.Link;
 import backend.academy.scrapper.exception.StackOverflowException;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -28,9 +28,8 @@ public class StackOverflowClient implements UpdateChecker {
     private final ObjectMapper objectMapper;
     private final StackoverflowProperties stackoverflowProperties;
 
-    public StackOverflowClient(HttpClient httpClient,
-                               ObjectMapper objectMapper,
-                               StackoverflowProperties stackoverflowProperties) {
+    public StackOverflowClient(
+            HttpClient httpClient, ObjectMapper objectMapper, StackoverflowProperties stackoverflowProperties) {
         this.httpClient = httpClient;
         this.objectMapper = objectMapper;
         this.stackoverflowProperties = stackoverflowProperties;
@@ -61,26 +60,24 @@ public class StackOverflowClient implements UpdateChecker {
             if (e instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
             }
-            throw new StackOverflowException(
-                "Не удалось выполнить HTTP‑запрос к " + uri, e);
+            throw new StackOverflowException("Не удалось выполнить HTTP‑запрос к " + uri, e);
         }
 
-//        log.trace("Чат:{} HTTP-статус {} / тело ответа: {}", resource.getChatId(), response.statusCode(), response.body());
+        //        log.trace("Чат:{} HTTP-статус {} / тело ответа: {}", resource.getChatId(), response.statusCode(),
+        // response.body());
         checkForErrors(response);
         return parseResponse(response.body());
     }
 
-
     private URI buildUrlWithFilters(Link resource) {
         int questionId = extractQuestionId(resource.getUrl());
 
-        UriComponentsBuilder builder = UriComponentsBuilder
-            .fromUriString(stackoverflowProperties.apiUrl())
-            .path("/2.3/questions/{id}")
-            .queryParam("site", "stackoverflow")
-            .queryParam("filter", "withbody")
-            .queryParam("key", stackoverflowProperties.key())
-            .queryParam("access_token", stackoverflowProperties.accessToken());
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(stackoverflowProperties.apiUrl())
+                .path("/2.3/questions/{id}")
+                .queryParam("site", "stackoverflow")
+                .queryParam("filter", "withbody")
+                .queryParam("key", stackoverflowProperties.key())
+                .queryParam("access_token", stackoverflowProperties.accessToken());
 
         if (!resource.getTags().isEmpty()) {
             builder.queryParam("tagged", String.join(";", resource.getTags()));
@@ -110,11 +107,11 @@ public class StackOverflowClient implements UpdateChecker {
 
     private HttpRequest buildRequest(String url) {
         return HttpRequest.newBuilder()
-            .uri(URI.create(url))
-            .timeout(Duration.ofSeconds(15))
-            .header("Accept", "application/json")
-            .GET()
-            .build();
+                .uri(URI.create(url))
+                .timeout(Duration.ofSeconds(15))
+                .header("Accept", "application/json")
+                .GET()
+                .build();
     }
 
     private void checkForErrors(HttpResponse<String> response) {
@@ -135,8 +132,7 @@ public class StackOverflowClient implements UpdateChecker {
             }
             return apiResp.getItems().getFirst();
         } catch (JsonProcessingException e) {
-            throw new StackOverflowException(
-                "Не удалось распарсить JSON‑ответ: " + e.getOriginalMessage(), e);
+            throw new StackOverflowException("Не удалось распарсить JSON‑ответ: " + e.getOriginalMessage(), e);
         }
     }
 }

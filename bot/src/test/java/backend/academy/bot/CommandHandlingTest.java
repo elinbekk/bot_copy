@@ -1,5 +1,10 @@
 package backend.academy.bot;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.contains;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 import backend.academy.bot.dto.LinkResponse;
 import backend.academy.bot.helper.InputParser;
@@ -9,12 +14,6 @@ import java.util.Map;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.contains;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-
 
 public class CommandHandlingTest {
     private static BotService botService;
@@ -29,17 +28,13 @@ public class CommandHandlingTest {
         LinkTypeDetector resourceTypeDetector = new LinkTypeDetector();
         InputParser inputParser = new InputParser();
 
-        commandHandler = new CommandHandler(
-            botService,
-            scrapperClient,
-            inputParser,
-            resourceTypeDetector
-        );
+        commandHandler = new CommandHandler(botService, scrapperClient, inputParser, resourceTypeDetector);
     }
 
     @Test
     void handleStartCommandSendsMessageTest() {
-        final String START_MESSAGE = """
+        final String START_MESSAGE =
+                """
             Привет! Я помогу отслеживать изменения на GitHub и Stack Overflow.
             Доступные команды:
             /track - начать отслеживание ссылки
@@ -60,12 +55,8 @@ public class CommandHandlingTest {
 
     @Test
     void listCommandFormattingTest() {
-        LinkResponse resource = new LinkResponse(
-            "https://example.com",
-            Set.of("tag"),
-            Map.of("key", "value"),
-            "2023-01-01T00:00:00Z"
-        );
+        LinkResponse resource =
+                new LinkResponse("https://example.com", Set.of("tag"), Map.of("key", "value"), "2023-01-01T00:00:00Z");
 
         String result = commandHandler.formatLink(resource);
 
@@ -74,5 +65,4 @@ public class CommandHandlingTest {
         assertTrue(result.contains("key: value"));
         assertTrue(result.contains("01.01.2023 03:00:00 MSK"));
     }
-
 }

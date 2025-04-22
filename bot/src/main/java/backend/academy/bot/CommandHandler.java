@@ -1,5 +1,18 @@
 package backend.academy.bot;
 
+import static backend.academy.bot.constant.BotMessages.FORMAT_LIST_MESSAGE;
+import static backend.academy.bot.constant.BotMessages.HELP_MESSAGE;
+import static backend.academy.bot.constant.BotMessages.LINK_DUPLICATED_MESSAGE;
+import static backend.academy.bot.constant.BotMessages.LINK_INCORRECT_MESSAGE;
+import static backend.academy.bot.constant.BotMessages.LINK_NOT_FOUND_MESSAGE;
+import static backend.academy.bot.constant.BotMessages.LIST_EMPTY_MESSAGE;
+import static backend.academy.bot.constant.BotMessages.LIST_MESSAGE;
+import static backend.academy.bot.constant.BotMessages.START_MESSAGE;
+import static backend.academy.bot.constant.BotMessages.UNKNOWN_COMMAND_MESSAGE;
+import static backend.academy.bot.constant.BotMessages.WAITING_FOR_FILTERS_MESSAGE;
+import static backend.academy.bot.constant.BotMessages.WAITING_FOR_LINK_MESSAGE;
+import static backend.academy.bot.constant.BotMessages.WAITING_FOR_TAGS_MESSAGE;
+
 import backend.academy.bot.constant.BotState;
 import backend.academy.bot.dto.LinkRequest;
 import backend.academy.bot.dto.LinkResponse;
@@ -25,18 +38,6 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import static backend.academy.bot.constant.BotMessages.FORMAT_LIST_MESSAGE;
-import static backend.academy.bot.constant.BotMessages.HELP_MESSAGE;
-import static backend.academy.bot.constant.BotMessages.LINK_DUPLICATED_MESSAGE;
-import static backend.academy.bot.constant.BotMessages.LINK_INCORRECT_MESSAGE;
-import static backend.academy.bot.constant.BotMessages.LINK_NOT_FOUND_MESSAGE;
-import static backend.academy.bot.constant.BotMessages.LIST_EMPTY_MESSAGE;
-import static backend.academy.bot.constant.BotMessages.LIST_MESSAGE;
-import static backend.academy.bot.constant.BotMessages.START_MESSAGE;
-import static backend.academy.bot.constant.BotMessages.UNKNOWN_COMMAND_MESSAGE;
-import static backend.academy.bot.constant.BotMessages.WAITING_FOR_FILTERS_MESSAGE;
-import static backend.academy.bot.constant.BotMessages.WAITING_FOR_LINK_MESSAGE;
-import static backend.academy.bot.constant.BotMessages.WAITING_FOR_TAGS_MESSAGE;
 
 @Component
 public class CommandHandler {
@@ -48,7 +49,11 @@ public class CommandHandler {
     private final Map<Long, BotState> botStates = new ConcurrentHashMap<>();
     private final Map<Long, SessionData> sessions = new ConcurrentHashMap<>();
 
-    public CommandHandler(BotService botService, ScrapperClient scrapperClient, InputParser inputParser, LinkTypeDetector linkTypeDetector) {
+    public CommandHandler(
+            BotService botService,
+            ScrapperClient scrapperClient,
+            InputParser inputParser,
+            LinkTypeDetector linkTypeDetector) {
         this.botService = botService;
         this.scrapperClient = scrapperClient;
         this.inputParser = inputParser;
@@ -72,7 +77,7 @@ public class CommandHandler {
     }
 
     private void handleInitial(long chatId, String message) {
-//        scrapperClient.registerChat(chatId);
+        //        scrapperClient.registerChat(chatId);
         switch (message) {
             case "/start" -> botService.sendMessage(chatId, START_MESSAGE);
             case "/help" -> botService.sendMessage(chatId, HELP_MESSAGE);
@@ -89,9 +94,7 @@ public class CommandHandler {
         if (links.isEmpty()) {
             botService.sendMessage(chatId, LIST_EMPTY_MESSAGE);
         } else {
-            String response = links.stream()
-                .map(this::formatLink)
-                .collect(Collectors.joining("\n\n"));
+            String response = links.stream().map(this::formatLink).collect(Collectors.joining("\n\n"));
             botService.sendMessage(chatId, LIST_MESSAGE + response);
         }
         resetState(chatId);
@@ -99,26 +102,22 @@ public class CommandHandler {
 
     public String formatLink(LinkResponse link) {
         String filtersStr = link.getFilters().entrySet().stream()
-            .map(entry -> entry.getKey() + ": " + entry.getValue())
-            .collect(Collectors.joining(", "));
+                .map(entry -> entry.getKey() + ": " + entry.getValue())
+                .collect(Collectors.joining(", "));
 
         String formattedTime = getFormattedTime(link);
 
         return String.format(
-            FORMAT_LIST_MESSAGE,
-            link.getLink(),
-            link.getTags().isEmpty() ? "нет" : String.join(", ", link.getTags()),
-            link.getFilters().isEmpty() ? "нет" : filtersStr,
-            formattedTime
-        );
+                FORMAT_LIST_MESSAGE,
+                link.getLink(),
+                link.getTags().isEmpty() ? "нет" : String.join(", ", link.getTags()),
+                link.getFilters().isEmpty() ? "нет" : filtersStr,
+                formattedTime);
     }
 
     private @NotNull String getFormattedTime(LinkResponse link) {
-        ZonedDateTime zonedDateTime = Instant.parse(link.getLastCheckedTime())
-            .atZone(ZoneId.systemDefault());
-        return DateTimeFormatter
-            .ofPattern("dd.MM.yyyy HH:mm:ss z")
-            .format(zonedDateTime);
+        ZonedDateTime zonedDateTime = Instant.parse(link.getLastCheckedTime()).atZone(ZoneId.systemDefault());
+        return DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss z").format(zonedDateTime);
     }
 
     private void startTracking(long chatId) {
@@ -172,7 +171,7 @@ public class CommandHandler {
 
     private void handleUntrack(long chatId, String url) {
         LinkRequest req = new LinkRequest(url, null, null, null);
-        try{
+        try {
             scrapperClient.removeLink(chatId, req);
             botService.sendMessage(chatId, "Ссылка удалена: " + url);
         } catch (LinkNotFoundException e) {

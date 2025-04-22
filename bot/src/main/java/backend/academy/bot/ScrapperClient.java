@@ -1,5 +1,7 @@
 package backend.academy.bot;
 
+import static backend.academy.bot.constant.BotMessages.LINK_DUPLICATED_MESSAGE;
+
 import backend.academy.bot.dto.LinkRequest;
 import backend.academy.bot.dto.LinkResponse;
 import backend.academy.bot.exception.DuplicateLinkException;
@@ -15,15 +17,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-import static backend.academy.bot.constant.BotMessages.LINK_DUPLICATED_MESSAGE;
 
 @Component
 public class ScrapperClient {
     private final RestTemplate restTemplate;
     private final String baseUrl;
 
-    public ScrapperClient(RestTemplate restTemplate,
-                          @Value("${app.base-url:http://localhost:8081}") String baseUrl) {
+    public ScrapperClient(RestTemplate restTemplate, @Value("${app.base-url:http://localhost:8081}") String baseUrl) {
         this.restTemplate = restTemplate;
         this.baseUrl = baseUrl;
     }
@@ -39,13 +39,8 @@ public class ScrapperClient {
         headers.set("Tg-Chat-Id", String.valueOf(chatId));
         HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
 
-        ResponseEntity<List<LinkResponse>> response = restTemplate.exchange(
-            url,
-            HttpMethod.GET,
-            requestEntity,
-            new ParameterizedTypeReference<>() {
-            }
-        );
+        ResponseEntity<List<LinkResponse>> response =
+                restTemplate.exchange(url, HttpMethod.GET, requestEntity, new ParameterizedTypeReference<>() {});
         return response.getBody();
     }
 
@@ -57,11 +52,7 @@ public class ScrapperClient {
         HttpEntity<LinkRequest> requestEntity = new HttpEntity<>(request, headers);
 
         try {
-            ResponseEntity<LinkResponse> response = restTemplate.postForEntity(
-                url,
-                requestEntity,
-                LinkResponse.class
-            );
+            ResponseEntity<LinkResponse> response = restTemplate.postForEntity(url, requestEntity, LinkResponse.class);
             return response.getBody();
         } catch (HttpClientErrorException.Conflict e) {
             throw new DuplicateLinkException(LINK_DUPLICATED_MESSAGE);
@@ -76,15 +67,9 @@ public class ScrapperClient {
         HttpEntity<LinkRequest> requestEntity = new HttpEntity<>(request, headers);
 
         try {
-            restTemplate.exchange(
-                url,
-                HttpMethod.DELETE,
-                requestEntity,
-                Void.class
-            );
+            restTemplate.exchange(url, HttpMethod.DELETE, requestEntity, Void.class);
         } catch (HttpClientErrorException e) {
             throw new LinkNotFoundException(e.getMessage());
         }
     }
 }
-

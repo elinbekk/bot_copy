@@ -40,16 +40,14 @@ public class InMemoryLinkRepository implements LinkRepository {
         List<Link> links = store.get(chatId);
         if (links == null) return false;
         return links.stream()
-            .anyMatch(l -> l.getUrl().equals(link.getUrl())
-                && Objects.equals(l.getTags(), link.getTags())
-                && Objects.equals(l.getFilters(), link.getFilters()));
+                .anyMatch(l -> l.getUrl().equals(link.getUrl())
+                        && Objects.equals(l.getTags(), link.getTags())
+                        && Objects.equals(l.getFilters(), link.getFilters()));
     }
 
     @Override
     public List<Link> getAllLinks() {
-        return store.values().stream()
-            .flatMap(List::stream)
-            .toList();
+        return store.values().stream().flatMap(List::stream).toList();
     }
 
     @Override

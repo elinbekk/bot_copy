@@ -21,7 +21,11 @@ public class LinkCheckerScheduler {
     private final StackOverflowClient stackoverflowClient;
     private final LinkRepository linkRepository;
 
-    public LinkCheckerScheduler(BotClient botClient, GithubClient githubClient, StackOverflowClient stackoverflowClient, LinkRepository linkRepository) {
+    public LinkCheckerScheduler(
+            BotClient botClient,
+            GithubClient githubClient,
+            StackOverflowClient stackoverflowClient,
+            LinkRepository linkRepository) {
         this.botClient = botClient;
         this.githubClient = githubClient;
         this.stackoverflowClient = stackoverflowClient;
@@ -32,7 +36,7 @@ public class LinkCheckerScheduler {
     public void checkAllLinks() {
         try {
             Set<Long> allChatIDs = linkRepository.findAllChatIds();
-            for(Long chatID : allChatIDs) {
+            for (Long chatID : allChatIDs) {
                 List<Link> resources = linkRepository.findAllByChatId(chatID);
                 log.info("SIZE: {}", resources.size());
                 for (Link resource : resources) {
@@ -40,11 +44,7 @@ public class LinkCheckerScheduler {
                     log.info("URL for link update:{}", resource.getUrl());
                     log.info("chat ID: {}", chatID);
                     if (isUpdated) {
-                        LinkUpdate upd = new LinkUpdate(
-                            resource.getUrl(),
-                            "Обнаружены изменения",
-                            List.of(chatID)
-                        );
+                        LinkUpdate upd = new LinkUpdate(resource.getUrl(), "Обнаружены изменения", List.of(chatID));
                         log.info("Updating link: {}", upd.getLink());
                         log.info("Updating ch: {}", upd.getTgChatIds().toArray());
                         botClient.sendUpdateNotification(upd);
@@ -63,5 +63,3 @@ public class LinkCheckerScheduler {
         };
     }
 }
-
-

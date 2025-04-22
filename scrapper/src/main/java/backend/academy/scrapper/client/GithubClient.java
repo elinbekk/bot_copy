@@ -1,5 +1,8 @@
 package backend.academy.scrapper.client;
 
+import static backend.academy.scrapper.entity.LinkType.GITHUB_ISSUE;
+import static backend.academy.scrapper.entity.LinkType.GITHUB_PR;
+import static backend.academy.scrapper.entity.LinkType.GITHUB_REPO;
 
 import backend.academy.scrapper.config.GithubProperties;
 import backend.academy.scrapper.dto.GithubResource;
@@ -20,10 +23,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
-import static backend.academy.scrapper.entity.LinkType.GITHUB_ISSUE;
-import static backend.academy.scrapper.entity.LinkType.GITHUB_PR;
-import static backend.academy.scrapper.entity.LinkType.GITHUB_REPO;
-
 
 @Component
 public class GithubClient implements UpdateChecker {
@@ -33,11 +32,7 @@ public class GithubClient implements UpdateChecker {
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
 
-    public GithubClient(
-        GithubProperties githubProperties,
-        HttpClient httpClient,
-        ObjectMapper objectMapper
-    ) {
+    public GithubClient(GithubProperties githubProperties, HttpClient httpClient, ObjectMapper objectMapper) {
         this.githubProperties = githubProperties;
         this.httpClient = httpClient;
         this.objectMapper = objectMapper;
@@ -46,8 +41,8 @@ public class GithubClient implements UpdateChecker {
     @Override
     public boolean hasUpdates(Link link) {
         try {
-//            log.info("Проверка обновлений: [chatId={}, link={}]",
-//                resource.getChatId(), resource.getLink());
+            //            log.info("Проверка обновлений: [chatId={}, link={}]",
+            //                resource.getChatId(), resource.getLink());
 
             URI uri = buildUriWithFilters(link);
             log.info("URI запроса: {}", uri);
@@ -55,9 +50,9 @@ public class GithubClient implements UpdateChecker {
             HttpRequest request = buildRequest(uri);
             HttpResponse<String> response = sendRequest(request);
 
-//            log.info("Response status [chatId={}, status={}]",
-//                link.getChatId(), response.statusCode());
-//            log.info("Response body: {}", response.body());
+            //            log.info("Response status [chatId={}, status={}]",
+            //                link.getChatId(), response.statusCode());
+            //            log.info("Response body: {}", response.body());
 
             JsonNode json = objectMapper.readTree(response.body());
             Instant lastUpdate = parseUpdateTime(json, link.getLinkType());
@@ -65,17 +60,18 @@ public class GithubClient implements UpdateChecker {
             return lastUpdate.isAfter(Instant.parse(link.getLastCheckedTime()));
         } catch (Exception e) {
             /*log.error("Ошибка при проверке обновлений [chatId={}, link={}]",
-                link.getChatId(), link.getLink(), e);*/
+            link.getChatId(), link.getLink(), e);*/
             return false;
         }
     }
 
     private Instant parseUpdateTime(JsonNode json, LinkType linkType) {
-        String dateString = switch (linkType) {
-            case GITHUB_REPO -> json.get("pushed_at").asText();
-            case GITHUB_ISSUE, GITHUB_PR -> json.get("updated_at").asText();
-            default -> throw new IllegalArgumentException("Неподдерживаемый тип ссылки");
-        };
+        String dateString =
+                switch (linkType) {
+                    case GITHUB_REPO -> json.get("pushed_at").asText();
+                    case GITHUB_ISSUE, GITHUB_PR -> json.get("updated_at").asText();
+                    default -> throw new IllegalArgumentException("Неподдерживаемый тип ссылки");
+                };
 
         log.debug("Дата обновления из API: {}", dateString);
         return Instant.parse(dateString);
@@ -85,8 +81,7 @@ public class GithubClient implements UpdateChecker {
         GithubResource gitHubResource = parseGitHubUrl(resource.getUrl());
         String basePath = buildBaseApiPath(gitHubResource);
 
-        UriComponentsBuilder builder = UriComponentsBuilder
-            .fromUriString(githubProperties.apiUrl() + basePath);
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(githubProperties.apiUrl() + basePath);
 
         if (resource.getFilters() != null) {
             resource.getFilters().forEach(builder::queryParam);
@@ -97,16 +92,10 @@ public class GithubClient implements UpdateChecker {
     private String buildBaseApiPath(GithubResource resource) {
         return switch (resource.getType()) {
             case GITHUB_REPO -> "/repos/%s/%s".formatted(resource.getOwner(), resource.getRepo());
-            case GITHUB_ISSUE -> "/repos/%s/%s/issues/%s".formatted(
-                resource.getOwner(),
-                resource.getRepo(),
-                resource.getNumber()
-            );
-            case GITHUB_PR -> "/repos/%s/%s/pulls/%s".formatted(
-                resource.getOwner(),
-                resource.getRepo(),
-                resource.getNumber()
-            );
+            case GITHUB_ISSUE -> "/repos/%s/%s/issues/%s"
+                    .formatted(resource.getOwner(), resource.getRepo(), resource.getNumber());
+            case GITHUB_PR -> "/repos/%s/%s/pulls/%s"
+                    .formatted(resource.getOwner(), resource.getRepo(), resource.getNumber());
             case STACKOVERFLOW -> null;
         };
     }
@@ -122,37 +111,23 @@ public class GithubClient implements UpdateChecker {
 
         if (issueMatcher.find()) {
             return new GithubResource(
-                GITHUB_ISSUE,
-                issueMatcher.group(1),
-                issueMatcher.group(2),
-                issueMatcher.group(3)
-            );
+                    GITHUB_ISSUE, issueMatcher.group(1), issueMatcher.group(2), issueMatcher.group(3));
         } else if (prMatcher.find()) {
-            return new GithubResource(
-                GITHUB_PR,
-                prMatcher.group(1),
-                prMatcher.group(2),
-                prMatcher.group(3)
-            );
+            return new GithubResource(GITHUB_PR, prMatcher.group(1), prMatcher.group(2), prMatcher.group(3));
         } else if (repoMatcher.find()) {
-            return new GithubResource(
-                GITHUB_REPO,
-                repoMatcher.group(1),
-                repoMatcher.group(2),
-                null
-            );
+            return new GithubResource(GITHUB_REPO, repoMatcher.group(1), repoMatcher.group(2), null);
         }
         throw new IllegalArgumentException("Неподдерживаемый Github URL");
     }
 
     private HttpRequest buildRequest(URI uri) {
         return HttpRequest.newBuilder()
-            .uri(uri)
-            .header("Accept", "application/vnd.github.v3+json")
-            .header("Authorization", "token " + githubProperties.token())
-            .timeout(Duration.ofSeconds(10))
-            .GET()
-            .build();
+                .uri(uri)
+                .header("Accept", "application/vnd.github.v3+json")
+                .header("Authorization", "token " + githubProperties.token())
+                .timeout(Duration.ofSeconds(10))
+                .GET()
+                .build();
     }
 
     private HttpResponse<String> sendRequest(HttpRequest request) throws IOException, InterruptedException {

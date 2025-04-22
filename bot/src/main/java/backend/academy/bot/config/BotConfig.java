@@ -1,8 +1,5 @@
 package backend.academy.bot.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.pengrad.telegrambot.TelegramBot;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -18,10 +15,7 @@ public class BotConfig {
     }
 
     @Bean
-    public BotCommandsConfig ubotCommandsConfig(
-            TelegramBot bot,
-            BotConfigProperties properties
-    ) {
+    public BotCommandsConfig ubotCommandsConfig(TelegramBot bot, BotConfigProperties properties) {
         return new BotCommandsConfig(bot, properties);
     }
 

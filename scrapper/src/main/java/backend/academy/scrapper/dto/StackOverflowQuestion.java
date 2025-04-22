@@ -12,9 +12,7 @@ public class StackOverflowQuestion {
 
     @JsonCreator
     public StackOverflowQuestion(
-        @JsonProperty("last_activity_date") long lastActivityDate,
-        @JsonProperty("title") String title
-    ) {
+            @JsonProperty("last_activity_date") long lastActivityDate, @JsonProperty("title") String title) {
         this.lastActivityDate = lastActivityDate;
         this.title = title;
     }
@@ -22,6 +20,7 @@ public class StackOverflowQuestion {
     public long getLastActivityDate() {
         return lastActivityDate;
     }
+
     public void setLastActivityDate(long lastActivityDate) {
         this.lastActivityDate = lastActivityDate;
     }

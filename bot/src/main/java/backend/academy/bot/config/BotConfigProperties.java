@@ -8,9 +8,5 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 @ConfigurationProperties(prefix = "app")
 public record BotConfigProperties(List<Command> commands, @NotBlank String telegramToken) {
-    public record Command(
-        @NotBlank String command,
-        @NotBlank String description
-    ) {
-    }
+    public record Command(@NotBlank String command, @NotBlank String description) {}
 }

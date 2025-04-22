@@ -1,18 +1,5 @@
 package backend.academy.scrapper;
 
-import backend.academy.scrapper.client.GithubClient;
-import backend.academy.scrapper.config.GithubProperties;
-import backend.academy.scrapper.entity.Link;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.time.Instant;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import static backend.academy.scrapper.entity.LinkType.GITHUB_REPO;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
@@ -24,6 +11,18 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+import backend.academy.scrapper.client.GithubClient;
+import backend.academy.scrapper.config.GithubProperties;
+import backend.academy.scrapper.entity.Link;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 class GithubClientTest extends WiremockIntegrationTest {
     private GithubClient client;
@@ -49,14 +48,15 @@ class GithubClientTest extends WiremockIntegrationTest {
 
     private void stubRepoRequest(ResponseDefinitionBuilder response) {
         wireMock.stubFor(get(urlEqualTo("/repos/owner/repo"))
-            .withHeader("Accept", equalTo("application/vnd.github.v3+json"))
-            .withHeader("Authorization", equalTo("token test-token"))
-            .willReturn(response));
+                .withHeader("Accept", equalTo("application/vnd.github.v3+json"))
+                .withHeader("Authorization", equalTo("token test-token"))
+                .willReturn(response));
     }
 
     @Test
     public void hasUpdatesTest() throws Exception {
-        String responseBody = """
+        String responseBody =
+                """
             {
                 "pushed_at": "2025-04-16T12:00:00Z"
             }
@@ -66,7 +66,7 @@ class GithubClientTest extends WiremockIntegrationTest {
         when(httpResponse.body()).thenReturn(responseBody);
 
         when(mockHttpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
-            .thenReturn(httpResponse);
+                .thenReturn(httpResponse);
 
         boolean result = client.hasUpdates(link);
         Assertions.assertTrue(result);

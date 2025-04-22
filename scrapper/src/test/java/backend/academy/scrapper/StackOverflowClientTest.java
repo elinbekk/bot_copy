@@ -1,5 +1,13 @@
 package backend.academy.scrapper;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.ok;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
+import static org.junit.Assert.assertThrows;
+
 import backend.academy.scrapper.client.StackOverflowClient;
 import backend.academy.scrapper.config.StackoverflowProperties;
 import backend.academy.scrapper.dto.StackOverflowQuestion;
@@ -17,18 +25,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
-import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.ok;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
-import static org.junit.Assert.assertThrows;
 
 public class StackOverflowClientTest extends WiremockIntegrationTest {
     private StackOverflowClient client;
     private Link resource;
-    private final String jsonDataWithOneItem = """
+    private final String jsonDataWithOneItem =
+            """
         {
             "items": [
                 {
@@ -37,7 +39,6 @@ public class StackOverflowClientTest extends WiremockIntegrationTest {
                 }
             ]
         }""";
-
 
     @BeforeEach
     void setup() {
@@ -53,22 +54,23 @@ public class StackOverflowClientTest extends WiremockIntegrationTest {
         resource.setLastCheckedTime("2023-01-01T00:00:00Z");
     }
 
-
     @Test
     void extractQuestionIdByValidUrlTest() {
         int id = client.extractQuestionId("https://stackoverflow.com/questions/12345/some-title");
         Assertions.assertEquals(12345, id);
     }
 
-
     @Test
     void extractQuestionId_InvalidUrl_ThrowsException() {
-        assertThrows(IllegalArgumentException.class, () -> client.extractQuestionId("https://stackoverflow.com/users/12345"));
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> client.extractQuestionId("https://stackoverflow.com/users/12345"));
     }
 
     @Test
     void parseResponseItemTest() {
-        String jsonData = """
+        String jsonData =
+                """
             {
                 "items": [
                     {
@@ -101,60 +103,31 @@ public class StackOverflowClientTest extends WiremockIntegrationTest {
 
     @Test
     void getQuestion_TimeoutThrowsExceptionTest() {
-        wireMock.stubFor(get(anyUrl())
-            .willReturn(ok().withFixedDelay(20000)));
-        StackOverflowException ex = assertThrows(
-            StackOverflowException.class,
-            () -> client.hasUpdates(resource)
-        );
+        wireMock.stubFor(get(anyUrl()).willReturn(ok().withFixedDelay(20000)));
+        StackOverflowException ex = assertThrows(StackOverflowException.class, () -> client.hasUpdates(resource));
         Assertions.assertTrue(ex.getMessage().contains("Не удалось выполнить HTTP‑запрос к"));
     }
 
     @ParameterizedTest
     @MethodSource("provideTestCases")
-    void parameterizedExceptionTest(
-        int statusCode,
-        String responseBody,
-        String expectedMessagePart
-    ) {
+    void parameterizedExceptionTest(int statusCode, String responseBody, String expectedMessagePart) {
         int questionId = client.extractQuestionId(resource.getUrl());
         wireMock.stubFor(get(urlPathEqualTo("/2.3/questions/" + questionId))
-            .withQueryParam("key", equalTo("test-key"))
-            .withQueryParam("access_token", equalTo("test-token"))
-            .willReturn(aResponse()
-                .withStatus(statusCode)
-                .withBody(responseBody)));
+                .withQueryParam("key", equalTo("test-key"))
+                .withQueryParam("access_token", equalTo("test-token"))
+                .willReturn(aResponse().withStatus(statusCode).withBody(responseBody)));
 
-        StackOverflowException ex = assertThrows(
-            StackOverflowException.class,
-            () -> client.hasUpdates(resource)
-        );
-        Assertions.assertTrue(ex.getMessage().contains(expectedMessagePart),
-            "Сообщение исключения должно содержать: " + expectedMessagePart);
+        StackOverflowException ex = assertThrows(StackOverflowException.class, () -> client.hasUpdates(resource));
+        Assertions.assertTrue(
+                ex.getMessage().contains(expectedMessagePart),
+                "Сообщение исключения должно содержать: " + expectedMessagePart);
     }
 
     private static Stream<Arguments> provideTestCases() {
         return Stream.of(
-            Arguments.of(
-                404,
-                "Not Found",
-                "Ошибка клиента: Not Found"
-            ),
-            Arguments.of(
-                500,
-                "Oops",
-                "Ошибка сервера"
-            ),
-            Arguments.of(
-                200,
-                "not a json",
-                "Не удалось распарсить JSON‑ответ"
-            ),
-            Arguments.of(
-                200,
-                "{ \"items\": [] }",
-                "В ответе нет ни одного вопроса"
-            )
-        );
+                Arguments.of(404, "Not Found", "Ошибка клиента: Not Found"),
+                Arguments.of(500, "Oops", "Ошибка сервера"),
+                Arguments.of(200, "not a json", "Не удалось распарсить JSON‑ответ"),
+                Arguments.of(200, "{ \"items\": [] }", "В ответе нет ни одного вопроса"));
     }
 }

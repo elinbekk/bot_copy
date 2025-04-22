@@ -1,5 +1,10 @@
 package backend.academy.scrapper;
 
+import static backend.academy.scrapper.entity.LinkType.GITHUB_REPO;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import backend.academy.scrapper.entity.Link;
 import backend.academy.scrapper.repository.InMemoryLinkRepository;
 import backend.academy.scrapper.repository.LinkRepository;
@@ -8,10 +13,6 @@ import java.util.Map;
 import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
-import static backend.academy.scrapper.entity.LinkType.GITHUB_REPO;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class LinkSavingTest {
     private LinkRepository linkRepository;
@@ -23,13 +24,12 @@ public class LinkSavingTest {
     public void setUp() {
         linkRepository = new InMemoryLinkRepository();
         link = new Link(
-            testLinkId,
-            "https://github.com/user/repo",
-            GITHUB_REPO,
-            Set.of("bug", "feature"),
-            Map.of("state", "open"),
-            "2025-04-16T12:00:00Z"
-        );
+                testLinkId,
+                "https://github.com/user/repo",
+                GITHUB_REPO,
+                Set.of("bug", "feature"),
+                Map.of("state", "open"),
+                "2025-04-16T12:00:00Z");
     }
 
     @Test
@@ -43,16 +43,13 @@ public class LinkSavingTest {
     public void saveDuplicateLinkThrowsExceptionTest() {
         linkRepository.saveLink(testChatId, link);
         Link duplicate = new Link(
-            testLinkId + 1,
-            link.getUrl(),
-            link.getLinkType(),
-            link.getTags(),
-            link.getFilters(),
-            link.getLastCheckedTime()
-        );
-        assertThrows(
-            IllegalArgumentException.class,
-            () -> linkRepository.saveLink(testChatId, duplicate));
+                testLinkId + 1,
+                link.getUrl(),
+                link.getLinkType(),
+                link.getTags(),
+                link.getFilters(),
+                link.getLastCheckedTime());
+        assertThrows(IllegalArgumentException.class, () -> linkRepository.saveLink(testChatId, duplicate));
     }
 
     @Test
@@ -65,10 +62,7 @@ public class LinkSavingTest {
 
     @Test
     public void remove_ShouldThrowWhenLinkNotFound() {
-        assertThrows(
-            IllegalStateException.class,
-            () -> linkRepository.remove(testChatId, "invalid-url")
-        );
+        assertThrows(IllegalStateException.class, () -> linkRepository.remove(testChatId, "invalid-url"));
     }
 
     @Test
@@ -76,15 +70,13 @@ public class LinkSavingTest {
         linkRepository.saveLink(testChatId, link);
 
         Link duplicate = new Link(
-            2L,
-            link.getUrl(),
-            link.getLinkType(),
-            link.getTags(),
-            link.getFilters(),
-            Instant.now().toString()
-        );
+                2L,
+                link.getUrl(),
+                link.getLinkType(),
+                link.getTags(),
+                link.getFilters(),
+                Instant.now().toString());
 
         assertTrue(linkRepository.linkIsExists(testChatId, duplicate));
     }
-
 }
