@@ -41,8 +41,7 @@ public class GithubClient implements UpdateChecker {
     @Override
     public boolean hasUpdates(Link link) {
         try {
-            //            log.info("Проверка обновлений: [chatId={}, link={}]",
-            //                resource.getChatId(), resource.getLink());
+            log.info("Проверка обновлений: link={}", link.getUrl());
 
             URI uri = buildUriWithFilters(link);
             log.info("URI запроса: {}", uri);
@@ -58,7 +57,7 @@ public class GithubClient implements UpdateChecker {
             Instant lastUpdate = parseUpdateTime(json, link.getLinkType());
 
             return lastUpdate.isAfter(Instant.parse(link.getLastCheckedTime()));
-        } catch (Exception e) {
+        } catch (IOException | InterruptedException e) {
             /*log.error("Ошибка при проверке обновлений [chatId={}, link={}]",
             link.getChatId(), link.getLink(), e);*/
             return false;

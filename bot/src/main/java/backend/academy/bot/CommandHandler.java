@@ -41,7 +41,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class CommandHandler {
-    Logger log = LoggerFactory.getLogger(CommandHandler.class);
+    private final Logger log = LoggerFactory.getLogger(CommandHandler.class);
     private final BotService botService;
     private final ScrapperClient scrapperClient;
     private final InputParser inputParser;
@@ -143,7 +143,7 @@ public class CommandHandler {
         try {
             new URL(url).toURI();
         } catch (MalformedURLException | URISyntaxException e) {
-            log.error(e.getMessage());
+            log.error("Ошибка в {}: {}", url, e.getMessage());
         }
     }
 

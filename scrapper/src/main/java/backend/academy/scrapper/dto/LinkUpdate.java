@@ -3,9 +3,9 @@ package backend.academy.scrapper.dto;
 import java.util.List;
 
 public class LinkUpdate {
-    private String link;
-    private String description;
-    private List<Long> tgChatIds;
+    private final String link;
+    private final String description;
+    private final List<Long> tgChatIds;
 
     public LinkUpdate(String link, String description, List<Long> tgChatIds) {
         this.link = link;
