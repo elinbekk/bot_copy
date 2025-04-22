@@ -18,7 +18,7 @@ public class BotConfig {
     }
 
     @Bean
-    public BotCommandsConfig botCommandsConfig(
+    public BotCommandsConfig ubotCommandsConfig(
             TelegramBot bot,
             BotConfigProperties properties
     ) {

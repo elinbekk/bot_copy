@@ -7,10 +7,11 @@ public class LinkUpdate {
     private String description;
     private List<Long> tgChatIds;
 
-    public LinkUpdate() {
+    public LinkUpdate(String link, String description, List<Long> tgChatIds) {
+        this.link = link;
+        this.description = description;
+        this.tgChatIds = tgChatIds;
     }
-
-    public LinkUpdate(String link, String description, List<Long> tgChatIds) {}
 
     public String getLink() {
         return link;

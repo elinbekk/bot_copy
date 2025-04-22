@@ -1,4 +1,4 @@
-package backend.academy.bot;
+package backend.academy.bot.constant;
 
 public class BotMessages {
     public static final String START_MESSAGE = """

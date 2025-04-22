@@ -1,8 +1,13 @@
 package backend.academy.bot;
 
+import backend.academy.bot.constant.BotState;
 import backend.academy.bot.dto.LinkRequest;
 import backend.academy.bot.dto.LinkResponse;
 import backend.academy.bot.entity.LinkType;
+import backend.academy.bot.exception.DuplicateLinkException;
+import backend.academy.bot.exception.LinkNotFoundException;
+import backend.academy.bot.helper.InputParser;
+import backend.academy.bot.helper.LinkTypeDetector;
 import backend.academy.bot.service.BotService;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -14,23 +19,22 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
-import static backend.academy.bot.BotMessages.FORMAT_LIST_MESSAGE;
-import static backend.academy.bot.BotMessages.HELP_MESSAGE;
-import static backend.academy.bot.BotMessages.LINK_DUPLICATED_MESSAGE;
-import static backend.academy.bot.BotMessages.LINK_INCORRECT_MESSAGE;
-import static backend.academy.bot.BotMessages.LIST_EMPTY_MESSAGE;
-import static backend.academy.bot.BotMessages.LIST_MESSAGE;
-import static backend.academy.bot.BotMessages.START_MESSAGE;
-import static backend.academy.bot.BotMessages.UNKNOWN_COMMAND_MESSAGE;
-import static backend.academy.bot.BotMessages.UNTRACK_MESSAGE;
-import static backend.academy.bot.BotMessages.WAITING_FOR_FILTERS_MESSAGE;
-import static backend.academy.bot.BotMessages.WAITING_FOR_LINK_MESSAGE;
-import static backend.academy.bot.BotMessages.WAITING_FOR_TAGS_MESSAGE;
+import static backend.academy.bot.constant.BotMessages.FORMAT_LIST_MESSAGE;
+import static backend.academy.bot.constant.BotMessages.HELP_MESSAGE;
+import static backend.academy.bot.constant.BotMessages.LINK_DUPLICATED_MESSAGE;
+import static backend.academy.bot.constant.BotMessages.LINK_INCORRECT_MESSAGE;
+import static backend.academy.bot.constant.BotMessages.LINK_NOT_FOUND_MESSAGE;
+import static backend.academy.bot.constant.BotMessages.LIST_EMPTY_MESSAGE;
+import static backend.academy.bot.constant.BotMessages.LIST_MESSAGE;
+import static backend.academy.bot.constant.BotMessages.START_MESSAGE;
+import static backend.academy.bot.constant.BotMessages.UNKNOWN_COMMAND_MESSAGE;
+import static backend.academy.bot.constant.BotMessages.WAITING_FOR_FILTERS_MESSAGE;
+import static backend.academy.bot.constant.BotMessages.WAITING_FOR_LINK_MESSAGE;
+import static backend.academy.bot.constant.BotMessages.WAITING_FOR_TAGS_MESSAGE;
 
 @Component
 public class CommandHandler {
@@ -87,6 +91,7 @@ public class CommandHandler {
                 .collect(Collectors.joining("\n\n"));
             botService.sendMessage(chatId, LIST_MESSAGE + response);
         }
+        resetState(chatId);
     }
 
     public String formatLink(LinkResponse link) {
@@ -166,15 +171,15 @@ public class CommandHandler {
         try{
             scrapperClient.removeLink(chatId, req);
             botService.sendMessage(chatId, "Ссылка удалена: " + url);
-        } catch (DuplicateLinkException e) {
-            botService.sendMessage(chatId, "Ошибка: " + e.getMessage());
+        } catch (LinkNotFoundException e) {
+            botService.sendMessage(chatId, "Ошибка. " + LINK_NOT_FOUND_MESSAGE);
         }
         resetState(chatId);
     }
 
     private void startUntracking(long chatId) {
         botStates.put(chatId, BotState.WAITING_FOR_UNTRACK_LINK);
-        botService.sendMessage(chatId, UNTRACK_MESSAGE);
+        botService.sendMessage(chatId, "Введите ссылку для удаления");
     }
 
     private void resetState(Long chatId) {

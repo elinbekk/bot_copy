@@ -2,6 +2,8 @@ package backend.academy.bot;
 
 import backend.academy.bot.dto.LinkRequest;
 import backend.academy.bot.dto.LinkResponse;
+import backend.academy.bot.exception.DuplicateLinkException;
+import backend.academy.bot.exception.LinkNotFoundException;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -12,9 +14,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import static backend.academy.bot.BotMessages.LINK_DUPLICATED_MESSAGE;
+import static backend.academy.bot.constant.BotMessages.LINK_DUPLICATED_MESSAGE;
 
 @Component
 public class ScrapperClient {

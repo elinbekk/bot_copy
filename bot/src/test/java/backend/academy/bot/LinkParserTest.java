@@ -2,6 +2,8 @@ package backend.academy.bot;
 
 import backend.academy.bot.entity.LinkType;
 import java.util.stream.Stream;
+
+import backend.academy.bot.helper.LinkTypeDetector;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;

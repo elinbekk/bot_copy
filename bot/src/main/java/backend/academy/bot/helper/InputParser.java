@@ -1,4 +1,4 @@
-package backend.academy.bot;
+package backend.academy.bot.helper;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class InputParser {
-    protected Set<String> parseTags(String message) {
+    public Set<String> parseTags(String message) {
         Set<String> tags = new HashSet<>();
         if (!message.equals("-")) {
             tags = Arrays.stream(message.split("\\s+"))
@@ -20,7 +20,7 @@ public class InputParser {
         return tags;
     }
 
-    protected Map<String, String> parseFilters(String message) {
+    public Map<String, String> parseFilters(String message) {
         Map<String, String> filters = new HashMap<>();
 
         if (message == null || message.isBlank() || message.equals("-")) {
