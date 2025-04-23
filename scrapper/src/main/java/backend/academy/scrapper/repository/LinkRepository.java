@@ -2,6 +2,7 @@ package backend.academy.scrapper.repository;
 
 import backend.academy.scrapper.entity.Link;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public interface LinkRepository {
@@ -16,4 +17,5 @@ public interface LinkRepository {
     List<Link> getAllLinks();
 
     Set<Long> findAllChatIds();
+    Map<Link, Set<Long>> findAllLinksWithChatIds();
 }

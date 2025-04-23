@@ -7,6 +7,8 @@ app:
     access-token: ${SO_ACCESS_TOKEN}
     api-url: "https://api.stackexchange.com/2.3/"
   base-url: http://localhost:8080
+  scheduler:
+    interval-in-ms: 120000
 spring:
   application:
     name: Scrapper

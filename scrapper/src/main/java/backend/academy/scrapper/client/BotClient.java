@@ -1,15 +1,15 @@
 package backend.academy.scrapper.client;
 
 import backend.academy.scrapper.dto.LinkUpdate;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestClient;
 
-@Slf4j
 public class BotClient {
     private final RestClient restClient;
-
+    private final Logger log = LoggerFactory.getLogger(BotClient.class);
     public BotClient(RestClient restClient) {
         this.restClient = restClient;
     }

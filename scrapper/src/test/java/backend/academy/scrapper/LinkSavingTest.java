@@ -79,4 +79,16 @@ public class LinkSavingTest {
 
         assertTrue(linkRepository.linkIsExists(testChatId, duplicate));
     }
+
+    @Test
+    public void getLinkWithChatIdTest(){
+        long testChatId = 1;
+        linkRepository.saveLink(testChatId, link);
+        linkRepository.saveLink(testChatId + 1, link);
+        linkRepository.saveLink(testChatId + 2, link);
+
+        Map<Link, Set<Long>> expected = Map.of(link, Set.of(1L, 2L, 3L));
+        Map<Link, Set<Long>> result = linkRepository.findAllLinksWithChatIds();
+        assertEquals(expected, result);
+    }
 }

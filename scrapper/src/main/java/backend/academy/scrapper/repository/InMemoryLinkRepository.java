@@ -2,6 +2,8 @@ package backend.academy.scrapper.repository;
 
 import backend.academy.scrapper.entity.Link;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -53,5 +55,16 @@ public class InMemoryLinkRepository implements LinkRepository {
     @Override
     public Set<Long> findAllChatIds() {
         return store.keySet();
+    }
+
+    @Override
+    public Map<Link, Set<Long>> findAllLinksWithChatIds() {
+        Map<Link, Set<Long>> result = new HashMap<>();
+        store.forEach((chatId, links) -> {
+            for (Link link : links) {
+                result.computeIfAbsent(link, k -> new HashSet<>()).add(chatId);
+            }
+        });
+        return result;
     }
 }

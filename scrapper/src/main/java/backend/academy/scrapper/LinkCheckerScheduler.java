@@ -6,7 +6,9 @@ import backend.academy.scrapper.client.StackOverflowClient;
 import backend.academy.scrapper.dto.LinkUpdate;
 import backend.academy.scrapper.entity.Link;
 import backend.academy.scrapper.repository.LinkRepository;
-import java.util.List;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Map;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,18 +34,23 @@ public class LinkCheckerScheduler {
         this.linkRepository = linkRepository;
     }
 
-    @Scheduled(fixedRate = 2 * 60 * 1000)
+    @Scheduled(fixedRateString = "${app.scheduler.interval-in-ms}")
     public void checkAllLinks() {
         try {
-            Set<Long> allChatIDs = linkRepository.findAllChatIds();
-            for (Long chatID : allChatIDs) {
-                List<Link> resources = linkRepository.findAllByChatId(chatID);
-                for (Link resource : resources) {
-                    boolean isUpdated = isUpdated(resource);
-                    if (isUpdated) {
-                        LinkUpdate upd = new LinkUpdate(resource.getUrl(), "Обнаружены изменения", List.of(chatID));
-                        botClient.sendUpdateNotification(upd);
-                    }
+            Map<Link, Set<Long>> linksWithChats = linkRepository.findAllLinksWithChatIds();
+
+            for (Map.Entry<Link, Set<Long>> entry : linksWithChats.entrySet()) {
+                Link resource = entry.getKey();
+                Set<Long> chatIds = entry.getValue();
+
+                if (isUpdated(resource)) {
+                    LinkUpdate update = new LinkUpdate(
+                        resource.getUrl(),
+                        "Обнаружены изменения",
+                        new ArrayList<>(chatIds)
+                    );
+                    resource.setLastCheckedTime(String.valueOf(Instant.now()));
+                    botClient.sendUpdateNotification(update);
                 }
             }
         } catch (Exception e) {

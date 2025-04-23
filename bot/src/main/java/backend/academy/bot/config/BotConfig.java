@@ -15,7 +15,7 @@ public class BotConfig {
     }
 
     @Bean
-    public BotCommandsConfig ubotCommandsConfig(TelegramBot bot, BotConfigProperties properties) {
+    public BotCommandsConfig botCommandsConfig(TelegramBot bot, BotConfigProperties properties) {
         return new BotCommandsConfig(bot, properties);
     }
 
