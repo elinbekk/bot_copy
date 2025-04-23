@@ -1,6 +1,5 @@
 package backend.academy.bot;
 
-import static backend.academy.bot.constant.BotMessages.FORMAT_LIST_MESSAGE;
 import static backend.academy.bot.constant.BotMessages.HELP_MESSAGE;
 import static backend.academy.bot.constant.BotMessages.LINK_DUPLICATED_MESSAGE;
 import static backend.academy.bot.constant.BotMessages.LINK_INCORRECT_MESSAGE;
@@ -19,21 +18,16 @@ import backend.academy.bot.dto.LinkResponse;
 import backend.academy.bot.exception.DuplicateLinkException;
 import backend.academy.bot.exception.LinkNotFoundException;
 import backend.academy.bot.helper.InputParser;
+import backend.academy.bot.helper.LinkFormatter;
 import backend.academy.bot.helper.LinkTypeDetector;
 import backend.academy.bot.service.BotService;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -45,6 +39,7 @@ public class CommandHandler {
     private final ScrapperClient scrapperClient;
     private final InputParser inputParser;
     private final LinkTypeDetector linkTypeDetector;
+    private final LinkFormatter linkFormatter;
     private final Map<Long, BotState> botStates = new ConcurrentHashMap<>();
     private final Map<Long, SessionData> sessions = new ConcurrentHashMap<>();
 
@@ -52,11 +47,13 @@ public class CommandHandler {
             BotService botService,
             ScrapperClient scrapperClient,
             InputParser inputParser,
-            LinkTypeDetector linkTypeDetector) {
+            LinkTypeDetector linkTypeDetector,
+            LinkFormatter linkFormatter) {
         this.botService = botService;
         this.scrapperClient = scrapperClient;
         this.inputParser = inputParser;
         this.linkTypeDetector = linkTypeDetector;
+        this.linkFormatter = linkFormatter;
     }
 
     public void handleState(long chatId, String message) {
@@ -93,30 +90,10 @@ public class CommandHandler {
         if (links.isEmpty()) {
             botService.sendMessage(chatId, LIST_EMPTY_MESSAGE);
         } else {
-            String response = links.stream().map(this::formatLink).collect(Collectors.joining("\n\n"));
+            String response = linkFormatter.getFormattedLinksList(links);
             botService.sendMessage(chatId, LIST_MESSAGE + response);
         }
         resetState(chatId);
-    }
-
-    public String formatLink(LinkResponse link) {
-        String filtersStr = link.getFilters().entrySet().stream()
-                .map(entry -> entry.getKey() + ": " + entry.getValue())
-                .collect(Collectors.joining(", "));
-
-        String formattedTime = getFormattedTime(link);
-
-        return String.format(
-                FORMAT_LIST_MESSAGE,
-                link.getLink(),
-                link.getTags().isEmpty() ? "нет" : String.join(", ", link.getTags()),
-                link.getFilters().isEmpty() ? "нет" : filtersStr,
-                formattedTime);
-    }
-
-    private @NotNull String getFormattedTime(LinkResponse link) {
-        ZonedDateTime zonedDateTime = Instant.parse(link.getLastCheckedTime()).atZone(ZoneId.systemDefault());
-        return DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss z").format(zonedDateTime);
     }
 
     private void startTracking(long chatId) {

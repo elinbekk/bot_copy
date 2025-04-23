@@ -1,24 +1,24 @@
 package backend.academy.bot;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.contains;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-
 import backend.academy.bot.dto.LinkResponse;
 import backend.academy.bot.helper.InputParser;
+import backend.academy.bot.helper.LinkFormatter;
 import backend.academy.bot.helper.LinkTypeDetector;
 import backend.academy.bot.service.BotService;
 import java.util.Map;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.contains;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 public class CommandHandlingTest {
     private static BotService botService;
     private static CommandHandler commandHandler;
-
+    LinkFormatter linkFormatter;
     private static final long testChatId = 123L;
 
     @BeforeEach
@@ -27,8 +27,9 @@ public class CommandHandlingTest {
         ScrapperClient scrapperClient = mock(ScrapperClient.class);
         LinkTypeDetector resourceTypeDetector = new LinkTypeDetector();
         InputParser inputParser = new InputParser();
+        linkFormatter = new LinkFormatter();
 
-        commandHandler = new CommandHandler(botService, scrapperClient, inputParser, resourceTypeDetector);
+        commandHandler = new CommandHandler(botService, scrapperClient, inputParser, resourceTypeDetector, linkFormatter);
     }
 
     @Test
@@ -58,7 +59,7 @@ public class CommandHandlingTest {
         LinkResponse resource =
                 new LinkResponse("https://example.com", Set.of("tag"), Map.of("key", "value"), "2023-01-01T00:00:00Z");
 
-        String result = commandHandler.formatLink(resource);
+        String result = linkFormatter.formatLink(resource);
 
         assertTrue(result.contains("example.com"));
         assertTrue(result.contains("tag"));
