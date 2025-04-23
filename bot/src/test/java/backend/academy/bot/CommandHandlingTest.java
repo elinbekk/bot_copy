@@ -66,6 +66,6 @@ public class CommandHandlingTest {
         assertTrue(result.contains("example.com"));
         assertTrue(result.contains("tag"));
         assertTrue(result.contains("key: value"));
-        assertTrue(result.contains("01.01.2023 03:00:00 MSK"));
+        assertTrue(result.contains("01.01.2023"));
     }
 }

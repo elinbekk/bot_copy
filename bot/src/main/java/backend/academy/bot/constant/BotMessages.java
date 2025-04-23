@@ -22,7 +22,7 @@ public class BotMessages {
     public static final String TRACK_MESSAGE = "Ссылка успешно добавлена!";
     public static final String UNTRACK_MESSAGE = "Ссылка успешно удалена!";
     public static final String LIST_MESSAGE = "Ваши отслеживаемые ссылки:\n";
-    public static final String FORMAT_LIST_MESSAGE = "• %s%nТеги: %s%nФильтры: %s%nПоследнее время проверки:%s";
+    public static final String FORMAT_LIST_MESSAGE = "• %s%nТеги: %s%nФильтры: %s%nПоследнее время проверки: %s";
     public static final String LIST_EMPTY_MESSAGE = "Список отслеживаемых ссылок пуст";
     public static final String LINK_DUPLICATED_MESSAGE = "Эта ссылка уже отслеживается";
     public static final String LINK_NOT_FOUND_MESSAGE = "Этой ссылки нет в вашем списке отслеживания";

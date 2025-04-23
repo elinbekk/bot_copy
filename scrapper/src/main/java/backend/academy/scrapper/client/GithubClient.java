@@ -48,18 +48,13 @@ public class GithubClient implements UpdateChecker {
 
             HttpRequest request = buildRequest(uri);
             HttpResponse<String> response = sendRequest(request);
-
-            //            log.info("Response status [chatId={}, status={}]",
-            //                link.getChatId(), response.statusCode());
-            //            log.info("Response body: {}", response.body());
+            log.info("Status Code: {}", response.statusCode());
 
             JsonNode json = objectMapper.readTree(response.body());
             Instant lastUpdate = parseUpdateTime(json, link.getLinkType());
 
             return lastUpdate.isAfter(Instant.parse(link.getLastCheckedTime()));
         } catch (IOException | InterruptedException e) {
-            /*log.error("Ошибка при проверке обновлений [chatId={}, link={}]",
-            link.getChatId(), link.getLink(), e);*/
             return false;
         }
     }
@@ -72,7 +67,7 @@ public class GithubClient implements UpdateChecker {
                     default -> throw new IllegalArgumentException("Неподдерживаемый тип ссылки");
                 };
 
-        log.debug("Дата обновления из API: {}", dateString);
+        log.info("Дата обновления из API: {}", dateString);
         return Instant.parse(dateString);
     }
 
