@@ -1,14 +1,19 @@
 package backend.academy.bot.config;
 
 import com.pengrad.telegrambot.TelegramBot;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestTemplate;
 
 @Configuration
 @EnableConfigurationProperties(BotConfigProperties.class)
 public class BotConfig {
+    @Value("${app.base-url:http://localhost:8081}") String baseUrl;
     @Bean
     public TelegramBot telegramBot(BotConfigProperties botConfigProperties) {
         return new TelegramBot(botConfigProperties.telegramToken());
@@ -22,5 +27,13 @@ public class BotConfig {
     @Bean
     public RestTemplate restTemplate() {
         return new RestTemplate();
+    }
+
+    @Bean
+    public RestClient restClient() {
+        return RestClient.builder()
+            .baseUrl(baseUrl)
+            .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            .build();
     }
 }
