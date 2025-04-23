@@ -1,4 +1,4 @@
-package backend.academy.bot.entity;
+package backend.academy.bot;
 
 import java.util.regex.Pattern;
 

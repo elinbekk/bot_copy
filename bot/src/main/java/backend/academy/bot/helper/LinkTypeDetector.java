@@ -1,6 +1,6 @@
 package backend.academy.bot.helper;
 
-import backend.academy.bot.entity.LinkType;
+import backend.academy.bot.LinkType;
 import org.springframework.stereotype.Component;
 
 @Component

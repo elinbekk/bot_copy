@@ -8,12 +8,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.client.RestClient;
-import org.springframework.web.client.RestTemplate;
 
 @Configuration
 @EnableConfigurationProperties(BotConfigProperties.class)
 public class BotConfig {
-    @Value("${app.base-url:http://localhost:8081}") String baseUrl;
+    @Value("${app.base-url:http://localhost:8081}")
+    private String baseUrl;
     @Bean
     public TelegramBot telegramBot(BotConfigProperties botConfigProperties) {
         return new TelegramBot(botConfigProperties.telegramToken());
@@ -22,11 +22,6 @@ public class BotConfig {
     @Bean
     public BotCommandsConfig botCommandsConfig(TelegramBot bot, BotConfigProperties properties) {
         return new BotCommandsConfig(bot, properties);
-    }
-
-    @Bean
-    public RestTemplate restTemplate() {
-        return new RestTemplate();
     }
 
     @Bean

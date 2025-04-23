@@ -2,7 +2,6 @@ package backend.academy.bot;
 
 import static org.junit.Assert.assertThrows;
 
-import backend.academy.bot.entity.LinkType;
 import backend.academy.bot.helper.LinkTypeDetector;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Assertions;

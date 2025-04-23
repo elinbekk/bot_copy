@@ -16,7 +16,6 @@ import static backend.academy.bot.constant.BotMessages.WAITING_FOR_TAGS_MESSAGE;
 import backend.academy.bot.constant.BotState;
 import backend.academy.bot.dto.LinkRequest;
 import backend.academy.bot.dto.LinkResponse;
-import backend.academy.bot.entity.LinkType;
 import backend.academy.bot.exception.DuplicateLinkException;
 import backend.academy.bot.exception.LinkNotFoundException;
 import backend.academy.bot.helper.InputParser;
@@ -77,7 +76,7 @@ public class CommandHandler {
     }
 
     private void handleInitial(long chatId, String message) {
-        //        scrapperClient.registerChat(chatId);
+        scrapperClient.registerChat(chatId);
         switch (message) {
             case "/start" -> botService.sendMessage(chatId, START_MESSAGE);
             case "/help" -> botService.sendMessage(chatId, HELP_MESSAGE);

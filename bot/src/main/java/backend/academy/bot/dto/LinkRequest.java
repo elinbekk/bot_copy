@@ -1,6 +1,6 @@
 package backend.academy.bot.dto;
 
-import backend.academy.bot.entity.LinkType;
+import backend.academy.bot.LinkType;
 import java.util.Map;
 import java.util.Set;
 

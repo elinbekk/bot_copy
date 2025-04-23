@@ -58,7 +58,7 @@ public class LinkCheckerScheduler {
         }
     }
 
-    private boolean isUpdated(Link resource) {
+    protected boolean isUpdated(Link resource) {
         return switch (resource.getLinkType()) {
             case GITHUB_REPO, GITHUB_ISSUE, GITHUB_PR -> githubClient.hasUpdates(resource);
             case STACKOVERFLOW -> stackoverflowClient.hasUpdates(resource);
