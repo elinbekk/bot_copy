@@ -18,7 +18,7 @@ public class LinkSavingTest {
     private LinkRepository linkRepository;
     private static final long testChatId = 123L;
     private static final long testLinkId = 1234L;
-    Link link;
+    private Link link;
 
     @Before
     public void setUp() {
@@ -81,7 +81,7 @@ public class LinkSavingTest {
     }
 
     @Test
-    public void getLinkWithChatIdTest(){
+    public void getLinkWithChatIdTest() {
         long testChatId = 1;
         linkRepository.saveLink(testChatId, link);
         linkRepository.saveLink(testChatId + 1, link);

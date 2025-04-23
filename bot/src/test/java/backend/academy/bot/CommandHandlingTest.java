@@ -1,5 +1,11 @@
 package backend.academy.bot;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.contains;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+
 import backend.academy.bot.dto.LinkResponse;
 import backend.academy.bot.helper.InputParser;
 import backend.academy.bot.helper.LinkFormatter;
@@ -9,11 +15,6 @@ import java.util.Map;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.contains;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
 public class CommandHandlingTest {
     private static BotService botService;
@@ -29,7 +30,8 @@ public class CommandHandlingTest {
         InputParser inputParser = new InputParser();
         linkFormatter = new LinkFormatter();
 
-        commandHandler = new CommandHandler(botService, scrapperClient, inputParser, resourceTypeDetector, linkFormatter);
+        commandHandler =
+                new CommandHandler(botService, scrapperClient, inputParser, resourceTypeDetector, linkFormatter);
     }
 
     @Test

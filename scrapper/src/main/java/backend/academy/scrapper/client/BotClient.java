@@ -10,6 +10,7 @@ import org.springframework.web.client.RestClient;
 public class BotClient {
     private final RestClient restClient;
     private final Logger log = LoggerFactory.getLogger(BotClient.class);
+
     public BotClient(RestClient restClient) {
         this.restClient = restClient;
     }

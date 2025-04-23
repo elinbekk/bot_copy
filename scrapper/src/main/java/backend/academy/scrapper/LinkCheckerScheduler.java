@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class LinkCheckerScheduler {
-    private static final Logger log = LoggerFactory.getLogger(LinkCheckerScheduler.class);
+    private static final Logger logger = LoggerFactory.getLogger(LinkCheckerScheduler.class);
     private final BotClient botClient;
     private final GithubClient githubClient;
     private final StackOverflowClient stackoverflowClient;
@@ -38,23 +38,22 @@ public class LinkCheckerScheduler {
     public void checkAllLinks() {
         try {
             Map<Link, Set<Long>> linksWithChats = linkRepository.findAllLinksWithChatIds();
-
+            logger.info("Найдено {} ссылок для проверки", linksWithChats.size());
             for (Map.Entry<Link, Set<Long>> entry : linksWithChats.entrySet()) {
                 Link resource = entry.getKey();
                 Set<Long> chatIds = entry.getValue();
-
+                logger.debug("Проверяемая ссылка: {} (Тип: {})", resource.getUrl(), resource.getLinkType());
                 if (isUpdated(resource)) {
-                    LinkUpdate update = new LinkUpdate(
-                        resource.getUrl(),
-                        "Обнаружены изменения",
-                        new ArrayList<>(chatIds)
-                    );
+                    logger.info("Обновления обнаружены для: {}", resource.getUrl());
+                    LinkUpdate update =
+                            new LinkUpdate(resource.getUrl(), "Обнаружены изменения", new ArrayList<>(chatIds));
                     resource.setLastCheckedTime(String.valueOf(Instant.now()));
+                    logger.debug("Отправление обновлений по {} в {} чатов", resource.getUrl(), chatIds.size());
                     botClient.sendUpdateNotification(update);
                 }
             }
         } catch (Exception e) {
-            log.error("Ошибка планировщика:", e);
+            logger.error("Ошибка планировщика:", e);
         }
     }
 

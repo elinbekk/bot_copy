@@ -14,6 +14,7 @@ import org.springframework.web.client.RestClient;
 public class BotConfig {
     @Value("${app.base-url:http://localhost:8081}")
     private String baseUrl;
+
     @Bean
     public TelegramBot telegramBot(BotConfigProperties botConfigProperties) {
         return new TelegramBot(botConfigProperties.telegramToken());
@@ -27,8 +28,8 @@ public class BotConfig {
     @Bean
     public RestClient restClient() {
         return RestClient.builder()
-            .baseUrl(baseUrl)
-            .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .build();
+                .baseUrl(baseUrl)
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .build();
     }
 }
