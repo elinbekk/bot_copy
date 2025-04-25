@@ -12,11 +12,15 @@ import backend.academy.scrapper.config.GithubProperties;
 import backend.academy.scrapper.entity.Link;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.http.HttpClient;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-class GithubClientTest extends WiremockIntegrationTest {
+public class GithubClientTest extends WiremockIntegrationTest {
     private GithubClient client;
     private Link link;
 
@@ -37,28 +41,21 @@ class GithubClientTest extends WiremockIntegrationTest {
         return resource;
     }
 
-    @Test
-    public void hasUpdatesWhenResourceIsUpdatedTest() {
+    @ParameterizedTest
+    @MethodSource("provideTestCases")
+    public void hasUpdatesTest(String apiResponseDate, boolean expectedResult) {
         wireMock.stubFor(get(urlPathEqualTo("/repos/owner/repo"))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
-                        .withBody("{\"pushed_at\":\"2023-05-02T10:15:30Z\"}")));
+                        .withBody(String.format("{\"pushed_at\":\"%s\"}", apiResponseDate))));
 
-        boolean updated = client.hasUpdates(link);
-        Assertions.assertTrue(updated);
+        boolean actualResult = client.hasUpdates(link);
+        Assertions.assertEquals(expectedResult, actualResult);
     }
 
-    @Test
-    public void hasNotUpdatesWhenResourceIsNotUpdTest() {
-        wireMock.stubFor(get(urlPathEqualTo("/repos/owner/repo"))
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withHeader("Content-Type", "application/json")
-                        .withBody("{\"pushed_at\":\"2020-05-02T10:15:30Z\"}")));
-
-        boolean updated = client.hasUpdates(link);
-        Assertions.assertFalse(updated);
+    private static Stream<Arguments> provideTestCases() {
+        return Stream.of(Arguments.of("2024-01-01T00:00:00Z", true), Arguments.of("2022-12-31T23:59:59Z", false));
     }
 
     @Test
