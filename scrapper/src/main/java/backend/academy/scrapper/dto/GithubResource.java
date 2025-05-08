@@ -24,4 +24,6 @@ public abstract class GithubResource {
     public String getRepo() {
         return repo;
     }
+
+    public abstract String getApiPath();
 }

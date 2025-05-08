@@ -1,10 +1,9 @@
 package backend.academy.scrapper.client;
 
-import static backend.academy.scrapper.entity.LinkType.GITHUB_ISSUE;
-import static backend.academy.scrapper.entity.LinkType.GITHUB_PR;
-import static backend.academy.scrapper.entity.LinkType.GITHUB_REPO;
-
 import backend.academy.scrapper.config.GithubProperties;
+import backend.academy.scrapper.dto.GithubIssue;
+import backend.academy.scrapper.dto.GithubPR;
+import backend.academy.scrapper.dto.GithubRepo;
 import backend.academy.scrapper.dto.GithubResource;
 import backend.academy.scrapper.entity.Link;
 import backend.academy.scrapper.entity.LinkType;
@@ -84,32 +83,46 @@ public class GithubClient implements UpdateChecker {
     }
 
     private String buildBaseApiPath(GithubResource resource) {
-        return switch (resource.getType()) {
-            case GITHUB_REPO -> "/repos/%s/%s".formatted(resource.getOwner(), resource.getRepo());
-            case GITHUB_ISSUE -> "/repos/%s/%s/issues/%s"
-                    .formatted(resource.getOwner(), resource.getRepo(), resource.getNumber());
-            case GITHUB_PR -> "/repos/%s/%s/pulls/%s"
-                    .formatted(resource.getOwner(), resource.getRepo(), resource.getNumber());
-            case STACKOVERFLOW -> null;
-        };
+        switch (resource.getType()) {
+            case GITHUB_REPO -> {
+                GithubRepo repo = (GithubRepo) resource;
+                return repo.getApiPath();
+            }
+            case GITHUB_ISSUE -> {
+                GithubIssue issue = (GithubIssue) resource;
+                return issue.getApiPath();
+            }
+            case GITHUB_PR -> {
+                GithubPR pr = (GithubPR) resource;
+                return pr.getApiPath();
+            }
+            case STACKOVERFLOW -> {
+                return null;
+            }
+        }
+        return "";
     }
 
     private GithubResource parseGitHubUrl(String url) {
-        Pattern repoPattern = Pattern.compile("https?://github.com/([^/]+)/([^/]+)/?");
-        Pattern issuePattern = Pattern.compile("https?://github.com/([^/]+)/([^/]+)/issues/(\\d+)");
-        Pattern prPattern = Pattern.compile("https?://github.com/([^/]+)/([^/]+)/pull/(\\d+)");
+        final String repoRegex = "https?://github.com/([^/]+)/([^/]+)/?";
+        final String issueRegex = "https?://github.com/([^/]+)/([^/]+)/issues/(\\d+)";
+        final String prRegex = "https?://github.com/([^/]+)/([^/]+)/pull/(\\d+)";
+
+        Pattern repoPattern = Pattern.compile(repoRegex);
+        Pattern issuePattern = Pattern.compile(issueRegex);
+        Pattern prPattern = Pattern.compile(prRegex);
 
         Matcher issueMatcher = issuePattern.matcher(url);
         Matcher prMatcher = prPattern.matcher(url);
         Matcher repoMatcher = repoPattern.matcher(url);
 
         if (issueMatcher.find()) {
-            return new GithubResource(
-                    GITHUB_ISSUE, issueMatcher.group(1), issueMatcher.group(2), issueMatcher.group(3));
+            return new GithubIssue(
+                issueMatcher.group(1), issueMatcher.group(2), Integer.parseInt(issueMatcher.group(3)));
         } else if (prMatcher.find()) {
-            return new GithubResource(GITHUB_PR, prMatcher.group(1), prMatcher.group(2), prMatcher.group(3));
+            return new GithubPR(prMatcher.group(1), prMatcher.group(2), Integer.parseInt(prMatcher.group(3)));
         } else if (repoMatcher.find()) {
-            return new GithubResource(GITHUB_REPO, repoMatcher.group(1), repoMatcher.group(2), null);
+            return new GithubRepo(repoMatcher.group(1), repoMatcher.group(2));
         }
         throw new IllegalArgumentException("Неподдерживаемый Github URL");
     }

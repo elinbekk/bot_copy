@@ -13,4 +13,10 @@ public class GithubIssue extends GithubResource {
     public int getIssueNumber() {
         return issueNumber;
     }
+
+    @Override
+    public String getApiPath() {
+        return "/repos/%s/%s/issues/%d"
+            .formatted(getOwner(), getRepo(), getIssueNumber());
+    }
 }
