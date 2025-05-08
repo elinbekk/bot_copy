@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test;
 public class CommandHandlingTest {
     private static BotService botService;
     private static CommandHandler commandHandler;
-    LinkFormatter linkFormatter;
+    private LinkFormatter linkFormatter;
     private static final long testChatId = 123L;
 
     @BeforeEach
@@ -27,11 +27,10 @@ public class CommandHandlingTest {
         botService = mock(BotService.class);
         ScrapperClient scrapperClient = mock(ScrapperClient.class);
         LinkTypeDetector resourceTypeDetector = new LinkTypeDetector();
-        InputParser inputParser = new InputParser();
         linkFormatter = new LinkFormatter();
 
         commandHandler =
-                new CommandHandler(botService, scrapperClient, inputParser, resourceTypeDetector, linkFormatter);
+                new CommandHandler(botService, scrapperClient, resourceTypeDetector, linkFormatter);
     }
 
     @Test

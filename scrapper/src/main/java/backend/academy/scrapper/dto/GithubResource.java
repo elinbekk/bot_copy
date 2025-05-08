@@ -2,17 +2,15 @@ package backend.academy.scrapper.dto;
 
 import backend.academy.scrapper.entity.LinkType;
 
-public class GithubResource {
+public abstract class GithubResource {
     private final LinkType type;
     private final String owner;
     private final String repo;
-    private final String number; // для issue/PR
 
-    public GithubResource(LinkType type, String owner, String repo, String number) {
+    public GithubResource(LinkType type, String owner, String repo) {
         this.type = type;
         this.owner = owner;
         this.repo = repo;
-        this.number = number;
     }
 
     public LinkType getType() {
@@ -25,9 +23,5 @@ public class GithubResource {
 
     public String getRepo() {
         return repo;
-    }
-
-    public String getNumber() {
-        return number;
     }
 }

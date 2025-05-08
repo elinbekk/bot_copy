@@ -62,9 +62,6 @@ public class StackOverflowClient implements UpdateChecker {
             }
             throw new StackOverflowException("Не удалось выполнить HTTP‑запрос к " + uri, e);
         }
-
-        //        log.trace("Чат:{} HTTP-статус {} / тело ответа: {}", resource.getChatId(), response.statusCode(),
-        // response.body());
         checkForErrors(response);
         return parseResponse(response.body());
     }

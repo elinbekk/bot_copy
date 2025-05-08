@@ -37,7 +37,6 @@ public class CommandHandler {
     private final Logger log = LoggerFactory.getLogger(CommandHandler.class);
     private final BotService botService;
     private final ScrapperClient scrapperClient;
-    private final InputParser inputParser;
     private final LinkTypeDetector linkTypeDetector;
     private final LinkFormatter linkFormatter;
     private final Map<Long, BotState> botStates = new ConcurrentHashMap<>();
@@ -46,12 +45,10 @@ public class CommandHandler {
     public CommandHandler(
             BotService botService,
             ScrapperClient scrapperClient,
-            InputParser inputParser,
             LinkTypeDetector linkTypeDetector,
             LinkFormatter linkFormatter) {
         this.botService = botService;
         this.scrapperClient = scrapperClient;
-        this.inputParser = inputParser;
         this.linkTypeDetector = linkTypeDetector;
         this.linkFormatter = linkFormatter;
     }
@@ -124,14 +121,14 @@ public class CommandHandler {
     }
 
     private void handleTags(long chatId, String message) {
-        Set<String> tags = inputParser.parseTags(message);
+        Set<String> tags = InputParser.parseTags(message);
         sessions.get(chatId).setTags(tags);
         botStates.put(chatId, BotState.WAITING_FOR_FILTERS);
         botService.sendMessage(chatId, WAITING_FOR_FILTERS_MESSAGE);
     }
 
     private void handleFilters(long chatId, String input) {
-        Map<String, String> filters = inputParser.parseFilters(input);
+        Map<String, String> filters = InputParser.parseFilters(input);
         SessionData sd = sessions.get(chatId);
         sd.setFilters(filters);
         LinkRequest req = new LinkRequest(sd.getUrl(), sd.getLinkType(), sd.getTags(), sd.getFilters());
