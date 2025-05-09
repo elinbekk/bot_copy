@@ -18,7 +18,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -68,11 +67,11 @@ public class GithubClient implements UpdateChecker {
 
     private Instant parseUpdateTime(JsonNode json, LinkType linkType) {
         String dateString =
-                switch (linkType) {
-                    case GITHUB_REPO -> json.get("pushed_at").asText();
-                    case GITHUB_ISSUE, GITHUB_PR -> json.get("updated_at").asText();
-                    default -> throw new IllegalArgumentException("Неподдерживаемый тип ссылки");
-                };
+            switch (linkType) {
+                case GITHUB_REPO -> json.get("pushed_at").asText();
+                case GITHUB_ISSUE, GITHUB_PR -> json.get("updated_at").asText();
+                default -> throw new IllegalArgumentException("Неподдерживаемый тип ссылки");
+            };
 
         log.info("Дата обновления из API: {}", dateString);
         return Instant.parse(dateString);
@@ -133,12 +132,12 @@ public class GithubClient implements UpdateChecker {
 
     private HttpRequest buildRequest(URI uri) {
         return HttpRequest.newBuilder()
-                .uri(uri)
-                .header("Accept", "application/vnd.github.v3+json")
-                .header("Authorization", "token " + githubProperties.token())
-                .timeout(Duration.ofSeconds(10))
-                .GET()
-                .build();
+            .uri(uri)
+            .header("Accept", "application/vnd.github.v3+json")
+            .header("Authorization", "token " + githubProperties.token())
+            .timeout(Duration.ofSeconds(10))
+            .GET()
+            .build();
     }
 
     private HttpResponse<String> sendRequest(HttpRequest request) throws IOException, InterruptedException {

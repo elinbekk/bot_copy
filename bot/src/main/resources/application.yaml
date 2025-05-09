@@ -1,17 +1,18 @@
 app:
-  telegram-token: ${TELEGRAM_TOKEN} # env variable
-  commands:
-    - command: start
-      description: Начало работы
-    - command: track
-      description: Отслеживание ссылки
-    - command: untrack
-      description: Удаление ссылки
-    - command: list
-      description: Список ссылок
-    - command: help
-      description: Справка
-  base-url: http://localhost:8081
+  telegram:
+    telegram-token: ${TELEGRAM_TOKEN} # env variable
+    commands:
+      - command: start
+        description: Начало работы
+      - command: track
+        description: Отслеживание ссылки
+      - command: untrack
+        description: Удаление ссылки
+      - command: list
+        description: Список ссылок
+      - command: help
+        description: Справка
+    base-url: http://localhost:8081
 spring:
   application:
     name: Bot
@@ -21,6 +22,9 @@ spring:
     hibernate:
       ddl-auto: validate
     open-in-view: false
+
+  clock:
+    time-zone: Europe/Moscow
 
 server:
   port: 8080
