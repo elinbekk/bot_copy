@@ -53,11 +53,6 @@ public class InMemoryLinkRepository implements LinkRepository {
     }
 
     @Override
-    public Set<Long> findAllChatIds() {
-        return store.keySet();
-    }
-
-    @Override
     public Map<Link, Set<Long>> findAllLinksWithChatIds() {
         Map<Link, Set<Long>> result = new HashMap<>();
         store.forEach((chatId, links) -> {

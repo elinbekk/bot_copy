@@ -18,6 +18,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -26,6 +27,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Component
 public class GithubClient implements UpdateChecker {
     private static final Logger log = LoggerFactory.getLogger(GithubClient.class);
+    final String repoRegex = "https?://github.com/([^/]+)/([^/]+)/?";
+    final String issueRegex = "https?://github.com/([^/]+)/([^/]+)/issues/(\\d+)";
+    final String prRegex = "https?://github.com/([^/]+)/([^/]+)/pull/(\\d+)";
 
     private final GithubProperties githubProperties;
     private final HttpClient httpClient;
@@ -42,7 +46,7 @@ public class GithubClient implements UpdateChecker {
         try {
             log.info("Проверка обновлений: link={}", link.getUrl());
 
-            URI uri = buildUriWithFilters(link);
+            URI uri = getUri(link);
             log.info("URI запроса: {}", uri);
 
             HttpRequest request = buildRequest(uri);
@@ -56,6 +60,10 @@ public class GithubClient implements UpdateChecker {
         } catch (IOException | InterruptedException e) {
             return false;
         }
+    }
+
+    private URI getUri(Link link) {
+        return buildUriWithFilters(link);
     }
 
     private Instant parseUpdateTime(JsonNode json, LinkType linkType) {
@@ -104,10 +112,6 @@ public class GithubClient implements UpdateChecker {
     }
 
     private GithubResource parseGitHubUrl(String url) {
-        final String repoRegex = "https?://github.com/([^/]+)/([^/]+)/?";
-        final String issueRegex = "https?://github.com/([^/]+)/([^/]+)/issues/(\\d+)";
-        final String prRegex = "https?://github.com/([^/]+)/([^/]+)/pull/(\\d+)";
-
         Pattern repoPattern = Pattern.compile(repoRegex);
         Pattern issuePattern = Pattern.compile(issueRegex);
         Pattern prPattern = Pattern.compile(prRegex);

@@ -16,7 +16,5 @@ public interface LinkRepository {
 
     List<Link> getAllLinks();
 
-    Set<Long> findAllChatIds();
-
     Map<Link, Set<Long>> findAllLinksWithChatIds();
 }
