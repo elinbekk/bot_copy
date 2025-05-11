@@ -1,5 +1,6 @@
 package backend.academy.scrapper;
 
+import static backend.academy.scrapper.TestUtils.loadFixture;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
@@ -29,16 +30,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 public class StackOverflowClientTest extends WiremockIntegrationTest {
     private StackOverflowClient client;
     private Link resource;
-    private final String jsonDataWithOneItem =
-            """
-        {
-            "items": [
-                {
-                    "last_activity_date": 1672531222,
-                    "title": "Test Question"
-                }
-            ]
-        }""";
 
     @BeforeEach
     void setup() {
@@ -69,33 +60,27 @@ public class StackOverflowClientTest extends WiremockIntegrationTest {
 
     @Test
     void parseResponseItemTest() {
-        String jsonData =
-                """
-            {
-                "items": [
-                    {
-                        "last_activity_date": 1672531222,
-                        "title": "Test1"
-                    },
-                    {
-                        "last_activity_date": 1672531222,
-                        "title": "Test2"
-                    }
-                ]
-            }""";
+        String jsonData;
+        try {
+            jsonData = loadFixture("fixtures/so_multiple_items.json");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
         StackOverflowQuestion result = client.parseResponse(jsonData);
         Assertions.assertEquals("Test1", result.getTitle());
     }
 
     @Test
-    void isUpdated_NewActivity_ReturnsTrue() {
+    void isUpdated_NewActivity_ReturnsTrue() throws Exception {
+        String jsonDataWithOneItem = loadFixture("fixtures/single_so_item.json");
         StackOverflowQuestion question = client.parseResponse(jsonDataWithOneItem);
         boolean result = client.isUpdated(question, Instant.parse("2023-01-01T00:00:00Z"));
         Assertions.assertTrue(result);
     }
 
     @Test
-    void isUpdated_OldActivity_ReturnsFalse() {
+    void isUpdated_OldActivity_ReturnsFalse() throws Exception {
+        String jsonDataWithOneItem = loadFixture("fixtures/single_so_item.json");
         StackOverflowQuestion question = client.parseResponse(jsonDataWithOneItem);
         boolean result = client.isUpdated(question, Instant.parse("2024-01-01T00:00:00Z"));
         Assertions.assertFalse(result);
