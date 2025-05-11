@@ -7,7 +7,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import backend.academy.bot.dto.LinkResponse;
-import backend.academy.bot.helper.InputParser;
 import backend.academy.bot.helper.LinkFormatter;
 import backend.academy.bot.helper.LinkTypeDetector;
 import backend.academy.bot.service.BotService;
@@ -29,8 +28,7 @@ public class CommandHandlingTest {
         LinkTypeDetector resourceTypeDetector = new LinkTypeDetector();
         linkFormatter = new LinkFormatter();
 
-        commandHandler =
-                new CommandHandler(botService, scrapperClient, resourceTypeDetector, linkFormatter);
+        commandHandler = new CommandHandler(botService, scrapperClient, resourceTypeDetector, linkFormatter);
     }
 
     @Test

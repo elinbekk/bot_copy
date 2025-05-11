@@ -16,7 +16,6 @@ public class GithubPR extends GithubResource {
 
     @Override
     public String getApiPath() {
-        return "/repos/%s/%s/pulls/%s"
-            .formatted(getOwner(), getRepo(), getPrNumber());
+        return "/repos/%s/%s/pulls/%s".formatted(getOwner(), getRepo(), getPrNumber());
     }
 }

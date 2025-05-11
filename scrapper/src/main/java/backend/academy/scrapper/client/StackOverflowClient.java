@@ -1,5 +1,7 @@
 package backend.academy.scrapper.client;
 
+import static backend.academy.scrapper.ScrapperConstants.SO_REGEX;
+
 import backend.academy.scrapper.config.StackoverflowProperties;
 import backend.academy.scrapper.dto.StackOverflowQuestion;
 import backend.academy.scrapper.dto.StackOverflowResponse;
@@ -7,30 +9,27 @@ import backend.academy.scrapper.entity.Link;
 import backend.academy.scrapper.exception.StackOverflowException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.IOException;
 import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriComponentsBuilder;
 
 @Component
 public class StackOverflowClient implements UpdateChecker {
     private static final Logger log = LoggerFactory.getLogger(StackOverflowClient.class);
-    private final HttpClient httpClient;
+    private final RestClient restClient;
     private final ObjectMapper objectMapper;
     private final StackoverflowProperties stackoverflowProperties;
 
     public StackOverflowClient(
-            HttpClient httpClient, ObjectMapper objectMapper, StackoverflowProperties stackoverflowProperties) {
-        this.httpClient = httpClient;
+            RestClient restClient, ObjectMapper objectMapper, StackoverflowProperties stackoverflowProperties) {
+        this.restClient = restClient;
         this.objectMapper = objectMapper;
         this.stackoverflowProperties = stackoverflowProperties;
     }
@@ -48,22 +47,25 @@ public class StackOverflowClient implements UpdateChecker {
     }
 
     private StackOverflowQuestion getQuestion(Link resource) {
-        URI uri = buildUrlWithFilters(resource);
-        log.debug("Сформированный URL: {}", uri);
+        StackOverflowResponse stackOverflowResponse = restClient
+                .get()
+                .uri(buildUrlWithFilters(resource))
+                .retrieve()
+                .onStatus(HttpStatusCode::is4xxClientError, (request, response) -> {
+                    String body = new String(response.getBody().readAllBytes());
+                    throw new StackOverflowException("Клиентская ошибка: " + response.getStatusCode() + " " + body);
+                })
+                .onStatus(HttpStatusCode::is5xxServerError, (request, response) -> {
+                    throw new StackOverflowException("Серверная ошибка: " + response.getStatusCode());
+                })
+                .body(StackOverflowResponse.class);
 
-        HttpRequest request = buildRequest(String.valueOf(uri));
-
-        HttpResponse<String> response;
-        try {
-            response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-        } catch (IOException | InterruptedException e) {
-            if (e instanceof InterruptedException) {
-                Thread.currentThread().interrupt();
-            }
-            throw new StackOverflowException("Не удалось выполнить HTTP‑запрос к " + uri, e);
+        if (stackOverflowResponse == null
+                || stackOverflowResponse.getItems() == null
+                || stackOverflowResponse.getItems().isEmpty()) {
+            throw new StackOverflowException("Пустой ответ от Stackoverflow");
         }
-        checkForErrors(response);
-        return parseResponse(response.body());
+        return stackOverflowResponse.getItems().getFirst();
     }
 
     private URI buildUrlWithFilters(Link resource) {
@@ -93,32 +95,13 @@ public class StackOverflowClient implements UpdateChecker {
     }
 
     public int extractQuestionId(String url) {
-        Pattern pattern = Pattern.compile("https?://stackoverflow.com/questions/(\\d+)");
+        Pattern pattern = Pattern.compile(SO_REGEX);
         Matcher matcher = pattern.matcher(url);
 
         if (!matcher.find()) {
             throw new IllegalArgumentException("Неправильный StackOverflow URL: " + url);
         }
         return Integer.parseInt(matcher.group(1));
-    }
-
-    private HttpRequest buildRequest(String url) {
-        return HttpRequest.newBuilder()
-                .uri(URI.create(url))
-                .timeout(Duration.ofSeconds(15))
-                .header("Accept", "application/json")
-                .GET()
-                .build();
-    }
-
-    private void checkForErrors(HttpResponse<String> response) {
-        int statusCode = response.statusCode();
-
-        if (statusCode >= 400 && statusCode < 500) {
-            throw new StackOverflowException("Ошибка клиента: " + response.body());
-        } else if (statusCode >= 500) {
-            throw new StackOverflowException("Ошибка сервера: " + response.body());
-        }
     }
 
     public StackOverflowQuestion parseResponse(String body) {

@@ -15,7 +15,6 @@ import backend.academy.scrapper.dto.StackOverflowQuestion;
 import backend.academy.scrapper.entity.Link;
 import backend.academy.scrapper.exception.StackOverflowException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.net.http.HttpClient;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
@@ -26,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.web.client.RestClient;
 
 public class StackOverflowClientTest extends WiremockIntegrationTest {
     private StackOverflowClient client;
@@ -36,7 +36,8 @@ public class StackOverflowClientTest extends WiremockIntegrationTest {
         String baseUrl = wireMock.baseUrl() + "/";
         StackoverflowProperties soProperties = new StackoverflowProperties("test-key", "test-token", baseUrl);
 
-        client = new StackOverflowClient(HttpClient.newHttpClient(), new ObjectMapper(), soProperties);
+        RestClient restClient = RestClient.builder().baseUrl(baseUrl).build();
+        client = new StackOverflowClient(restClient, new ObjectMapper(), soProperties);
 
         resource = new Link();
         resource.setUrl("https://stackoverflow.com/questions/12345/some-title");
@@ -89,18 +90,17 @@ public class StackOverflowClientTest extends WiremockIntegrationTest {
     @Test
     void getQuestion_TimeoutThrowsExceptionTest() {
         wireMock.stubFor(get(anyUrl()).willReturn(ok().withFixedDelay(20000)));
-        StackOverflowException ex = assertThrows(StackOverflowException.class, () -> client.hasUpdates(resource));
-        Assertions.assertTrue(ex.getMessage().contains("Не удалось выполнить HTTP‑запрос к"));
+        assertThrows(StackOverflowException.class, () -> client.hasUpdates(resource));
     }
 
     @ParameterizedTest
     @MethodSource("provideTestCases")
-    void parameterizedExceptionTest(int statusCode, String responseBody, String expectedMessagePart) {
+    void parameterizedExceptionTest(int statusCode, String expectedMessagePart) {
         int questionId = client.extractQuestionId(resource.getUrl());
         wireMock.stubFor(get(urlPathEqualTo("/2.3/questions/" + questionId))
                 .withQueryParam("key", equalTo("test-key"))
                 .withQueryParam("access_token", equalTo("test-token"))
-                .willReturn(aResponse().withStatus(statusCode).withBody(responseBody)));
+                .willReturn(aResponse().withStatus(statusCode)));
 
         StackOverflowException ex = assertThrows(StackOverflowException.class, () -> client.hasUpdates(resource));
         Assertions.assertTrue(
@@ -110,9 +110,8 @@ public class StackOverflowClientTest extends WiremockIntegrationTest {
 
     private static Stream<Arguments> provideTestCases() {
         return Stream.of(
-                Arguments.of(404, "Not Found", "Ошибка клиента: Not Found"),
-                Arguments.of(500, "Oops", "Ошибка сервера"),
-                Arguments.of(200, "not a json", "Не удалось распарсить JSON‑ответ"),
-                Arguments.of(200, "{ \"items\": [] }", "В ответе нет ни одного вопроса"));
+                Arguments.of(404, "Клиентская ошибка"),
+                Arguments.of(500, "Серверная ошибка"),
+                Arguments.of(200, "Пустой ответ от Stackoverflow"));
     }
 }

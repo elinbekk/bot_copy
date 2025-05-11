@@ -34,8 +34,8 @@ class LinkParserTest {
 
     private static Stream<Arguments> negativeTestCases() {
         return Stream.of(
-            Arguments.of("https://dckmdcdkdnvo"),
-            Arguments.of("https://invalid"),
-            Arguments.of("https://google.com"));
+                Arguments.of("https://dckmdcdkdnvo"),
+                Arguments.of("https://invalid"),
+                Arguments.of("https://google.com"));
     }
 }
