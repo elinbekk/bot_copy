@@ -36,6 +36,6 @@ class LinkParserTest {
         return Stream.of(
             Arguments.of("https://dckmdcdkdnvo"),
             Arguments.of("https://invalid"),
-            Arguments.of("https://google.com", null, true));
+            Arguments.of("https://google.com"));
     }
 }

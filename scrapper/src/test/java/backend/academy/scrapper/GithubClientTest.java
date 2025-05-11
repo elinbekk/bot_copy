@@ -1,17 +1,9 @@
 package backend.academy.scrapper;
 
-import static backend.academy.scrapper.entity.LinkType.GITHUB_REPO;
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
-
 import backend.academy.scrapper.client.GithubClient;
 import backend.academy.scrapper.config.GithubProperties;
 import backend.academy.scrapper.entity.Link;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.net.http.HttpClient;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,6 +11,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClient;
+import static backend.academy.scrapper.entity.LinkType.GITHUB_REPO;
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 
 public class GithubClientTest extends WiremockIntegrationTest {
     private GithubClient client;
@@ -29,7 +30,10 @@ public class GithubClientTest extends WiremockIntegrationTest {
         String baseUrl = wireMock.baseUrl();
         GithubProperties githubProperties = new GithubProperties("dummy-token", baseUrl);
         ObjectMapper objectMapper = new ObjectMapper();
-        client = new GithubClient(githubProperties, HttpClient.newHttpClient(), objectMapper);
+        RestClient restClient = RestClient.builder()
+            .baseUrl(baseUrl)
+            .build();
+        client = new GithubClient(githubProperties, restClient, objectMapper);
         link = createDefaultResource();
     }
 
@@ -60,14 +64,16 @@ public class GithubClientTest extends WiremockIntegrationTest {
 
     @Test
     void http404ErrorTest() {
-        stubFor(get(anyUrl()).willReturn(aResponse().withStatus(404)));
+        wireMock.stubFor(get(urlPathEqualTo("/repos/owner/repo"))
+            .withHeader("Authorization", equalTo("token dummy-token"))
+            .willReturn(aResponse().withStatus(404)));
         boolean result = client.hasUpdates(link);
         Assertions.assertFalse(result);
     }
 
     @Test
     void missingPushedAtFieldTest() {
-        stubFor(get(urlPathEqualTo("/repos/owner/repo"))
+        wireMock.stubFor(get(urlPathEqualTo("/repos/owner/repo"))
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")
                         .withBody("{\"name\":\"repo\"}")));
@@ -77,14 +83,15 @@ public class GithubClientTest extends WiremockIntegrationTest {
 
     @Test
     void http500ErrorTest() {
-        stubFor(get(urlPathEqualTo("/repos/owner/repo")).willReturn(aResponse().withStatus(500)));
-
+        wireMock.stubFor(get(urlPathEqualTo("/repos/owner/repo"))
+            .withHeader("Authorization", equalTo("token dummy-token"))
+            .willReturn(aResponse().withStatus(500)));
         Assertions.assertFalse(client.hasUpdates(link));
     }
 
     @Test
     void requestTimeoutTest() {
-        stubFor(get(anyUrl())
+        wireMock.stubFor(get(anyUrl())
                 .willReturn(aResponse()
                         .withFixedDelay(5000) // Задержка 5 сек
                         .withStatus(200)));

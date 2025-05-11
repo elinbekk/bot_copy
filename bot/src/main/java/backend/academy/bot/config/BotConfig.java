@@ -12,7 +12,12 @@ import org.springframework.web.client.RestClient;
 @Configuration
 @EnableConfigurationProperties(BotConfigProperties.class)
 public class BotConfig {
-    private BotConfigProperties botConfigProperties;
+    private final BotConfigProperties botConfigProperties;
+
+    public BotConfig(BotConfigProperties botConfigProperties) {
+        this.botConfigProperties = botConfigProperties;
+    }
+
     @Bean
     public TelegramBot telegramBot(BotConfigProperties botConfigProperties) {
         return new TelegramBot(botConfigProperties.telegramToken());

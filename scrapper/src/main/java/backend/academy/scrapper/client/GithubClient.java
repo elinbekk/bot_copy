@@ -18,25 +18,31 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriComponentsBuilder;
+import static backend.academy.scrapper.ScrapperConstants.ISSUE_REGEX;
+import static backend.academy.scrapper.ScrapperConstants.PR_REGEX;
+import static backend.academy.scrapper.ScrapperConstants.REPO_REGEX;
 
 @Component
 public class GithubClient implements UpdateChecker {
     private static final Logger log = LoggerFactory.getLogger(GithubClient.class);
-    final String repoRegex = "https?://github.com/([^/]+)/([^/]+)/?";
-    final String issueRegex = "https?://github.com/([^/]+)/([^/]+)/issues/(\\d+)";
-    final String prRegex = "https?://github.com/([^/]+)/([^/]+)/pull/(\\d+)";
 
     private final GithubProperties githubProperties;
-    private final HttpClient httpClient;
+    private final RestClient restClient;
     private final ObjectMapper objectMapper;
 
-    public GithubClient(GithubProperties githubProperties, HttpClient httpClient, ObjectMapper objectMapper) {
+    public GithubClient(GithubProperties githubProperties, RestClient restClient, ObjectMapper objectMapper) {
         this.githubProperties = githubProperties;
-        this.httpClient = httpClient;
+        this.restClient = restClient;
         this.objectMapper = objectMapper;
     }
 
@@ -48,17 +54,35 @@ public class GithubClient implements UpdateChecker {
             URI uri = getUri(link);
             log.info("URI запроса: {}", uri);
 
-            HttpRequest request = buildRequest(uri);
-            HttpResponse<String> response = sendRequest(request);
-            log.info("Status Code: {}", response.statusCode());
+            final ResponseEntity<String> response = getResponse(uri);
 
-            JsonNode json = objectMapper.readTree(response.body());
+            JsonNode json = objectMapper.readTree(response.getBody());
             Instant lastUpdate = parseUpdateTime(json, link.getLinkType());
+            log.info("Status Code: {}", response.getStatusCode());
 
             return lastUpdate.isAfter(Instant.parse(link.getLastCheckedTime()));
-        } catch (IOException | InterruptedException e) {
+        } catch (Exception e) {
             return false;
         }
+    }
+
+    private ResponseEntity<String> getResponse(URI uri) {
+        ResponseEntity<String> response = restClient
+            .get()
+            .uri(uri)
+            .header("Accept", "application/vnd.github.v3+json")
+            .header("Authorization", "token " + githubProperties.token())
+            .retrieve()
+            .onStatus(HttpStatusCode::is4xxClientError, (req, res) -> {
+                log.error("Клиентская ошибка: {} {}", res.getStatusCode(), res.getStatusText());
+                throw new HttpClientErrorException(res.getStatusCode());
+            })
+            .onStatus(HttpStatusCode::is5xxServerError, (req, res) -> {
+                log.error("Серверная ошибка: {}", res.getStatusCode());
+                throw new HttpServerErrorException(res.getStatusCode());
+            })
+            .toEntity(String.class);
+        return response;
     }
 
     private URI getUri(Link link) {
@@ -111,9 +135,9 @@ public class GithubClient implements UpdateChecker {
     }
 
     private GithubResource parseGitHubUrl(String url) {
-        Pattern repoPattern = Pattern.compile(repoRegex);
-        Pattern issuePattern = Pattern.compile(issueRegex);
-        Pattern prPattern = Pattern.compile(prRegex);
+        Pattern repoPattern = Pattern.compile(REPO_REGEX);
+        Pattern issuePattern = Pattern.compile(ISSUE_REGEX);
+        Pattern prPattern = Pattern.compile(PR_REGEX);
 
         Matcher issueMatcher = issuePattern.matcher(url);
         Matcher prMatcher = prPattern.matcher(url);
@@ -128,19 +152,5 @@ public class GithubClient implements UpdateChecker {
             return new GithubRepo(repoMatcher.group(1), repoMatcher.group(2));
         }
         throw new IllegalArgumentException("Неподдерживаемый Github URL");
-    }
-
-    private HttpRequest buildRequest(URI uri) {
-        return HttpRequest.newBuilder()
-            .uri(uri)
-            .header("Accept", "application/vnd.github.v3+json")
-            .header("Authorization", "token " + githubProperties.token())
-            .timeout(Duration.ofSeconds(10))
-            .GET()
-            .build();
-    }
-
-    private HttpResponse<String> sendRequest(HttpRequest request) throws IOException, InterruptedException {
-        return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
     }
 }
