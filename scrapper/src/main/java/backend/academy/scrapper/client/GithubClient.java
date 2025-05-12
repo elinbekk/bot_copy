@@ -63,6 +63,9 @@ public class GithubClient implements UpdateChecker {
         } catch (JsonProcessingException e) {
             log.error("Ошибка парсинга JSON: {}", e.getMessage());
             return false;
+        } catch (Exception e) {
+            log.error("Ошибка:{}", e.getMessage());
+            return false;
         }
     }
 
