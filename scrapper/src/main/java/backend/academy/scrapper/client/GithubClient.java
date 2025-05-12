@@ -11,6 +11,7 @@ import backend.academy.scrapper.dto.GithubRepo;
 import backend.academy.scrapper.dto.GithubResource;
 import backend.academy.scrapper.entity.Link;
 import backend.academy.scrapper.entity.LinkType;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
@@ -56,7 +57,11 @@ public class GithubClient implements UpdateChecker {
             log.info("Status Code: {}", response.getStatusCode());
 
             return lastUpdate.isAfter(Instant.parse(link.getLastCheckedTime()));
-        } catch (Exception e) {
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
+            log.error("Ошибка при запросе: {}", e.getMessage());
+            return false;
+        } catch (JsonProcessingException e) {
+            log.error("Ошибка парсинга JSON: {}", e.getMessage());
             return false;
         }
     }
