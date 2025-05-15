@@ -2,13 +2,10 @@ package backend.academy.scrapper.repository;
 
 import backend.academy.scrapper.entity.ChatEntity;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
 
-
-
 @Component
-@ConditionalOnProperty(name="access-type", havingValue="ORM")
+@ConditionalOnProperty(name = "access-type", havingValue = "ORM")
 public class OrmChatRepository implements ChatRepository {
     private final ChatEntityRepository chatRepo;
 

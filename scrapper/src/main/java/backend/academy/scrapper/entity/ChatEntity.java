@@ -14,6 +14,13 @@ public class ChatEntity {
         this.id = chatId;
     }
 
-    public ChatEntity() {
+    public ChatEntity() {}
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 }

@@ -25,8 +25,7 @@ public class SqlChatRepository implements ChatRepository {
 
     @Override
     public boolean exists(Long chatId) {
-        Integer cnt = jdbc.queryForObject(
-            "SELECT count(1) FROM chats WHERE id = ?", Integer.class, chatId);
+        Integer cnt = jdbc.queryForObject("SELECT count(1) FROM chats WHERE id = ?", Integer.class, chatId);
         return cnt != null && cnt > 0;
     }
 }

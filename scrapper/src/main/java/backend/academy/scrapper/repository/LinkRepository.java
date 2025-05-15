@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public interface LinkRepository {
+public interface LinkRepository {//todo: need to remove
     List<Link> findAllByChatId(Long chatId);
 
     void saveLink(Long chatId, Link link) throws IllegalStateException;
