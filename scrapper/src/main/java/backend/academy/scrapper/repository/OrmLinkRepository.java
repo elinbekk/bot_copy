@@ -24,9 +24,9 @@ public class OrmLinkRepository implements LinkRepo {
     }
 
     @Override
-    public void save(Long chatId, Link link) {
+    public void save(Link link) {
         ChatEntity chat = new ChatEntity();
-        chat.setId(chatId);
+        chat.setId(link.getChatId());
         LinkEntity linkEntity = new LinkEntity();
         linkEntity.setChat(chat);
         linkEntity.setUrl(link.getUrl());

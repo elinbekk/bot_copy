@@ -7,6 +7,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,22 +33,28 @@ public class SqlLinkRepository implements LinkRepo {
 
     @Override
     public void save(Link link) {
-        String tagsJson;
-        String filtersJson;
+        String tagsJson, filtersJson;
         try {
             tagsJson = om.writeValueAsString(link.getTags());
             filtersJson = om.writeValueAsString(link.getFilters());
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
-        jdbc.update(
-                "INSERT INTO links(chat_id,url,type,last_checked,tags,filters) VALUES(?,?,?,?,?::jsonb,?::jsonb)",
-                link.getChatId(),
-                link.getUrl(),
-                link.getLinkType().name(),
-                link.getLastCheckedTime(),
-                tagsJson,
-                filtersJson);
+
+        String sql = """
+            INSERT INTO links(
+              chat_id, url, type, last_checked, tags, filters
+            ) VALUES(?, ?, ?, ?, ?, ?)
+            """;
+
+        jdbc.update(sql,
+            link.getChatId(),
+            link.getUrl(),
+            link.getLinkType().name(),
+            Timestamp.from(Instant.parse(link.getLastCheckedTime())),
+            tagsJson,
+            filtersJson
+        );
     }
 
     @Override
@@ -63,7 +71,14 @@ public class SqlLinkRepository implements LinkRepo {
 
     @Override
     public List<Link> findAllLinksByChatId(Long chatId) {
-        return List.of();
+        var sql = """
+                SELECT id, chat_id, url, type, last_checked, tags, filters
+                FROM links
+                WHERE chat_id = ?
+            """;
+
+        List<Link> linksByChatId = jdbc.query(sql, this::mapRow, chatId);
+        return linksByChatId;
     }
 
     //    @Override
@@ -71,7 +86,7 @@ public class SqlLinkRepository implements LinkRepo {
         var sql = """
                 SELECT id, chat_id, url, type, last_checked, tags, filters
                 FROM links
-                WHERE last_checked < NOW()  -- или другой критерий “устаревания”
+                WHERE last_checked < NOW()
                 ORDER BY last_checked
                 LIMIT :limit OFFSET :offset
             """;

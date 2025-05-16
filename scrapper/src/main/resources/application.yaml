@@ -24,10 +24,11 @@ spring:
     show-sql: true
   datasource:
     url: jdbc:postgresql://localhost:5433/default
-    username: ${POSTGRES_USERNAME}
-    password: ${POSTGRES_PASSWORD}
+    username: ${POSTGRES_USERNAME:default}
+    password: ${POSTGRES_PASSWORD:default}
     driver-class-name: org.postgresql.Driver
-    access-type: SQL
+
+access-type: SQL
 
 server:
   port: 8081

@@ -21,6 +21,6 @@ public class LinkService {
         if (linksRepo.exists(chatId, link.getUrl())) {
             throw new DuplicateLinkException();
         }
-        linksRepo.save(chatId, link);
+        linksRepo.save(link);
     }
 }

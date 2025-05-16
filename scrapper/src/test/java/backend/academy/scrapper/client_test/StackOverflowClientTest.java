@@ -1,4 +1,4 @@
-package backend.academy.scrapper;
+package backend.academy.scrapper.client_test;
 
 import static backend.academy.scrapper.TestUtils.loadFixture;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
@@ -9,6 +9,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static org.junit.Assert.assertThrows;
 
+import backend.academy.scrapper.WiremockIntegrationTest;
 import backend.academy.scrapper.client.StackOverflowClient;
 import backend.academy.scrapper.config.StackoverflowProperties;
 import backend.academy.scrapper.dto.StackOverflowQuestion;

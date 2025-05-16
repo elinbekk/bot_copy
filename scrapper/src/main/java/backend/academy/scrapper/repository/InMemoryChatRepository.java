@@ -4,6 +4,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.stereotype.Component;
 
+/*
 @Component
 public class InMemoryChatRepository implements ChatRepository {
     private final Set<Long> chats = ConcurrentHashMap.newKeySet();
@@ -23,3 +24,4 @@ public class InMemoryChatRepository implements ChatRepository {
         chats.remove(chatId);
     }
 }
+*/

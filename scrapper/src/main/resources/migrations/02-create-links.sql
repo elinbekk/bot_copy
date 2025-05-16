@@ -4,7 +4,7 @@ CREATE TABLE links (
                        url TEXT NOT NULL,
                        type VARCHAR(50) NOT NULL,
                        last_checked TIMESTAMPTZ NOT NULL,
-                       tags JSONB,
-                       filters JSONB
+                       tags TEXT,
+                       filters TEXT
 );
 CREATE INDEX idx_links_chat_checked ON links(chat_id, last_checked);
