@@ -41,6 +41,10 @@ public class LinkEntity {
 
     public LinkEntity() {}
 
+    public LinkEntity(Long linkId) {
+        this.id = linkId;
+    }
+
     public Long getId() {
         return id;
     }
