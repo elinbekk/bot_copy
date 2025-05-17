@@ -39,6 +39,10 @@ public class Link {
         this.lastCheckedTime = lastCheckedTime;
     }
 
+    public Link(Long linkId) {
+        this.linkId = linkId;
+    }
+
     public Long getLinkId() {
         return linkId;
     }

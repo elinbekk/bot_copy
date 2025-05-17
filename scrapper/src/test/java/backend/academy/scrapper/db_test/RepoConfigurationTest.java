@@ -12,7 +12,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest
 @ActiveProfiles("test")
-public class RepoConfigurationTest extends BaseTest {
+public class RepoConfigurationTest {
     private final String accessType;
     private final LinkRepo repository;
 

@@ -4,14 +4,18 @@ import backend.academy.scrapper.dto.UpdateDto;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Component;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
 import static java.util.stream.Collectors.joining;
 
+@Component
+@ConditionalOnProperty(name = "access-type", havingValue = "SQL")
 public class SqlUpdateRepository implements UpdateRepository {
     private final JdbcTemplate jdbc;
     private final ObjectMapper om;
@@ -25,7 +29,7 @@ public class SqlUpdateRepository implements UpdateRepository {
     public void save(Long linkId, JsonNode payload, Instant occurredAt) {
         try {
             jdbc.update(
-                "INSERT INTO updates(link_id, occurred_at, payload) VALUES(?,?,?::jsonb)",
+                "INSERT INTO updates(link_id, occurred_at, payload) VALUES(?,?,?)",
                 linkId, occurredAt, om.writeValueAsString(payload)
             );
         } catch (JsonProcessingException e) {

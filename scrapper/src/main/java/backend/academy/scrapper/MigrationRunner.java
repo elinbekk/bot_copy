@@ -20,7 +20,7 @@ public class MigrationRunner {
     public void migrate() {
         SpringLiquibase liquibase = new SpringLiquibase();
         liquibase.setDataSource(dataSource);
-        liquibase.setChangeLog("classpath:/migrations/changelog-master.xml");
+        liquibase.setChangeLog("migrations/changelog-master.xml");
         try {
             Thread.sleep(3000);
             liquibase.afterPropertiesSet();
