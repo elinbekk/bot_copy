@@ -65,7 +65,7 @@ public class SqlLinkRepository implements LinkRepo {
     @Override
     public boolean exists(Long chatId, String url) {
         Integer cnt = jdbc.queryForObject(
-            "SELECT count(1) FROM chats WHERE id = ?", Integer.class, chatId);
+            "SELECT count(1) FROM links WHERE links.chat_id = ? AND url = ?", Integer.class, chatId, url);
         return cnt != null && cnt > 0;
     }
 
