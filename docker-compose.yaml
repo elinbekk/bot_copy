@@ -18,5 +18,22 @@ services:
     ports:
       - 8080:8080
 
+  liquibase-migrations:
+    image: liquibase/liquibase:4.29
+    depends_on:
+      - db
+    command:
+      - --searchPath=/changesets
+      - --changelog-file=changelog-master.xml
+      - --driver=org.postgresql.Driver
+      - --url=jdbc:postgresql://db:5432/${POSTGRES_DB}
+      - --username=${POSTGRES_USERNAME}
+      - --password=${POSTGRES_PASSWORD}
+      - update
+    volumes:
+      - ./scrapper/migrations:/changesets
+    networks:
+      - default
+
 volumes:
   pgdata:

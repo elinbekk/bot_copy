@@ -9,6 +9,7 @@ app:
   base-url: http://localhost:8080
   scheduler:
     interval-in-ms: 120000
+  access-type: SQL
 spring:
   application:
     name: Scrapper
@@ -24,11 +25,10 @@ spring:
     show-sql: true
   datasource:
     url: jdbc:postgresql://localhost:5433/default
-    username: ${POSTGRES_USERNAME:default}
-    password: ${POSTGRES_PASSWORD:default}
+    username: ${POSTGRES_USERNAME}
+    password: ${POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
-access-type: SQL
 
 server:
   port: 8081
