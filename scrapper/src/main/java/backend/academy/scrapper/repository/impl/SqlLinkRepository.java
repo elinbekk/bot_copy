@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.Set;
 
 @Component
-@ConditionalOnProperty(name = "access-type", havingValue = "SQL")
+@ConditionalOnProperty(name = "app.access-type", havingValue = "SQL")
 public class SqlLinkRepository implements LinkRepo {
     private final JdbcTemplate jdbc;
     private final ObjectMapper om;
@@ -96,7 +96,7 @@ public class SqlLinkRepository implements LinkRepo {
 
     @Override
     public Page<Link> findDueLinks(Pageable pg) {
-        var sql = """
+        String sql = """
                 SELECT id, chat_id, url, type, last_checked, tags, filters
                 FROM links
                 WHERE last_checked < NOW()
@@ -115,7 +115,8 @@ public class SqlLinkRepository implements LinkRepo {
 
     @Override
     public void updateLastChecked(Long linkId, Timestamp when) {
-
+        String query = "update links set last_checked = ? where id = ?";
+        jdbc.update(query, when, linkId);
     }
 
     private Link mapRow(ResultSet rs, int rowNum) throws SQLException {

@@ -4,9 +4,12 @@ import backend.academy.scrapper.repository.ChatRepository;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
-@Component
-@ConditionalOnProperty(name = "access-type", havingValue = "SQL")
+import java.util.List;
+
+@Repository
+@ConditionalOnProperty(name = "app.access-type", havingValue = "SQL")
 public class SqlChatRepository implements ChatRepository {
     private final JdbcTemplate jdbc;
 
@@ -22,6 +25,12 @@ public class SqlChatRepository implements ChatRepository {
     @Override
     public void delete(Long chatId) {
         jdbc.update("DELETE FROM chats WHERE id = ?", chatId);
+    }
+
+    @Override
+    public List<Long> findAllChatIds() {
+        String sql = "SELECT id FROM chats";
+        return jdbc.query(sql, (rs, rowNum) -> rs.getLong("id"));
     }
 
     @Override

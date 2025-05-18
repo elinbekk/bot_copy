@@ -15,11 +15,12 @@ import java.time.Instant;
 import java.util.List;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 @Component
-@ConditionalOnProperty(name = "access-type", havingValue = "ORM")
+@ConditionalOnProperty(name = "app.access-type", havingValue = "ORM")
 public class OrmLinkRepository implements LinkRepo {
     private final LinkEntityRepository linkRepo;
     private final ObjectMapper om;
@@ -77,11 +78,29 @@ public class OrmLinkRepository implements LinkRepo {
     }
 
     @Override
-    public Page<Link> findDueLinks(Pageable page) {
+    public Page<Link> findDueLinks(Pageable pg) {
+        Page<LinkEntity> page = linkRepo.findDueLinks(pg);
+        List<Link> content = page.getContent().stream()
+            .map(linkEntity -> {
+                try {
+                    return new Link(
+                        linkEntity.getId(),
+                        linkEntity.getUrl(),
+                        LinkType.valueOf(linkEntity.getType()),
+                        om.readValue(linkEntity.getTags(), new TypeReference<>() {}),
+                        om.readValue(linkEntity.getFilters(), new TypeReference<>() {}),
+                        String.valueOf(linkEntity.getLastChecked())
+                    );
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException(e);
+                }
+            }).toList();
 
+        return new PageImpl<>(content, pg, page.getTotalElements());
     }
 
     @Override
     public void updateLastChecked(Long linkId, Timestamp when) {
+        linkRepo.updateLastChecked(linkId, when);
     }
 }

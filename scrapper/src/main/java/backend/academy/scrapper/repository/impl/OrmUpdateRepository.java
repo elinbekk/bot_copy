@@ -17,7 +17,7 @@ import java.sql.Timestamp;
 import java.util.List;
 
 @Component
-@ConditionalOnProperty(name = "access-type", havingValue = "ORM")
+@ConditionalOnProperty(name = "app.access-type", havingValue = "ORM")
 public class OrmUpdateRepository implements UpdateRepository {
     private final UpdateEntityRepository repo;
     private final ObjectMapper om;

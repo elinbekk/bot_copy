@@ -10,20 +10,29 @@ import backend.academy.scrapper.client.BotClient;
 import backend.academy.scrapper.client.GithubClient;
 import backend.academy.scrapper.client.StackOverflowClient;
 import backend.academy.scrapper.entity.Link;
+import backend.academy.scrapper.repository.ChatRepository;
 import backend.academy.scrapper.repository.InMemoryLinkRepository;
+import backend.academy.scrapper.repository.LinkRepo;
 import backend.academy.scrapper.repository.LinkRepository;
 import java.util.Map;
 import java.util.Set;
+import backend.academy.scrapper.service.ChatService;
+import backend.academy.scrapper.service.LinkService;
+import backend.academy.scrapper.service.impl.ChatServiceImpl;
+import backend.academy.scrapper.service.impl.LinkServiceImpl;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 public class SchedulerTest {
-    private final LinkRepository linkRepository = new InMemoryLinkRepository();
+    private final ChatRepository chatRepository = Mockito.mock(ChatRepository.class);
+    private final LinkRepo linkRepository = Mockito.mock(LinkRepo.class);
+    private final LinkService linkService = new LinkServiceImpl(chatRepository, linkRepository);
+    private final ChatService chatService = new ChatServiceImpl(chatRepository);
     private final BotClient botClient = Mockito.mock(BotClient.class);
     private final GithubClient githubClient = Mockito.mock(GithubClient.class);
     private final StackOverflowClient soClient = Mockito.mock(StackOverflowClient.class);
     private final LinkCheckerScheduler linkScheduler =
-            new LinkCheckerScheduler(botClient, githubClient, soClient, linkRepository);
+            new LinkCheckerScheduler(botClient, githubClient, soClient, linkService, chatService);
 
     private static final long testChatId = 123L;
     private static final long testChatId2 = 124L;
@@ -48,9 +57,11 @@ public class SchedulerTest {
 
     @Test
     public void shouldSendNotificationsOnlySubscribersWhenLinksUpdated() {
-        linkRepository.saveLink(testChatId, link1);
-        linkRepository.saveLink(testChatId, link2);
-        linkRepository.saveLink(testChatId2, link1);
+        chatService.registerChat(testChatId);
+        chatService.registerChat(testChatId2);
+        linkService.addLink(testChatId, link1);
+        linkService.addLink(testChatId, link2);
+        linkService.addLink(testChatId2, link1);
 
         when(githubClient.hasUpdates(any(Link.class))).thenReturn(true);
 

@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 import static java.util.stream.Collectors.joining;
 
 @Component
-@ConditionalOnProperty(name = "access-type", havingValue = "SQL")
+@ConditionalOnProperty(name = "app.access-type", havingValue = "SQL")
 public class SqlUpdateRepository implements UpdateRepository {
     private final JdbcTemplate jdbc;
     private final ObjectMapper om;

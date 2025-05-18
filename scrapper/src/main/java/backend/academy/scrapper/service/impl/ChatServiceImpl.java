@@ -3,6 +3,7 @@ package backend.academy.scrapper.service.impl;
 import backend.academy.scrapper.repository.ChatRepository;
 import backend.academy.scrapper.service.ChatService;
 import org.springframework.stereotype.Service;
+import java.util.List;
 
 @Service
 public class ChatServiceImpl implements ChatService {
@@ -25,5 +26,10 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public boolean exists(Long chatId) {
         return chatRepo.exists(chatId);
+    }
+
+    @Override
+    public List<Long> getChatIds() {
+        return chatRepo.findAllChatIds();
     }
 }

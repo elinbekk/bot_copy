@@ -8,8 +8,11 @@ import backend.academy.scrapper.entity.Link;
 import backend.academy.scrapper.repository.LinkRepository;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import backend.academy.scrapper.service.ChatService;
+import backend.academy.scrapper.service.LinkService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -21,35 +24,37 @@ public class LinkCheckerScheduler {
     private final BotClient botClient;
     private final GithubClient githubClient;
     private final StackOverflowClient stackoverflowClient;
-    private final LinkRepository linkRepository;
+    private final LinkService linkService;
+    private final ChatService chatService;
 
     public LinkCheckerScheduler(
-            BotClient botClient,
-            GithubClient githubClient,
-            StackOverflowClient stackoverflowClient,
-            LinkRepository linkRepository) {
+        BotClient botClient,
+        GithubClient githubClient,
+        StackOverflowClient stackoverflowClient,
+        LinkService linkService, ChatService chatService) {
         this.botClient = botClient;
         this.githubClient = githubClient;
         this.stackoverflowClient = stackoverflowClient;
-        this.linkRepository = linkRepository;
+        this.linkService = linkService;
+        this.chatService = chatService;
     }
 
     @Scheduled(fixedRateString = "${app.scheduler.interval-in-ms}")
     public void checkAllLinks() {
         try {
-            Map<Link, Set<Long>> linksWithChats = linkRepository.findAllLinksWithChatIds();
-            logger.info("Найдено {} ссылок для проверки", linksWithChats.size());
-            for (Map.Entry<Link, Set<Long>> entry : linksWithChats.entrySet()) {
-                Link resource = entry.getKey();
-                Set<Long> chatIds = entry.getValue();
-                logger.debug("Проверяемая ссылка: {} (Тип: {})", resource.getUrl(), resource.getLinkType());
-                if (isUpdated(resource)) {
-                    logger.info("Обновления обнаружены для: {}", resource.getUrl());
-                    LinkUpdate update =
-                            new LinkUpdate(resource.getUrl(), "Обнаружены изменения", new ArrayList<>(chatIds));
-                    resource.setLastCheckedTime(String.valueOf(Instant.now()));
-                    logger.debug("Отправление обновлений по {} в {} чатов", resource.getUrl(), chatIds.size());
-                    botClient.sendUpdateNotification(update);
+            List<Long> chatIds = chatService.getChatIds();
+            for(Long chatId : chatIds) {
+                List<Link> links = linkService.getUserListLinks(chatId);
+                for(Link link : links) {
+                    logger.debug("Проверяемая ссылка: {} (Тип: {})", link.getUrl(), link.getLinkType());
+                    if (isUpdated(link)) {
+                        logger.info("Обновления обнаружены для: {}", link.getUrl());
+                        LinkUpdate update =
+                            new LinkUpdate(link.getUrl(), "Обнаружены изменения", new ArrayList<>(chatIds));
+                        link.setLastCheckedTime(String.valueOf(Instant.now()));
+                        logger.debug("Отправление обновлений по {} в {} чатов", link.getUrl(), chatIds.size());
+                        botClient.sendUpdateNotification(update);
+                    }
                 }
             }
         } catch (Exception e) {

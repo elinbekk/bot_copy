@@ -5,9 +5,13 @@ import backend.academy.scrapper.repository.ChatEntityRepository;
 import backend.academy.scrapper.repository.ChatRepository;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
-@Component
-@ConditionalOnProperty(name = "access-type", havingValue = "ORM")
+import java.util.ArrayList;
+import java.util.List;
+
+@Repository
+@ConditionalOnProperty(name = "app.access-type", havingValue = "ORM")
 public class OrmChatRepository implements ChatRepository {
     private final ChatEntityRepository chatRepo;
 
@@ -28,5 +32,14 @@ public class OrmChatRepository implements ChatRepository {
     @Override
     public void delete(Long chatId) {
         chatRepo.deleteById(chatId);
+    }
+
+    @Override
+    public List<Long> findAllChatIds() {
+        List<Long> chatIds = new ArrayList<>();
+        for(ChatEntity chatEntity : chatRepo.findAll()) {
+            chatIds.add(chatEntity.getId());
+        }
+        return chatIds;
     }
 }
