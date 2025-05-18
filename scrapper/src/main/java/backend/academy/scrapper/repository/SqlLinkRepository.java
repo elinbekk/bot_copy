@@ -5,8 +5,10 @@ import backend.academy.scrapper.entity.LinkType;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.HashMap;
@@ -18,6 +20,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -32,7 +36,7 @@ public class SqlLinkRepository implements LinkRepo {
     }
 
     @Override
-    public void save(Link link) {
+    public Long save(Link link) {
         String tagsJson, filtersJson;
         try {
             tagsJson = om.writeValueAsString(link.getTags());
@@ -45,16 +49,27 @@ public class SqlLinkRepository implements LinkRepo {
             INSERT INTO links(
               chat_id, url, type, last_checked, tags, filters
             ) VALUES(?, ?, ?, ?, ?, ?)
+            returning id
             """;
+        KeyHolder keyHolder = new GeneratedKeyHolder();
 
-        jdbc.update(sql,
-            link.getChatId(),
-            link.getUrl(),
-            link.getLinkType().name(),
-            Timestamp.from(Instant.parse(link.getLastCheckedTime())),
-            tagsJson,
-            filtersJson
-        );
+        jdbc.update(connection -> {
+            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            ps.setLong(1, link.getChatId());
+            ps.setString(2, link.getUrl());
+            ps.setString(3, link.getLinkType().name());
+            ps.setTimestamp(4, Timestamp.from(Instant.parse(link.getLastCheckedTime())));
+            ps.setString(5, tagsJson);
+            ps.setString(6, filtersJson);
+            return ps;
+        }, keyHolder);
+
+        Number key = keyHolder.getKey();
+        if (key != null) {
+            return key.longValue();
+        } else {
+            throw new IllegalStateException("Failed to retrieve generated key for Link");
+        }
     }
 
     @Override

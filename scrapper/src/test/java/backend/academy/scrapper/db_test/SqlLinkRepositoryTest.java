@@ -31,13 +31,13 @@ public class SqlLinkRepositoryTest {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @PostConstruct
-    void setUp() {
+    void init() {
         linkRepo = new SqlLinkRepository(jdbcTemplate, objectMapper);
         chatRepo = new SqlChatRepository(jdbcTemplate);
     }
 
     @BeforeEach
-    void setup() {
+    void clean() {
         jdbcTemplate.update("DELETE FROM links");
         jdbcTemplate.update("DELETE FROM chats");
     }

@@ -7,6 +7,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.sql.Timestamp;
 import java.time.Instant;
 import static jakarta.persistence.FetchType.LAZY;
 
@@ -23,7 +24,7 @@ public class UpdateEntity {
     private LinkEntity link;
 
     @Column(name = "occurred_at", nullable = false)
-    private Instant occurredAt;
+    private Timestamp occurredAt;
 
     @Column(columnDefinition = "jsonb", nullable = false)
     private String payload;
@@ -47,11 +48,11 @@ public class UpdateEntity {
         this.link = link;
     }
 
-    public Instant getOccurredAt() {
+    public Timestamp getOccurredAt() {
         return occurredAt;
     }
 
-    public void setOccurredAt(Instant occurredAt) {
+    public void setOccurredAt(Timestamp occurredAt) {
         this.occurredAt = occurredAt;
     }
 

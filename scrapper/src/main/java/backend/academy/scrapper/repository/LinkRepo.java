@@ -4,7 +4,7 @@ import backend.academy.scrapper.entity.Link;
 import java.util.List;
 
 public interface LinkRepo {
-    void save(Link link);
+    Long save(Link link);
 
     void delete(Long chatId, String url);
 

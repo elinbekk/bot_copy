@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 
@@ -22,7 +23,7 @@ public class OrmUpdateRepository implements UpdateRepository {
     }
 
     @Override
-    public void save(Long linkId, JsonNode payload, Instant occurredAt) {
+    public void save(Long linkId, JsonNode payload, Timestamp occurredAt) {
         UpdateEntity e = new UpdateEntity();
         e.setOccurredAt(occurredAt);
         try {

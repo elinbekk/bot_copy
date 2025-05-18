@@ -24,7 +24,7 @@ public class OrmLinkRepository implements LinkRepo {
     }
 
     @Override
-    public void save(Link link) {
+    public Long save(Link link) {
         ChatEntity chat = new ChatEntity();
         chat.setId(link.getChatId());
         LinkEntity linkEntity = new LinkEntity();
@@ -38,7 +38,7 @@ public class OrmLinkRepository implements LinkRepo {
         } catch (JsonProcessingException ex) {
             throw new RuntimeException(ex);
         }
-        linkRepo.save(linkEntity);
+        return linkRepo.save(linkEntity).getId();
     }
 
     @Override

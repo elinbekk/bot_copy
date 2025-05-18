@@ -4,14 +4,14 @@ import backend.academy.scrapper.dto.UpdateDto;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.List;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.time.Instant;
-import java.util.List;
 import static java.util.stream.Collectors.joining;
 
 @Component
@@ -26,11 +26,13 @@ public class SqlUpdateRepository implements UpdateRepository {
     }
 
     @Override
-    public void save(Long linkId, JsonNode payload, Instant occurredAt) {
+    public void save(Long linkId, JsonNode payload, Timestamp occurredAt) {
         try {
             jdbc.update(
                 "INSERT INTO updates(link_id, occurred_at, payload) VALUES(?,?,?)",
-                linkId, occurredAt, om.writeValueAsString(payload)
+                linkId,
+                occurredAt,
+                om.writeValueAsString(payload)
             );
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
@@ -63,7 +65,7 @@ public class SqlUpdateRepository implements UpdateRepository {
             UpdateDto u = new UpdateDto();
             u.setId(rs.getLong("id"));
             u.setLinkId(rs.getLong("link_id"));
-            u.setOccurredAt(rs.getTimestamp("occurred_at").toInstant());
+            u.setOccurredAt(rs.getTimestamp("occurred_at"));
             u.setSent(rs.getBoolean("sent"));
             try {
                 u.setPayload(

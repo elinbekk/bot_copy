@@ -1,16 +1,16 @@
 package backend.academy.scrapper.dto;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import java.time.Instant;
+import java.sql.Timestamp;
 
 public class UpdateDto {
     private Long id;
     private Long linkId;
-    private Instant occurredAt;
+    private Timestamp occurredAt;
     private JsonNode payload;
     private boolean sent;
 
-    public UpdateDto(Long id, Long linkId, Instant occurredAt, JsonNode payload, boolean sent) {
+    public UpdateDto(Long id, Long linkId, Timestamp occurredAt, JsonNode payload, boolean sent) {
         this.id = id;
         this.linkId = linkId;
         this.occurredAt = occurredAt;
@@ -37,11 +37,11 @@ public class UpdateDto {
         this.linkId = linkId;
     }
 
-    public Instant getOccurredAt() {
+    public Timestamp getOccurredAt() {
         return occurredAt;
     }
 
-    public void setOccurredAt(Instant occurredAt) {
+    public void setOccurredAt(Timestamp occurredAt) {
         this.occurredAt = occurredAt;
     }
 
