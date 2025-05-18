@@ -4,26 +4,13 @@ import backend.academy.scrapper.repository.SqlChatRepository;
 import jakarta.annotation.PostConstruct;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.context.ActiveProfiles;
-import org.testcontainers.utility.TestcontainersConfiguration;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 
-@JdbcTest
-@ActiveProfiles("test")
-@Import(TestcontainersConfiguration.class)
-public class SqlChatRepositoryTest {
-    private SqlChatRepository chatRepo;
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
-
+public class SqlChatRepositoryTest extends BaseSqlTest {
     @PostConstruct
     void setUp() {
-        chatRepo = new SqlChatRepository(jdbcTemplate);
+        chatRepository = new SqlChatRepository(jdbcTemplate);
     }
 
     @BeforeEach
@@ -34,7 +21,7 @@ public class SqlChatRepositoryTest {
     @Test
     void saveNewChatInDbTest() {
         Long chatId = 1L;
-        chatRepo.save(chatId);
+        chatRepository.save(chatId);
         Integer count = jdbcTemplate.queryForObject(
             "SELECT COUNT(*) FROM chats WHERE id = ?",
             Integer.class,
@@ -46,8 +33,8 @@ public class SqlChatRepositoryTest {
     @Test
     void saveDuplicateChatTest() {
         Long chatId = 1L;
-        chatRepo.save(chatId);
-        chatRepo.save(chatId);
+        chatRepository.save(chatId);
+        chatRepository.save(chatId);
         Integer count = jdbcTemplate.queryForObject(
             "SELECT COUNT(*) FROM chats WHERE id = ?",
             Integer.class,
@@ -59,8 +46,8 @@ public class SqlChatRepositoryTest {
     @Test
     void deleteExistingChatTest() {
         Long chatId = 1L;
-        chatRepo.save(chatId);
-        chatRepo.delete(chatId);
+        chatRepository.save(chatId);
+        chatRepository.delete(chatId);
         Integer count = jdbcTemplate.queryForObject(
             "SELECT COUNT(*) FROM chats WHERE id = ?",
             Integer.class,
@@ -72,15 +59,14 @@ public class SqlChatRepositoryTest {
     @Test
     void existsChatTest() {
         Long chatId = 1L;
-        chatRepo.save(chatId);
-        assertThat(chatRepo.exists(chatId)).isTrue();
-        assertThat(chatRepo.exists(999L)).isFalse();
-
+        chatRepository.save(chatId);
+        assertThat(chatRepository.exists(chatId)).isTrue();
+        assertThat(chatRepository.exists(999L)).isFalse();
     }
 
     @Test
     void deleteNonExistingChatTest() {
         assertThatNoException()
-            .isThrownBy(() -> chatRepo.delete(999L));
+            .isThrownBy(() -> chatRepository.delete(999L));
     }
 }

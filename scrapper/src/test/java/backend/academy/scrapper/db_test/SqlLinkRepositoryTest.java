@@ -4,7 +4,6 @@ import backend.academy.scrapper.entity.Link;
 import backend.academy.scrapper.entity.LinkType;
 import backend.academy.scrapper.repository.SqlChatRepository;
 import backend.academy.scrapper.repository.SqlLinkRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import java.time.Instant;
 import java.util.Map;
@@ -12,28 +11,13 @@ import java.util.Set;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.context.ActiveProfiles;
-import org.testcontainers.utility.TestcontainersConfiguration;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
-@JdbcTest
-@ActiveProfiles("test")
-@Import(TestcontainersConfiguration.class)
-public class SqlLinkRepositoryTest {
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
-    private SqlLinkRepository linkRepo;
-    private SqlChatRepository chatRepo;
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
+public class SqlLinkRepositoryTest extends BaseSqlTest{
     @PostConstruct
     void init() {
-        linkRepo = new SqlLinkRepository(jdbcTemplate, objectMapper);
-        chatRepo = new SqlChatRepository(jdbcTemplate);
+        linkRepository = new SqlLinkRepository(jdbcTemplate, objectMapper);
+        chatRepository = new SqlChatRepository(jdbcTemplate);
     }
 
     @BeforeEach
@@ -65,8 +49,8 @@ public class SqlLinkRepositoryTest {
     void saveInDatabaseTest() {
         Link link = createTestLink();
 
-        chatRepo.save(link.getChatId());
-        linkRepo.save(link);
+        chatRepository.save(link.getChatId());
+        linkRepository.save(link);
         Integer count = jdbcTemplate.queryForObject(
             "SELECT COUNT(*) FROM links WHERE url = ? AND chat_id = ?",
             Integer.class,
@@ -79,9 +63,9 @@ public class SqlLinkRepositoryTest {
     @Test
     void deleteFromDatabaseTest() {
         Link link = createTestLink();
-        chatRepo.save(link.getChatId());
-        linkRepo.save(link);
-        linkRepo.delete(CHAT_ID, URL);
+        chatRepository.save(link.getChatId());
+        linkRepository.save(link);
+        linkRepository.delete(CHAT_ID, URL);
 
         Integer count = jdbcTemplate.queryForObject(
             "SELECT COUNT(*) FROM links WHERE url = ? AND chat_id = ?",
@@ -95,17 +79,17 @@ public class SqlLinkRepositoryTest {
     @Test
     void linkIsExistsTest() {
         Link link = createTestLink();
-        chatRepo.save(link.getChatId());
-        linkRepo.save(link);
-        boolean exists = linkRepo.exists(CHAT_ID, URL);
+        chatRepository.save(link.getChatId());
+        linkRepository.save(link);
+        boolean exists = linkRepository.exists(CHAT_ID, URL);
         Assertions.assertTrue(exists);
     }
 
     @Test
     void saveSerializeJsonFieldsTest() {
         Link link = createTestLink();
-        chatRepo.save(link.getChatId());
-        linkRepo.save(link);
+        chatRepository.save(link.getChatId());
+        linkRepository.save(link);
         Map<String, Object> saved = jdbcTemplate.queryForMap(
             "SELECT tags, filters FROM links WHERE url = ?", URL);
 
