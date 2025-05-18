@@ -1,15 +1,21 @@
-package backend.academy.scrapper.repository;
+package backend.academy.scrapper.repository.impl;
 
 import backend.academy.scrapper.entity.ChatEntity;
 import backend.academy.scrapper.entity.Link;
 import backend.academy.scrapper.entity.LinkEntity;
 import backend.academy.scrapper.entity.LinkType;
+import backend.academy.scrapper.repository.LinkEntityRepository;
+import backend.academy.scrapper.repository.LinkRepo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -68,5 +74,14 @@ public class OrmLinkRepository implements LinkRepo {
                     }
                 })
                 .toList();
+    }
+
+    @Override
+    public Page<Link> findDueLinks(Pageable page) {
+
+    }
+
+    @Override
+    public void updateLastChecked(Long linkId, Timestamp when) {
     }
 }

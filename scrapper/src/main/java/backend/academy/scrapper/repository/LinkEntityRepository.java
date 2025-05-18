@@ -10,4 +10,5 @@ public interface LinkEntityRepository extends JpaRepository<LinkEntity, Long> {
     boolean existsByChatIdAndUrl(Long chatId, String url);
 
     Collection<LinkEntity> findByChatId(Long chatId);
+
 }

@@ -1,20 +1,11 @@
-package backend.academy.scrapper.repository;
+package backend.academy.scrapper.repository.impl;
 
 import backend.academy.scrapper.entity.Link;
 import backend.academy.scrapper.entity.LinkType;
+import backend.academy.scrapper.repository.LinkRepo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -23,6 +14,13 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
+
+import java.sql.*;
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Component
 @ConditionalOnProperty(name = "access-type", havingValue = "SQL")
@@ -96,7 +94,7 @@ public class SqlLinkRepository implements LinkRepo {
         return linksByChatId;
     }
 
-    //    @Override
+    @Override
     public Page<Link> findDueLinks(Pageable pg) {
         var sql = """
                 SELECT id, chat_id, url, type, last_checked, tags, filters
@@ -113,6 +111,11 @@ public class SqlLinkRepository implements LinkRepo {
         Object[] args = new Object[]{pg.getPageSize(), pg.getOffset()};
         List<Link> content = jdbc.query(sql, args, this::mapRow);
         return new PageImpl<>(content, pg, content.size());
+    }
+
+    @Override
+    public void updateLastChecked(Long linkId, Timestamp when) {
+
     }
 
     private Link mapRow(ResultSet rs, int rowNum) throws SQLException {

@@ -5,7 +5,10 @@ import backend.academy.scrapper.exception.DuplicateLinkException;
 import backend.academy.scrapper.repository.ChatRepository;
 import backend.academy.scrapper.repository.LinkRepo;
 import backend.academy.scrapper.service.LinkService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import java.sql.Timestamp;
 import java.util.List;
 
 @Service
@@ -37,5 +40,15 @@ public class LinkServiceImpl implements LinkService {
     public List<Link> getUserListLinks(Long chatId) {
         if (!chatsRepo.exists(chatId)) throw new IllegalArgumentException();
         return linksRepo.findAllLinksByChatId(chatId);
+    }
+
+    @Override
+    public Page<Link> findDueLinks(Pageable page) {
+        return linksRepo.findDueLinks(page);
+    }
+
+    @Override
+    public void updateLastChecked(Long linkId, Timestamp when) {
+        linksRepo.updateLastChecked(linkId, when);
     }
 }

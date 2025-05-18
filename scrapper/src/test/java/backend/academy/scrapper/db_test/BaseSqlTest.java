@@ -1,8 +1,8 @@
 package backend.academy.scrapper.db_test;
 
-import backend.academy.scrapper.repository.SqlChatRepository;
-import backend.academy.scrapper.repository.SqlLinkRepository;
-import backend.academy.scrapper.repository.SqlUpdateRepository;
+import backend.academy.scrapper.repository.impl.SqlChatRepository;
+import backend.academy.scrapper.repository.impl.SqlLinkRepository;
+import backend.academy.scrapper.repository.impl.SqlUpdateRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;

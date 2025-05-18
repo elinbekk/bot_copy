@@ -1,6 +1,7 @@
-package backend.academy.scrapper.repository;
+package backend.academy.scrapper.repository.impl;
 
 import backend.academy.scrapper.dto.UpdateDto;
+import backend.academy.scrapper.repository.UpdateRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

@@ -1,6 +1,6 @@
 package backend.academy.scrapper.db_test;
 
-import backend.academy.scrapper.repository.SqlChatRepository;
+import backend.academy.scrapper.repository.impl.SqlChatRepository;
 import jakarta.annotation.PostConstruct;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

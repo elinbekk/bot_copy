@@ -1,6 +1,8 @@
-package backend.academy.scrapper.repository;
+package backend.academy.scrapper.repository.impl;
 
 import backend.academy.scrapper.entity.ChatEntity;
+import backend.academy.scrapper.repository.ChatEntityRepository;
+import backend.academy.scrapper.repository.ChatRepository;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
