@@ -1,18 +1,17 @@
 package backend.academy.scrapper;
 
-import backend.academy.scrapper.client.BotClient;
 import backend.academy.scrapper.client.GithubClient;
 import backend.academy.scrapper.client.StackOverflowClient;
-import backend.academy.scrapper.dto.LinkUpdate;
+import backend.academy.scrapper.dto.UpdateDto;
 import backend.academy.scrapper.entity.Link;
-import backend.academy.scrapper.repository.LinkRepository;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import backend.academy.scrapper.service.ChatService;
 import backend.academy.scrapper.service.LinkService;
+import backend.academy.scrapper.service.UpdateService;
+import com.fasterxml.jackson.databind.JsonNode;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -21,22 +20,21 @@ import org.springframework.stereotype.Component;
 @Component
 public class LinkCheckerScheduler {
     private static final Logger logger = LoggerFactory.getLogger(LinkCheckerScheduler.class);
-    private final BotClient botClient;
     private final GithubClient githubClient;
     private final StackOverflowClient stackoverflowClient;
     private final LinkService linkService;
     private final ChatService chatService;
+    private final UpdateService updateService;
 
     public LinkCheckerScheduler(
-        BotClient botClient,
         GithubClient githubClient,
         StackOverflowClient stackoverflowClient,
-        LinkService linkService, ChatService chatService) {
-        this.botClient = botClient;
+        LinkService linkService, ChatService chatService, UpdateService updateService) {
         this.githubClient = githubClient;
         this.stackoverflowClient = stackoverflowClient;
         this.linkService = linkService;
         this.chatService = chatService;
+        this.updateService = updateService;
     }
 
     @Scheduled(fixedRateString = "${app.scheduler.interval-in-ms}")
@@ -48,12 +46,7 @@ public class LinkCheckerScheduler {
                 for(Link link : links) {
                     logger.debug("Проверяемая ссылка: {} (Тип: {})", link.getUrl(), link.getLinkType());
                     if (isUpdated(link)) {
-                        logger.info("Обновления обнаружены для: {}", link.getUrl());
-                        LinkUpdate update =
-                            new LinkUpdate(link.getUrl(), "Обнаружены изменения", new ArrayList<>(chatIds));
-                        link.setLastCheckedTime(String.valueOf(Instant.now()));
-                        logger.debug("Отправление обновлений по {} в {} чатов", link.getUrl(), chatIds.size());
-                        botClient.sendUpdateNotification(update);
+                        saveUpdateDetails(link);
                     }
                 }
             }
@@ -67,5 +60,24 @@ public class LinkCheckerScheduler {
             case GITHUB_REPO, GITHUB_ISSUE, GITHUB_PR -> githubClient.hasUpdates(resource);
             case STACKOVERFLOW -> stackoverflowClient.hasUpdates(resource);
         };
+    }
+
+    private void saveUpdateDetails(Link link) {
+        Optional<JsonNode> details = Optional.empty();
+        switch (link.getLinkType()) {
+            case GITHUB_REPO, GITHUB_ISSUE, GITHUB_PR -> {
+                details = githubClient.fetchDetail(link);
+            }
+            case STACKOVERFLOW -> {
+                details = stackoverflowClient.fetchDetail(link);
+            }
+        }
+        UpdateDto upd = new UpdateDto(
+            link.getLinkId(),
+            Timestamp.from(Instant.now()),
+            details.get(),
+            false
+        );
+        updateService.save(upd);
     }
 }

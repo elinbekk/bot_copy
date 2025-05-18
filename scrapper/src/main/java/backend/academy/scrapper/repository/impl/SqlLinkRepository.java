@@ -2,7 +2,7 @@ package backend.academy.scrapper.repository.impl;
 
 import backend.academy.scrapper.entity.Link;
 import backend.academy.scrapper.entity.LinkType;
-import backend.academy.scrapper.repository.LinkRepo;
+import backend.academy.scrapper.repository.LinkRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,7 +24,7 @@ import java.util.Set;
 
 @Component
 @ConditionalOnProperty(name = "app.access-type", havingValue = "SQL")
-public class SqlLinkRepository implements LinkRepo {
+public class SqlLinkRepository implements LinkRepository {
     private final JdbcTemplate jdbc;
     private final ObjectMapper om;
 

@@ -1,9 +1,5 @@
 package backend.academy.scrapper.client;
 
-import static backend.academy.scrapper.ScrapperConstants.ISSUE_REGEX;
-import static backend.academy.scrapper.ScrapperConstants.PR_REGEX;
-import static backend.academy.scrapper.ScrapperConstants.REPO_REGEX;
-
 import backend.academy.scrapper.config.GithubProperties;
 import backend.academy.scrapper.dto.GithubIssue;
 import backend.academy.scrapper.dto.GithubPR;
@@ -16,8 +12,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatusCode;
@@ -27,6 +26,9 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriComponentsBuilder;
+import static backend.academy.scrapper.ScrapperConstants.ISSUE_REGEX;
+import static backend.academy.scrapper.ScrapperConstants.PR_REGEX;
+import static backend.academy.scrapper.ScrapperConstants.REPO_REGEX;
 
 @Component
 public class GithubClient implements UpdateChecker {
@@ -50,10 +52,11 @@ public class GithubClient implements UpdateChecker {
             URI uri = getUri(link);
             log.info("URI запроса: {}", uri);
 
-            final ResponseEntity<String> response = getResponse(uri);
+            final ResponseEntity<String> response = getStringResponseEntity(uri);
 
             JsonNode json = objectMapper.readTree(response.getBody());
             Instant lastUpdate = parseUpdateTime(json, link.getLinkType());
+
             log.info("Status Code: {}", response.getStatusCode());
 
             return lastUpdate.isAfter(Instant.parse(link.getLastCheckedTime()));
@@ -67,6 +70,11 @@ public class GithubClient implements UpdateChecker {
             log.error("Ошибка:{}", e.getMessage());
             return false;
         }
+    }
+
+    private @NotNull ResponseEntity<String> getStringResponseEntity(URI uri) {
+        final ResponseEntity<String> response = getResponse(uri);
+        return response;
     }
 
     private ResponseEntity<String> getResponse(URI uri) {
@@ -155,5 +163,18 @@ public class GithubClient implements UpdateChecker {
             return new GithubRepo(repoMatcher.group(1), repoMatcher.group(2));
         }
         throw new IllegalArgumentException("Неподдерживаемый Github URL");
+    }
+
+    public Optional<JsonNode> fetchDetail(JsonNode json) {
+        ObjectNode payload = objectMapper.createObjectNode();
+        payload.put("title", json.get("title").asText());
+        payload.put("user", json.get("user").get("login").asText());
+        payload.put("createdAt", json.get("created_at").asText());
+        String body = json.has("body") ? json.get("body").asText() : "";
+        payload.put("preview",
+            body.length() <= 200 ? body : body.substring(0, 200)
+        );
+
+        return Optional.of(payload);
     }
 }

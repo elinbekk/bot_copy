@@ -11,8 +11,6 @@ import backend.academy.scrapper.client.GithubClient;
 import backend.academy.scrapper.client.StackOverflowClient;
 import backend.academy.scrapper.entity.Link;
 import backend.academy.scrapper.repository.ChatRepository;
-import backend.academy.scrapper.repository.InMemoryLinkRepository;
-import backend.academy.scrapper.repository.LinkRepo;
 import backend.academy.scrapper.repository.LinkRepository;
 import java.util.Map;
 import java.util.Set;
@@ -25,7 +23,7 @@ import org.mockito.Mockito;
 
 public class SchedulerTest {
     private final ChatRepository chatRepository = Mockito.mock(ChatRepository.class);
-    private final LinkRepo linkRepository = Mockito.mock(LinkRepo.class);
+    private final LinkRepository linkRepository = Mockito.mock(LinkRepository.class);
     private final LinkService linkService = new LinkServiceImpl(chatRepository, linkRepository);
     private final ChatService chatService = new ChatServiceImpl(chatRepository);
     private final BotClient botClient = Mockito.mock(BotClient.class);

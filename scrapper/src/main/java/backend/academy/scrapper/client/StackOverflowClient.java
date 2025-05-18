@@ -8,11 +8,14 @@ import backend.academy.scrapper.dto.StackOverflowResponse;
 import backend.academy.scrapper.entity.Link;
 import backend.academy.scrapper.exception.StackOverflowException;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatusCode;
@@ -113,6 +116,42 @@ public class StackOverflowClient implements UpdateChecker {
             return apiResp.getItems().getFirst();
         } catch (JsonProcessingException e) {
             throw new StackOverflowException("Не удалось распарсить JSON‑ответ: " + e.getOriginalMessage(), e);
+        }
+    }
+
+    public Optional<JsonNode> fetchDetail(Link link) {
+        try {
+            // 1) получаем JSON-ответ уже как дерево
+            String raw = restClient.get()
+                .uri(buildUrlWithFilters(link))
+                .retrieve()
+                .body(String.class);
+            JsonNode root = objectMapper.readTree(raw);
+            JsonNode item = root.path("items").get(0);
+
+            // 2) проверяем дату
+            Instant lastActivity = Instant.ofEpochSecond(item.path("last_activity_date").asLong());
+            Instant lastChecked  = Instant.parse(link.getLastCheckedTime());
+            if (!lastActivity.isAfter(lastChecked)) {
+                return Optional.empty();
+            }
+
+            // 3) формируем payload
+            ObjectNode payload = objectMapper.createObjectNode();
+            payload.put("questionTitle", item.path("title").asText());
+            payload.put("user",          item.path("owner").path("display_name").asText());
+            payload.put("createdAt",     Instant.ofEpochSecond(item.path("creation_date").asLong()).toString());
+
+            String body = item.path("body").asText("");
+            payload.put("preview", body.length() <= 200
+                ? body
+                : body.substring(0, 200)
+            );
+
+            return Optional.of(payload);
+        } catch (Exception e) {
+            log.error("Ошибка fetchDetail для SO: {}", e.getMessage(), e);
+            return Optional.empty();
         }
     }
 }

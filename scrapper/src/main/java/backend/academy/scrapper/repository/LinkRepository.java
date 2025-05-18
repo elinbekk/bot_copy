@@ -1,20 +1,21 @@
 package backend.academy.scrapper.repository;
 
 import backend.academy.scrapper.entity.Link;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import java.sql.Timestamp;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
-public interface LinkRepository {//todo: need to remove
-    List<Link> findAllByChatId(Long chatId);
+public interface LinkRepository {
+    Long save(Link link);
 
-    void saveLink(Long chatId, Link link) throws IllegalStateException;
+    void delete(Long chatId, String url);
 
-    void remove(Long chatId, String url) throws IllegalStateException;
+    boolean exists(Long chatId, String url);
 
-    boolean linkIsExists(Long chatId, Link link);
+    List<Link> findAllLinksByChatId(Long chatId);
 
-    List<Link> getAllLinks();
+    Page<Link> findDueLinks(Pageable page);
 
-    Map<Link, Set<Long>> findAllLinksWithChatIds();
+    void updateLastChecked(Long linkId, Timestamp when);
 }

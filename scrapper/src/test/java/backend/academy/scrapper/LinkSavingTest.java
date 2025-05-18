@@ -6,8 +6,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import backend.academy.scrapper.entity.Link;
-import backend.academy.scrapper.repository.InMemoryLinkRepository;
-import backend.academy.scrapper.repository.LinkRepository;
+import backend.academy.scrapper.repository.LinkRepositoryOld;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
@@ -15,7 +14,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class LinkSavingTest {
-    private LinkRepository linkRepository;
+    private LinkRepositoryOld linkRepository;
     private static final long testChatId = 123L;
     private static final long testLinkId = 1234L;
     private Link link;

@@ -1,7 +1,7 @@
 package backend.academy.scrapper.db_test;
 
 import backend.academy.scrapper.config.ScrapperConfig;
-import backend.academy.scrapper.repository.LinkRepo;
+import backend.academy.scrapper.repository.LinkRepository;
 import backend.academy.scrapper.repository.impl.OrmLinkRepository;
 import backend.academy.scrapper.repository.impl.SqlLinkRepository;
 import org.junit.jupiter.api.Assertions;
@@ -14,10 +14,10 @@ import org.springframework.test.context.ActiveProfiles;
 @ActiveProfiles("test")
 public class RepoConfigurationTest {
     private final String accessType;
-    private final LinkRepo repository;
+    private final LinkRepository repository;
 
     @Autowired
-    public RepoConfigurationTest(ScrapperConfig config, LinkRepo repository) {
+    public RepoConfigurationTest(ScrapperConfig config, LinkRepository repository) {
         this.accessType = config.accessType();
         this.repository = repository;
     }

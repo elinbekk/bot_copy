@@ -18,6 +18,13 @@ public class UpdateDto {
         this.sent = sent;
     }
 
+    public UpdateDto(Long linkId, Timestamp occurredAt, JsonNode payload, boolean sent) {
+        this.linkId = linkId;
+        this.occurredAt = occurredAt;
+        this.payload = payload;
+        this.sent = sent;
+    }
+
     public UpdateDto() {
     }
 

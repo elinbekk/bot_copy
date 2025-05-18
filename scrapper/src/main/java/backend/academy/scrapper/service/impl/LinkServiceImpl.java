@@ -3,7 +3,7 @@ package backend.academy.scrapper.service.impl;
 import backend.academy.scrapper.entity.Link;
 import backend.academy.scrapper.exception.DuplicateLinkException;
 import backend.academy.scrapper.repository.ChatRepository;
-import backend.academy.scrapper.repository.LinkRepo;
+import backend.academy.scrapper.repository.LinkRepository;
 import backend.academy.scrapper.service.LinkService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,9 +14,9 @@ import java.util.List;
 @Service
 public class LinkServiceImpl implements LinkService {
     private final ChatRepository chatsRepo;
-    private final LinkRepo linksRepo;
+    private final LinkRepository linksRepo;
 
-    public LinkServiceImpl(ChatRepository chats, LinkRepo links) {
+    public LinkServiceImpl(ChatRepository chats, LinkRepository links) {
         this.chatsRepo = chats;
         this.linksRepo = links;
     }

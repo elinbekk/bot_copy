@@ -5,7 +5,7 @@ import backend.academy.scrapper.entity.Link;
 import backend.academy.scrapper.entity.LinkEntity;
 import backend.academy.scrapper.entity.LinkType;
 import backend.academy.scrapper.repository.LinkEntityRepository;
-import backend.academy.scrapper.repository.LinkRepo;
+import backend.academy.scrapper.repository.LinkRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,7 +21,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @ConditionalOnProperty(name = "app.access-type", havingValue = "ORM")
-public class OrmLinkRepository implements LinkRepo {
+public class OrmLinkRepository implements LinkRepository {
     private final LinkEntityRepository linkRepo;
     private final ObjectMapper om;
 
