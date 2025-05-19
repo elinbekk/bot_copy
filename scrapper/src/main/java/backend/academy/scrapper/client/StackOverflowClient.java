@@ -9,15 +9,18 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.io.IOException;
 import java.net.URI;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -51,7 +54,6 @@ public class StackOverflowClient implements UpdateChecker {
 
     private StackOverflowQuestion getQuestion(Link resource) {
         final StackOverflowResponse stackOverflowResponse = getStackOverflowResponse(resource);
-
         if (stackOverflowResponse == null
                 || stackOverflowResponse.getItems() == null
                 || stackOverflowResponse.getItems().isEmpty()) {
@@ -60,20 +62,24 @@ public class StackOverflowClient implements UpdateChecker {
         return stackOverflowResponse.getItems().getFirst();
     }
 
-    private @Nullable StackOverflowResponse getStackOverflowResponse(Link resource) {
+    private StackOverflowResponse getStackOverflowResponse(Link resource) {
         StackOverflowResponse stackOverflowResponse = restClient
                 .get()
                 .uri(buildUrlWithFilters(resource))
                 .retrieve()
-                .onStatus(HttpStatusCode::is4xxClientError, (request, response) -> {
-                    String body = new String(response.getBody().readAllBytes());
-                    throw new StackOverflowException("Клиентская ошибка: " + response.getStatusCode() + " " + body);
-                })
-                .onStatus(HttpStatusCode::is5xxServerError, (request, response) -> {
-                    throw new StackOverflowException("Серверная ошибка: " + response.getStatusCode());
-                })
+                .onStatus(HttpStatusCode::is4xxClientError, this::handle4xxError)
+                .onStatus(HttpStatusCode::is5xxServerError, this::handle5xxError)
                 .body(StackOverflowResponse.class);
         return stackOverflowResponse;
+    }
+
+    private void handle5xxError(HttpRequest request, ClientHttpResponse response) throws IOException {
+        throw new StackOverflowException("Серверная ошибка: " + response.getStatusCode());
+    }
+
+    private void handle4xxError(HttpRequest httpRequest, ClientHttpResponse response) throws IOException {
+        String body = new String(response.getBody().readAllBytes());
+        throw new StackOverflowException("Клиентская ошибка: " + response.getStatusCode() + " " + body);
     }
 
     private URI buildUrlWithFilters(Link resource) {
@@ -124,4 +130,53 @@ public class StackOverflowClient implements UpdateChecker {
         }
     }
 
+    public Optional<Detail> fetchDetail(Link link) {
+        try {
+            StackOverflowResponse response = getStackOverflowResponse(link);
+            StackOverflowQuestion question = response.getItems().getFirst();
+            Instant lastActivity = Instant.ofEpochSecond(question.getLastActivityDate());
+            Instant lastChecked = Instant.parse(link.getLastCheckedTime());
+            if (!lastActivity.isAfter(lastChecked)) {
+                return Optional.empty();
+            }
+            final ObjectNode payload = buildPayload(question);
+
+            return Optional.of(new Detail(lastActivity, payload));
+        } catch (Exception e) {
+            log.error("Ошибка fetchDetail для SO: {}", e.getMessage(), e);
+            return Optional.empty();
+        }
+    }
+
+    private ObjectNode buildPayload(StackOverflowQuestion question) {
+        ObjectNode payload = objectMapper.createObjectNode();
+        payload.put("questionTitle", question.getTitle());
+        payload.put("user", question.getOwner().getDisplayName());
+        payload.put("createdAt", question.getCreatingDate());
+
+        String body = question.getBody();
+        payload.put("preview", body.length() <= 200
+            ? body
+            : body.substring(0, 200)
+        );
+        return payload;
+    }
+
+    public static class Detail {
+        private final Instant lastUpdate;
+        private final JsonNode payload;
+
+        public Detail(Instant lastUpdate, JsonNode payload) {
+            this.lastUpdate = lastUpdate;
+            this.payload = payload;
+        }
+
+        public Instant getLastUpdate() {
+            return lastUpdate;
+        }
+
+        public JsonNode getPayload() {
+            return payload;
+        }
+    }
 }
