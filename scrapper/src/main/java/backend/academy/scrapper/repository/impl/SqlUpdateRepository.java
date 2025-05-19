@@ -57,10 +57,8 @@ public class SqlUpdateRepository implements UpdateRepository {
         if (updateIds == null || updateIds.isEmpty()) {
             return;
         }
-        String inSql = updateIds.stream().map(id -> "?").collect(joining(","));
         String ids = updateIds.stream().map(String::valueOf).collect(joining(","));
-        System.out.println("IDS:" + ids);
-        jdbc.update("UPDATE updates SET sent = true WHERE id IN (" + inSql + ")", ids);
+        jdbc.update("UPDATE updates SET sent = true WHERE id IN (" + ids + ")");
     }
 
     private static class UpdateRowMapper implements RowMapper<UpdateDto> {
