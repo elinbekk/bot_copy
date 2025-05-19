@@ -53,6 +53,13 @@ public class Link {
         this.lastCheckedTime = lastCheckedTime;
     }
 
+    public Link(Long id, String url, Long chatId, LinkType type) {
+        this.linkId = id;
+        this.url = url;
+        this.chatId = chatId;
+        this.linkType = type;
+    }
+
     public Long getLinkId() {
         return linkId;
     }
