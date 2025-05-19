@@ -3,6 +3,7 @@ package backend.academy.scrapper.controller;
 import backend.academy.scrapper.dto.LinkRequest;
 import backend.academy.scrapper.dto.LinkResponse;
 import backend.academy.scrapper.dto.Link;
+import backend.academy.scrapper.exception.DuplicateLinkException;
 import backend.academy.scrapper.service.LinkService;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -50,7 +51,7 @@ public class LinkController {
             LinkResponse resp = new LinkResponse(
                     model.getLinkId(), model.getUrl(), model.getTags(), model.getFilters(), model.getLastCheckedTime());
             return ResponseEntity.ok(resp);
-        } catch (IllegalArgumentException e) {
+        } catch (DuplicateLinkException | IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
         }
     }

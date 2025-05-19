@@ -2,18 +2,19 @@ package backend.academy.scrapper;
 
 import backend.academy.scrapper.client.GithubClient;
 import backend.academy.scrapper.client.StackOverflowClient;
-import backend.academy.scrapper.dto.UpdateDto;
 import backend.academy.scrapper.dto.Link;
-import backend.academy.scrapper.service.ChatService;
+import backend.academy.scrapper.dto.UpdateDto;
 import backend.academy.scrapper.service.LinkService;
 import backend.academy.scrapper.service.UpdateService;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -23,35 +24,39 @@ public class LinkCheckerScheduler {
     private final GithubClient githubClient;
     private final StackOverflowClient stackoverflowClient;
     private final LinkService linkService;
-    private final ChatService chatService;
     private final UpdateService updateService;
+    private final int pageSize;
 
     public LinkCheckerScheduler(
         GithubClient githubClient,
         StackOverflowClient stackoverflowClient,
-        LinkService linkService, ChatService chatService, UpdateService updateService) {
+        LinkService linkService, UpdateService updateService,
+        @Value("${app.scheduler.page-size:50}") int pageSize) {
         this.githubClient = githubClient;
         this.stackoverflowClient = stackoverflowClient;
         this.linkService = linkService;
-        this.chatService = chatService;
+        this.pageSize = pageSize;
         this.updateService = updateService;
     }
 
     @Scheduled(fixedRateString = "${app.scheduler.interval-in-ms}")
     public void checkAllLinks() {
+        int page = 0;
+        Page<Link> links;
         try {
-            List<Long> chatIds = chatService.getChatIds();
-            for(Long chatId : chatIds) {
-                List<Link> links = linkService.getUserListLinks(chatId);
-                for(Link link : links) {
+            do {
+                links = linkService.findDueLinks(PageRequest.of(page, pageSize));
+                for (Link link : links) {
                     logger.debug("Проверяемая ссылка: {} (Тип: {})", link.getUrl(), link.getLinkType());
                     processUpdateDetails(link);
                 }
-            }
+                page++;
+            } while (links.hasNext());
         } catch (Exception e) {
             logger.error("Ошибка планировщика:", e);
         }
     }
+
 
     protected boolean isUpdated(Link resource) {
         return switch (resource.getLinkType()) {

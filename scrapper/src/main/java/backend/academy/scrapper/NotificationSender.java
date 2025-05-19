@@ -8,6 +8,7 @@ import backend.academy.scrapper.entity.LinkType;
 import backend.academy.scrapper.service.LinkService;
 import backend.academy.scrapper.service.UpdateService;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -32,7 +33,7 @@ public class NotificationSender {
         for (UpdateDto upd : unsents) {
             Link link = linkService.findById(upd.getLinkId());
             final String text = formatMessage(upd, link.getLinkType());
-            logger.info("ТЕКСТ УВЕДОМЛЕНИЯ:{}", text);
+            logger.info("Уведомление:{}", text);
             LinkUpdate dto = new LinkUpdate(
                 link.getUrl(),
                 text,
@@ -40,6 +41,8 @@ public class NotificationSender {
             );
             botClient.sendUpdateNotification(dto);
         }
+        List<Long> updateIds = unsents.stream().map(UpdateDto::getId).toList();
+        updateService.markSent(updateIds);
     }
 
     String formatMessage(UpdateDto updateDto, LinkType linkType) {
