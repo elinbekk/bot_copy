@@ -10,7 +10,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import backend.academy.scrapper.WiremockIntegrationTest;
 import backend.academy.scrapper.client.GithubClient;
 import backend.academy.scrapper.config.GithubProperties;
-import backend.academy.scrapper.entity.Link;
+import backend.academy.scrapper.dto.Link;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Assertions;

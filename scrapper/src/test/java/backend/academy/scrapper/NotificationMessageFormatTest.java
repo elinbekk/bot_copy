@@ -14,20 +14,17 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class NotificationMessageFormatTest {
-
     private NotificationSender sender;
     private ObjectMapper mapper;
 
     @BeforeEach
     void setUp() {
-        // Для тестирования формата нам не нужны реальные сервисы
         sender = new NotificationSender(null, null, null);
         mapper = new ObjectMapper();
     }
 
     @Test
     void formatGithubMessage() {
-        // готовим DTO с payload
         ObjectNode payload = mapper.createObjectNode();
         payload.put("title", "My Repo");
         payload.put("user", "alice");
@@ -35,29 +32,28 @@ public class NotificationMessageFormatTest {
         payload.put("preview", "Hello world");
 
         UpdateDto dto = new UpdateDto(
-            1L,                      // linkId
-            Timestamp.from(Instant.now()),           // occurredAt
+            1L,
+            Timestamp.from(Instant.now()),
             payload,
             false
         );
 
         Link link = new Link(
             1L,
-            "https://github.com/x", // id
-            42L,                     // chatId
-            // url
-            LinkType.GITHUB_REPO,
+            "https://github.com/x",
+            42L,
+            LinkType.GITHUB_PR,
             Set.of(), Map.of(),
-            "2025-05-19T11:00:00Z"   // lastCheckedTime
+            "2025-05-19T11:00:00Z"
         );
 
-        String text = sender.formatMessage(dto);
+        String text = sender.formatMessage(dto, link.getLinkType());
 
         assertThat(text).isEqualTo(
             "My Repo\n" +
                 "Автор: alice\n" +
                 "Время: 2025-05-19T12:00:00Z\n" +
-                "Hello world…"
+                "Hello world..."
         );
     }
 
@@ -67,7 +63,7 @@ public class NotificationMessageFormatTest {
         payload.put("questionTitle", "How to X?");
         payload.put("user", "bob");
         payload.put("createdAt", "2025-05-19T13:00:00Z");
-        payload.put("preview", "Answer is...");
+        payload.put("preview", "Answer is");
 
         UpdateDto dto = new UpdateDto(
             2L,
@@ -85,13 +81,13 @@ public class NotificationMessageFormatTest {
             "2025-05-19T12:00:00Z"
         );
 
-        String text = sender.formatMessage(dto);
+        String text = sender.formatMessage(dto, link.getLinkType());
 
         assertThat(text).isEqualTo(
             "Вопрос: How to X?\n" +
                 "От: bob\n" +
                 "Время: 2025-05-19T13:00:00Z\n" +
-                "Answer is…"
+                "Answer is..."
         );
     }
 }

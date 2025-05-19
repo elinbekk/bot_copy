@@ -9,28 +9,34 @@ import static org.mockito.Mockito.when;
 import backend.academy.scrapper.client.BotClient;
 import backend.academy.scrapper.client.GithubClient;
 import backend.academy.scrapper.client.StackOverflowClient;
-import backend.academy.scrapper.entity.Link;
+import backend.academy.scrapper.dto.Link;
 import backend.academy.scrapper.repository.ChatRepository;
 import backend.academy.scrapper.repository.LinkRepository;
 import java.util.Map;
 import java.util.Set;
+import backend.academy.scrapper.repository.UpdateRepository;
 import backend.academy.scrapper.service.ChatService;
 import backend.academy.scrapper.service.LinkService;
+import backend.academy.scrapper.service.UpdateService;
 import backend.academy.scrapper.service.impl.ChatServiceImpl;
 import backend.academy.scrapper.service.impl.LinkServiceImpl;
+import backend.academy.scrapper.service.impl.UpdateServiceImpl;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 public class SchedulerTest {
     private final ChatRepository chatRepository = Mockito.mock(ChatRepository.class);
     private final LinkRepository linkRepository = Mockito.mock(LinkRepository.class);
+    private final UpdateRepository updateRepository = Mockito.mock(UpdateRepository.class);
     private final LinkService linkService = new LinkServiceImpl(chatRepository, linkRepository);
     private final ChatService chatService = new ChatServiceImpl(chatRepository);
+    private final UpdateService updateService = new UpdateServiceImpl(updateRepository);
     private final BotClient botClient = Mockito.mock(BotClient.class);
     private final GithubClient githubClient = Mockito.mock(GithubClient.class);
     private final StackOverflowClient soClient = Mockito.mock(StackOverflowClient.class);
+    int pageSize = 5;
     private final LinkCheckerScheduler linkScheduler =
-            new LinkCheckerScheduler(botClient, githubClient, soClient, linkService, chatService);
+            new LinkCheckerScheduler(githubClient, soClient, linkService, updateService, pageSize);
 
     private static final long testChatId = 123L;
     private static final long testChatId2 = 124L;

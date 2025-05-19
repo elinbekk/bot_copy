@@ -1,7 +1,7 @@
 package backend.academy.scrapper.db_test;
 
 import backend.academy.scrapper.dto.UpdateDto;
-import backend.academy.scrapper.entity.Link;
+import backend.academy.scrapper.dto.Link;
 import backend.academy.scrapper.entity.LinkType;
 import backend.academy.scrapper.repository.impl.SqlChatRepository;
 import backend.academy.scrapper.repository.impl.SqlLinkRepository;
@@ -50,7 +50,7 @@ public class SqlUpdatesRepositoryTest extends BaseSqlTest {
         Timestamp occurredAt = Timestamp.from(now);
         updateRepository.save(savedLinkId, payload, occurredAt);
 
-        List<UpdateDto> updates = updateRepository.findUnsents(0, 10);
+        List<UpdateDto> updates = updateRepository.findAll();
         assertThat(updates).hasSize(1);
 
         UpdateDto u = updates.get(0);
@@ -67,7 +67,7 @@ public class SqlUpdatesRepositoryTest extends BaseSqlTest {
         Timestamp time = Timestamp.from(Instant.now());
         updateRepository.save(savedLinkId, payload, time);
 
-        List<UpdateDto> updates = updateRepository.findUnsents(0, 10);
+        List<UpdateDto> updates = updateRepository.findAll();
         assertThat(updates).hasSize(1);
 
         Long updateId = updates.getFirst().getId();

@@ -6,7 +6,7 @@ public enum LinkType {
     GITHUB_REPO("https?://github\\.com/[^/]+/[^/]+(/)?(.git)?", "GitHub Repository"),
     GITHUB_ISSUE("https?://github\\.com/[^/]+/[^/]+/issues/\\d+", "GitHub Issue"),
     GITHUB_PR("https?://github\\.com/[^/]+/[^/]+/pull/\\d+", "GitHub Pull Request"),
-    STACKOVERFLOW("https?://stackoverflow\\.com/questions/\\d+", "StackOverflow Question");
+    STACKOVERFLOW("https?://stackoverflow\\.com/questions/\\d+(?:/[^/]+)?", "StackOverflow Question");
 
     private final Pattern pattern;
     private final String description;

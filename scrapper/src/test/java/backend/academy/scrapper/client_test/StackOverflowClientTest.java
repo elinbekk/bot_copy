@@ -13,7 +13,7 @@ import backend.academy.scrapper.WiremockIntegrationTest;
 import backend.academy.scrapper.client.StackOverflowClient;
 import backend.academy.scrapper.config.StackoverflowProperties;
 import backend.academy.scrapper.dto.StackOverflowQuestion;
-import backend.academy.scrapper.entity.Link;
+import backend.academy.scrapper.dto.Link;
 import backend.academy.scrapper.exception.StackOverflowException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;

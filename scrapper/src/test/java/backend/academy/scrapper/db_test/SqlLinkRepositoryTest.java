@@ -1,6 +1,6 @@
 package backend.academy.scrapper.db_test;
 
-import backend.academy.scrapper.entity.Link;
+import backend.academy.scrapper.dto.Link;
 import backend.academy.scrapper.entity.LinkType;
 import backend.academy.scrapper.repository.impl.SqlChatRepository;
 import backend.academy.scrapper.repository.impl.SqlLinkRepository;
