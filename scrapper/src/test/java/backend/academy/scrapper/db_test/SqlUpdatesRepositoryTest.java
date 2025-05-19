@@ -1,7 +1,9 @@
 package backend.academy.scrapper.db_test;
 
-import backend.academy.scrapper.dto.UpdateDto;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import backend.academy.scrapper.dto.Link;
+import backend.academy.scrapper.dto.UpdateDto;
 import backend.academy.scrapper.entity.LinkType;
 import backend.academy.scrapper.repository.impl.SqlChatRepository;
 import backend.academy.scrapper.repository.impl.SqlLinkRepository;
@@ -16,7 +18,6 @@ import java.util.Map;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class SqlUpdatesRepositoryTest extends BaseSqlTest {
     private final Long CHAT_ID = 100L;
@@ -37,7 +38,13 @@ public class SqlUpdatesRepositoryTest extends BaseSqlTest {
         jdbcTemplate.update("DELETE FROM chats");
 
         chatRepository.save(CHAT_ID);
-        Link link = new Link(LINK_URL, CHAT_ID, LinkType.GITHUB_PR, Set.of(), Map.of(), Instant.now().toString());
+        Link link = new Link(
+                LINK_URL,
+                CHAT_ID,
+                LinkType.GITHUB_PR,
+                Set.of(),
+                Map.of(),
+                Instant.now().toString());
         savedLinkId = linkRepository.save(link);
     }
 
@@ -45,8 +52,7 @@ public class SqlUpdatesRepositoryTest extends BaseSqlTest {
     void saveAndFindUpdateTest() {
         ObjectNode payload = objectMapper.createObjectNode();
         payload.put("testKey", "testValue");
-        Instant now = Instant.now()
-            .truncatedTo(ChronoUnit.MILLIS);
+        Instant now = Instant.now().truncatedTo(ChronoUnit.MILLIS);
         Timestamp occurredAt = Timestamp.from(now);
         updateRepository.save(savedLinkId, payload, occurredAt);
 
@@ -73,11 +79,8 @@ public class SqlUpdatesRepositoryTest extends BaseSqlTest {
         Long updateId = updates.getFirst().getId();
         updateRepository.markSent(List.of(updateId));
 
-        boolean sentFlag = jdbcTemplate.queryForObject(
-            "SELECT sent FROM updates WHERE id = ?",
-            Boolean.class,
-            updateId
-        );
+        boolean sentFlag =
+                jdbcTemplate.queryForObject("SELECT sent FROM updates WHERE id = ?", Boolean.class, updateId);
         assertThat(sentFlag).isTrue();
     }
 }

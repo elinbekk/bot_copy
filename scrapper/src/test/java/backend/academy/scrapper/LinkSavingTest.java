@@ -1,19 +1,19 @@
-//package backend.academy.scrapper;
+// package backend.academy.scrapper;
 //
-//import static backend.academy.scrapper.entity.LinkType.GITHUB_REPO;
-//import static org.junit.Assert.assertEquals;
-//import static org.junit.Assert.assertTrue;
-//import static org.junit.jupiter.api.Assertions.assertThrows;
+// import static backend.academy.scrapper.entity.LinkType.GITHUB_REPO;
+// import static org.junit.Assert.assertEquals;
+// import static org.junit.Assert.assertTrue;
+// import static org.junit.jupiter.api.Assertions.assertThrows;
 //
-//import backend.academy.scrapper.dto.Link;
-//import backend.academy.scrapper.repository.LinkRepositoryOld;
-//import java.time.Instant;
-//import java.util.Map;
-//import java.util.Set;
-//import org.junit.Before;
-//import org.junit.Test;
+// import backend.academy.scrapper.dto.Link;
+// import backend.academy.scrapper.repository.LinkRepositoryOld;
+// import java.time.Instant;
+// import java.util.Map;
+// import java.util.Set;
+// import org.junit.Before;
+// import org.junit.Test;
 //
-//public class LinkSavingTest {
+// public class LinkSavingTest {
 //    private LinkRepositoryOld linkRepository;
 //    private static final long testChatId = 123L;
 //    private static final long testLinkId = 1234L;
@@ -90,4 +90,4 @@
 //        Map<Link, Set<Long>> result = linkRepository.findAllLinksWithChatIds();
 //        assertEquals(expected, result);
 //    }
-//}
+// }

@@ -1,7 +1,6 @@
 package backend.academy.scrapper.dto;
 
 import backend.academy.scrapper.entity.LinkType;
-
 import java.util.Map;
 import java.util.Set;
 
@@ -14,16 +13,15 @@ public class Link {
     private Map<String, String> filters;
     private String lastCheckedTime;
 
-    public Link() {
-    }
+    public Link() {}
 
     public Link(
-        String url,
-        Long chatId,
-        LinkType resourceType,
-        Set<String> tags,
-        Map<String, String> filters,
-        String lastCheckedTime) {
+            String url,
+            Long chatId,
+            LinkType resourceType,
+            Set<String> tags,
+            Map<String, String> filters,
+            String lastCheckedTime) {
         this.url = url;
         this.chatId = chatId;
         this.linkType = resourceType;
@@ -32,7 +30,14 @@ public class Link {
         this.lastCheckedTime = lastCheckedTime;
     }
 
-    public Link(Long linkId, String url, Long chatId, LinkType linkType, Set<String> tags, Map<String, String> filters, String lastCheckedTime) {
+    public Link(
+            Long linkId,
+            String url,
+            Long chatId,
+            LinkType linkType,
+            Set<String> tags,
+            Map<String, String> filters,
+            String lastCheckedTime) {
         this.linkId = linkId;
         this.url = url;
         this.chatId = chatId;
@@ -46,7 +51,13 @@ public class Link {
         this.linkId = linkId;
     }
 
-    public Link(Long linkId, String url, LinkType linkType, Set<String> tags, Map<String, String> filters, String lastCheckedTime) {
+    public Link(
+            Long linkId,
+            String url,
+            LinkType linkType,
+            Set<String> tags,
+            Map<String, String> filters,
+            String lastCheckedTime) {
         this.linkId = linkId;
         this.url = url;
         this.linkType = linkType;

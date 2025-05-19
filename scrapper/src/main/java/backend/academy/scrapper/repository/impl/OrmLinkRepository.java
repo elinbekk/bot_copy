@@ -1,7 +1,7 @@
 package backend.academy.scrapper.repository.impl;
 
-import backend.academy.scrapper.entity.ChatEntity;
 import backend.academy.scrapper.dto.Link;
+import backend.academy.scrapper.entity.ChatEntity;
 import backend.academy.scrapper.entity.LinkEntity;
 import backend.academy.scrapper.entity.LinkType;
 import backend.academy.scrapper.repository.LinkEntityRepository;
@@ -9,7 +9,6 @@ import backend.academy.scrapper.repository.LinkRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
@@ -81,20 +80,20 @@ public class OrmLinkRepository implements LinkRepository {
     public Page<Link> findDueLinks(Pageable pg) {
         Page<LinkEntity> page = linkRepo.findDueLinks(pg);
         List<Link> content = page.getContent().stream()
-            .map(linkEntity -> {
-                try {
-                    return new Link(
-                        linkEntity.getId(),
-                        linkEntity.getUrl(),
-                        LinkType.valueOf(linkEntity.getType()),
-                        om.readValue(linkEntity.getTags(), new TypeReference<>() {}),
-                        om.readValue(linkEntity.getFilters(), new TypeReference<>() {}),
-                        String.valueOf(linkEntity.getLastChecked())
-                    );
-                } catch (JsonProcessingException e) {
-                    throw new RuntimeException(e);
-                }
-            }).toList();
+                .map(linkEntity -> {
+                    try {
+                        return new Link(
+                                linkEntity.getId(),
+                                linkEntity.getUrl(),
+                                LinkType.valueOf(linkEntity.getType()),
+                                om.readValue(linkEntity.getTags(), new TypeReference<>() {}),
+                                om.readValue(linkEntity.getFilters(), new TypeReference<>() {}),
+                                String.valueOf(linkEntity.getLastChecked()));
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .toList();
 
         return new PageImpl<>(content, pg, page.getTotalElements());
     }
@@ -108,10 +107,9 @@ public class OrmLinkRepository implements LinkRepository {
     public Link findLinkById(Long linkId) {
         LinkEntity linkEntity = linkRepo.findById(linkId).orElse(null);
         return new Link(
-            linkEntity.getId(),
-            linkEntity.getUrl(),
-            linkEntity.getChat().getId(),
-            LinkType.valueOf(linkEntity.getType())
-        );
+                linkEntity.getId(),
+                linkEntity.getUrl(),
+                linkEntity.getChat().getId(),
+                LinkType.valueOf(linkEntity.getType()));
     }
 }

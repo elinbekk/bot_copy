@@ -2,8 +2,8 @@ package backend.academy.scrapper.service.impl;
 
 import backend.academy.scrapper.repository.ChatRepository;
 import backend.academy.scrapper.service.ChatService;
-import org.springframework.stereotype.Service;
 import java.util.List;
+import org.springframework.stereotype.Service;
 
 @Service
 public class ChatServiceImpl implements ChatService {

@@ -1,11 +1,12 @@
 package backend.academy.scrapper.db_test;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
+
 import backend.academy.scrapper.repository.impl.SqlChatRepository;
 import jakarta.annotation.PostConstruct;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatNoException;
 
 public class SqlChatRepositoryTest extends BaseSqlTest {
     @PostConstruct
@@ -22,11 +23,7 @@ public class SqlChatRepositoryTest extends BaseSqlTest {
     void saveNewChatInDbTest() {
         Long chatId = 1L;
         chatRepository.save(chatId);
-        Integer count = jdbcTemplate.queryForObject(
-            "SELECT COUNT(*) FROM chats WHERE id = ?",
-            Integer.class,
-            chatId
-        );
+        Integer count = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM chats WHERE id = ?", Integer.class, chatId);
         assertThat(count).isEqualTo(1);
     }
 
@@ -35,11 +32,7 @@ public class SqlChatRepositoryTest extends BaseSqlTest {
         Long chatId = 1L;
         chatRepository.save(chatId);
         chatRepository.save(chatId);
-        Integer count = jdbcTemplate.queryForObject(
-            "SELECT COUNT(*) FROM chats WHERE id = ?",
-            Integer.class,
-            chatId
-        );
+        Integer count = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM chats WHERE id = ?", Integer.class, chatId);
         assertThat(count).isEqualTo(1);
     }
 
@@ -48,11 +41,7 @@ public class SqlChatRepositoryTest extends BaseSqlTest {
         Long chatId = 1L;
         chatRepository.save(chatId);
         chatRepository.delete(chatId);
-        Integer count = jdbcTemplate.queryForObject(
-            "SELECT COUNT(*) FROM chats WHERE id = ?",
-            Integer.class,
-            chatId
-        );
+        Integer count = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM chats WHERE id = ?", Integer.class, chatId);
         assertThat(count).isEqualTo(0);
     }
 
@@ -66,7 +55,6 @@ public class SqlChatRepositoryTest extends BaseSqlTest {
 
     @Test
     void deleteNonExistingChatTest() {
-        assertThatNoException()
-            .isThrownBy(() -> chatRepository.delete(999L));
+        assertThatNoException().isThrownBy(() -> chatRepository.delete(999L));
     }
 }

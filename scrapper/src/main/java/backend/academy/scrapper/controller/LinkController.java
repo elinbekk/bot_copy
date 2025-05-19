@@ -1,8 +1,8 @@
 package backend.academy.scrapper.controller;
 
+import backend.academy.scrapper.dto.Link;
 import backend.academy.scrapper.dto.LinkRequest;
 import backend.academy.scrapper.dto.LinkResponse;
-import backend.academy.scrapper.dto.Link;
 import backend.academy.scrapper.exception.DuplicateLinkException;
 import backend.academy.scrapper.service.LinkService;
 import java.time.Instant;

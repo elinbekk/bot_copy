@@ -12,8 +12,6 @@ import backend.academy.scrapper.client.StackOverflowClient;
 import backend.academy.scrapper.dto.Link;
 import backend.academy.scrapper.repository.ChatRepository;
 import backend.academy.scrapper.repository.LinkRepository;
-import java.util.Map;
-import java.util.Set;
 import backend.academy.scrapper.repository.UpdateRepository;
 import backend.academy.scrapper.service.ChatService;
 import backend.academy.scrapper.service.LinkService;
@@ -21,6 +19,8 @@ import backend.academy.scrapper.service.UpdateService;
 import backend.academy.scrapper.service.impl.ChatServiceImpl;
 import backend.academy.scrapper.service.impl.LinkServiceImpl;
 import backend.academy.scrapper.service.impl.UpdateServiceImpl;
+import java.util.Map;
+import java.util.Set;
 import org.junit.Test;
 import org.mockito.Mockito;
 

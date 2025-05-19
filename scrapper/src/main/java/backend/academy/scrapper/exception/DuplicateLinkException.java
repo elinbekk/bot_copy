@@ -1,4 +1,3 @@
 package backend.academy.scrapper.exception;
 
-public class DuplicateLinkException extends RuntimeException {
-}
+public class DuplicateLinkException extends RuntimeException {}

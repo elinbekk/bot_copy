@@ -16,6 +16,7 @@ public interface LinkEntityRepository extends JpaRepository<LinkEntity, Long> {
     boolean existsByChatIdAndUrl(Long chatId, String url);
 
     Collection<LinkEntity> findByChatId(Long chatId);
+
     @Modifying
     @Query("UPDATE LinkEntity l SET l.lastChecked = :when WHERE l.id = :linkId")
     void updateLastChecked(@Param("linkId") Long linkId, @Param("when") Timestamp when);

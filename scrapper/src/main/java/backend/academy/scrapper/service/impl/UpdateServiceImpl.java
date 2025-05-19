@@ -3,8 +3,8 @@ package backend.academy.scrapper.service.impl;
 import backend.academy.scrapper.dto.UpdateDto;
 import backend.academy.scrapper.repository.UpdateRepository;
 import backend.academy.scrapper.service.UpdateService;
-import org.springframework.stereotype.Service;
 import java.util.List;
+import org.springframework.stereotype.Service;
 
 @Service
 public class UpdateServiceImpl implements UpdateService {
@@ -29,4 +29,3 @@ public class UpdateServiceImpl implements UpdateService {
         updateRepo.markSent(updateIds);
     }
 }
-

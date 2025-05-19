@@ -28,10 +28,11 @@ public class LinkCheckerScheduler {
     private final int pageSize;
 
     public LinkCheckerScheduler(
-        GithubClient githubClient,
-        StackOverflowClient stackoverflowClient,
-        LinkService linkService, UpdateService updateService,
-        @Value("${app.scheduler.page-size:50}") int pageSize) {
+            GithubClient githubClient,
+            StackOverflowClient stackoverflowClient,
+            LinkService linkService,
+            UpdateService updateService,
+            @Value("${app.scheduler.page-size:50}") int pageSize) {
         this.githubClient = githubClient;
         this.stackoverflowClient = stackoverflowClient;
         this.linkService = linkService;
@@ -57,7 +58,6 @@ public class LinkCheckerScheduler {
         }
     }
 
-
     protected boolean isUpdated(Link resource) {
         return switch (resource.getLinkType()) {
             case GITHUB_REPO, GITHUB_ISSUE, GITHUB_PR -> githubClient.hasUpdates(resource);
@@ -71,7 +71,7 @@ public class LinkCheckerScheduler {
         switch (link.getLinkType()) {
             case GITHUB_REPO, GITHUB_ISSUE, GITHUB_PR -> {
                 githubDetail = githubClient.fetchDetail(link);
-                githubDetail.ifPresent(detail ->saveUpdateDetail(link, detail.getLastUpdate(), detail.getPayload()));
+                githubDetail.ifPresent(detail -> saveUpdateDetail(link, detail.getLastUpdate(), detail.getPayload()));
             }
             case STACKOVERFLOW -> {
                 soDetail = stackoverflowClient.fetchDetail(link);
@@ -81,12 +81,7 @@ public class LinkCheckerScheduler {
     }
 
     private void saveUpdateDetail(Link link, Instant lastUpdate, JsonNode payload) {
-        UpdateDto upd = new UpdateDto(
-            link.getLinkId(),
-            Timestamp.from(lastUpdate),
-            payload,
-            false
-        );
+        UpdateDto upd = new UpdateDto(link.getLinkId(), Timestamp.from(lastUpdate), payload, false);
         updateService.save(upd);
         linkService.updateLastChecked(link.getLinkId(), Timestamp.from(Instant.now()));
     }

@@ -25,8 +25,7 @@ public class UpdateDto {
         this.sent = sent;
     }
 
-    public UpdateDto() {
-    }
+    public UpdateDto() {}
 
     public Long getId() {
         return id;

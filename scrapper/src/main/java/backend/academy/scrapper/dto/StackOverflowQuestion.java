@@ -21,11 +21,11 @@ public class StackOverflowQuestion {
 
     @JsonCreator
     public StackOverflowQuestion(
-        @JsonProperty("last_activity_date") long lastActivityDate,
-        @JsonProperty("title") String title,
-        @JsonProperty("owner") Owner owner,
-        @JsonProperty("creating_date") long creatingDate,
-        @JsonProperty("body") String body) {
+            @JsonProperty("last_activity_date") long lastActivityDate,
+            @JsonProperty("title") String title,
+            @JsonProperty("owner") Owner owner,
+            @JsonProperty("creating_date") long creatingDate,
+            @JsonProperty("body") String body) {
         this.lastActivityDate = lastActivityDate;
         this.title = title;
         this.owner = owner;

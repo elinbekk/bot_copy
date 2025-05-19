@@ -9,10 +9,6 @@
     </parent>
 
     <artifactId>scrapper</artifactId>
-    <properties>
-        <maven.compiler.source>23</maven.compiler.source>
-        <maven.compiler.target>23</maven.compiler.target>
-    </properties>
 
     <dependencies>
         <dependency>
@@ -94,7 +90,6 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <optional>true</optional>
             <version>1.18.36</version>
         </dependency>
 

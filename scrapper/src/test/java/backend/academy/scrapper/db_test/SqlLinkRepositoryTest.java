@@ -1,5 +1,7 @@
 package backend.academy.scrapper.db_test;
 
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+
 import backend.academy.scrapper.dto.Link;
 import backend.academy.scrapper.entity.LinkType;
 import backend.academy.scrapper.repository.impl.SqlChatRepository;
@@ -11,9 +13,8 @@ import java.util.Set;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
-public class SqlLinkRepositoryTest extends BaseSqlTest{
+public class SqlLinkRepositoryTest extends BaseSqlTest {
     @PostConstruct
     void init() {
         linkRepository = new SqlLinkRepository(jdbcTemplate, objectMapper);
@@ -34,15 +35,7 @@ public class SqlLinkRepositoryTest extends BaseSqlTest{
     private final String LAST_CHECKED = Instant.now().minusSeconds(60).toString();
 
     private Link createTestLink() {
-        return new Link(
-            null,
-            URL,
-            CHAT_ID,
-            TYPE,
-            TAGS,
-            FILTERS,
-            LAST_CHECKED
-        );
+        return new Link(null, URL, CHAT_ID, TYPE, TAGS, FILTERS, LAST_CHECKED);
     }
 
     @Test
@@ -52,11 +45,7 @@ public class SqlLinkRepositoryTest extends BaseSqlTest{
         chatRepository.save(link.getChatId());
         linkRepository.save(link);
         Integer count = jdbcTemplate.queryForObject(
-            "SELECT COUNT(*) FROM links WHERE url = ? AND chat_id = ?",
-            Integer.class,
-            URL,
-            CHAT_ID
-        );
+                "SELECT COUNT(*) FROM links WHERE url = ? AND chat_id = ?", Integer.class, URL, CHAT_ID);
         assertThat(count).isEqualTo(1);
     }
 
@@ -68,11 +57,7 @@ public class SqlLinkRepositoryTest extends BaseSqlTest{
         linkRepository.delete(CHAT_ID, URL);
 
         Integer count = jdbcTemplate.queryForObject(
-            "SELECT COUNT(*) FROM links WHERE url = ? AND chat_id = ?",
-            Integer.class,
-            URL,
-            CHAT_ID
-        );
+                "SELECT COUNT(*) FROM links WHERE url = ? AND chat_id = ?", Integer.class, URL, CHAT_ID);
         assertThat(count).isEqualTo(0);
     }
 
@@ -90,8 +75,7 @@ public class SqlLinkRepositoryTest extends BaseSqlTest{
         Link link = createTestLink();
         chatRepository.save(link.getChatId());
         linkRepository.save(link);
-        Map<String, Object> saved = jdbcTemplate.queryForMap(
-            "SELECT tags, filters FROM links WHERE url = ?", URL);
+        Map<String, Object> saved = jdbcTemplate.queryForMap("SELECT tags, filters FROM links WHERE url = ?", URL);
 
         assertThat(saved.get("tags")).isEqualTo("[\"tag\"]");
         assertThat(saved.get("filters")).isEqualTo("{\"key\":\"value\"}");

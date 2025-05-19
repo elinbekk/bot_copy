@@ -1,5 +1,7 @@
 package backend.academy.scrapper.repository.impl;
 
+import static java.util.stream.Collectors.joining;
+
 import backend.academy.scrapper.dto.UpdateDto;
 import backend.academy.scrapper.repository.UpdateRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -13,7 +15,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
-import static java.util.stream.Collectors.joining;
 
 @Component
 @ConditionalOnProperty(name = "app.access-type", havingValue = "SQL")
@@ -30,11 +31,10 @@ public class SqlUpdateRepository implements UpdateRepository {
     public void save(Long linkId, JsonNode payload, Timestamp occurredAt) {
         try {
             jdbc.update(
-                "INSERT INTO updates(link_id, occurred_at, payload) VALUES(?,?,?)",
-                linkId,
-                occurredAt,
-                om.writeValueAsString(payload)
-            );
+                    "INSERT INTO updates(link_id, occurred_at, payload) VALUES(?,?,?)",
+                    linkId,
+                    occurredAt,
+                    om.writeValueAsString(payload));
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
@@ -42,7 +42,8 @@ public class SqlUpdateRepository implements UpdateRepository {
 
     @Override
     public List<UpdateDto> findAll() {
-        String sql = """
+        String sql =
+                """
       SELECT id, link_id, occurred_at, payload, sent
       FROM updates
       ORDER BY occurred_at
@@ -53,10 +54,7 @@ public class SqlUpdateRepository implements UpdateRepository {
     @Override
     public void markSent(List<Long> updateIds) {
         String inSql = updateIds.stream().map(id -> "?").collect(joining(","));
-        jdbc.update(
-            "UPDATE updates SET sent = true WHERE id IN (" + inSql + ")",
-            updateIds.toArray()
-        );
+        jdbc.update("UPDATE updates SET sent = true WHERE id IN (" + inSql + ")", updateIds.toArray());
     }
 
     private static class UpdateRowMapper implements RowMapper<UpdateDto> {
@@ -67,9 +65,7 @@ public class SqlUpdateRepository implements UpdateRepository {
             u.setOccurredAt(rs.getTimestamp("occurred_at"));
             u.setSent(rs.getBoolean("sent"));
             try {
-                u.setPayload(
-                    new ObjectMapper().readTree(rs.getString("payload"))
-                );
+                u.setPayload(new ObjectMapper().readTree(rs.getString("payload")));
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
             }

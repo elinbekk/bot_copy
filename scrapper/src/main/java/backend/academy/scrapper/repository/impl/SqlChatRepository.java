@@ -1,12 +1,10 @@
 package backend.academy.scrapper.repository.impl;
 
 import backend.academy.scrapper.repository.ChatRepository;
+import java.util.List;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
-
-import java.util.List;
 
 @Repository
 @ConditionalOnProperty(name = "app.access-type", havingValue = "SQL")

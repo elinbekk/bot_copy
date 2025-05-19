@@ -17,6 +17,7 @@ import org.testcontainers.utility.TestcontainersConfiguration;
 public class BaseSqlTest {
     @Autowired
     protected JdbcTemplate jdbcTemplate;
+
     protected SqlUpdateRepository updateRepository;
     protected SqlLinkRepository linkRepository;
     protected SqlChatRepository chatRepository;

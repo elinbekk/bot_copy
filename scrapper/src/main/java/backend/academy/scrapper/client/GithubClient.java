@@ -1,5 +1,9 @@
 package backend.academy.scrapper.client;
 
+import static backend.academy.scrapper.ScrapperConstants.ISSUE_REGEX;
+import static backend.academy.scrapper.ScrapperConstants.PR_REGEX;
+import static backend.academy.scrapper.ScrapperConstants.REPO_REGEX;
+
 import backend.academy.scrapper.config.GithubProperties;
 import backend.academy.scrapper.dto.GithubIssue;
 import backend.academy.scrapper.dto.GithubPR;
@@ -25,9 +29,6 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriComponentsBuilder;
-import static backend.academy.scrapper.ScrapperConstants.ISSUE_REGEX;
-import static backend.academy.scrapper.ScrapperConstants.PR_REGEX;
-import static backend.academy.scrapper.ScrapperConstants.REPO_REGEX;
 
 @Component
 public class GithubClient implements UpdateChecker {
@@ -183,17 +184,15 @@ public class GithubClient implements UpdateChecker {
         ObjectNode payload = objectMapper.createObjectNode();
         payload.put("title", json.get("title").asText());
         payload.put("user", json.get("user").get("login").asText());
-        String when = switch (link.getLinkType()) {
-            case GITHUB_REPO -> json.get("created_at").asText();
-            default -> json.get("updated_at").asText();
-        };
+        String when =
+                switch (link.getLinkType()) {
+                    case GITHUB_REPO -> json.get("created_at").asText();
+                    default -> json.get("updated_at").asText();
+                };
         payload.put("createdAt", when);
 
         String body = json.has("body") ? json.get("body").asText() : "";
-        payload.put("preview", body.length() <= 200
-            ? body
-            : body.substring(0, 200)
-        );
+        payload.put("preview", body.length() <= 200 ? body : body.substring(0, 200));
         return payload;
     }
 

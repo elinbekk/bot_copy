@@ -1,9 +1,11 @@
 package backend.academy.scrapper.client;
 
+import static backend.academy.scrapper.ScrapperConstants.SO_REGEX;
+
 import backend.academy.scrapper.config.StackoverflowProperties;
+import backend.academy.scrapper.dto.Link;
 import backend.academy.scrapper.dto.StackOverflowQuestion;
 import backend.academy.scrapper.dto.StackOverflowResponse;
-import backend.academy.scrapper.dto.Link;
 import backend.academy.scrapper.exception.StackOverflowException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -23,7 +25,6 @@ import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriComponentsBuilder;
-import static backend.academy.scrapper.ScrapperConstants.SO_REGEX;
 
 @Component
 public class StackOverflowClient implements UpdateChecker {
@@ -154,10 +155,7 @@ public class StackOverflowClient implements UpdateChecker {
         payload.put("createdAt", question.getCreatingDate());
 
         String body = question.getBody();
-        payload.put("preview", body.length() <= 200
-            ? body
-            : body.substring(0, 200)
-        );
+        payload.put("preview", body.length() <= 200 ? body : body.substring(0, 200));
         return payload;
     }
 
