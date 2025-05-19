@@ -103,4 +103,15 @@ public class OrmLinkRepository implements LinkRepository {
     public void updateLastChecked(Long linkId, Timestamp when) {
         linkRepo.updateLastChecked(linkId, when);
     }
+
+    @Override
+    public Link findLinkById(Long linkId) {
+        LinkEntity linkEntity = linkRepo.findById(linkId).orElse(null);
+        return new Link(
+            linkEntity.getId(),
+            linkEntity.getUrl(),
+            linkEntity.getChat().getId(),
+            LinkType.valueOf(linkEntity.getType())
+        );
+    }
 }

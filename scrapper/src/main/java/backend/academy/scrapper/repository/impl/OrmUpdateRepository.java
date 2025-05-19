@@ -42,9 +42,10 @@ public class OrmUpdateRepository implements UpdateRepository {
     }
 
     @Override
-    public List<UpdateDto> findUnsents(int page, int size) {
-        Page<UpdateEntity> p = repo.findBySentFalse(PageRequest.of(page,size, Sort.by("occurredAt")));
-        return p.getContent().stream().map(this::toModel).toList();
+    public List<UpdateDto> findAll() {
+//        Page<UpdateEntity> p = repo.findBySentFalse(PageRequest.of(page,size, Sort.by("occurredAt")));
+        return repo.findAll().stream().map(this::toModel).toList();
+//        return p.getContent().stream().map(this::toModel).toList();
     }
 
     @Override

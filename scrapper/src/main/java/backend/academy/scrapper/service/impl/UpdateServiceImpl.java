@@ -20,8 +20,8 @@ public class UpdateServiceImpl implements UpdateService {
     }
 
     @Override
-    public List<UpdateDto> findUnsents() {
-        return updateRepo.findUnsents(1, 1);
+    public List<UpdateDto> getAll() {
+        return updateRepo.findAll();
     }
 
     @Override

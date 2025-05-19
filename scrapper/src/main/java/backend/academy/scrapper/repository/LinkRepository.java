@@ -18,4 +18,6 @@ public interface LinkRepository {
     Page<Link> findDueLinks(Pageable page);
 
     void updateLastChecked(Long linkId, Timestamp when);
+
+    Link findLinkById(Long linkId);
 }

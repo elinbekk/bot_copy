@@ -119,6 +119,12 @@ public class SqlLinkRepository implements LinkRepository {
         jdbc.update(query, when, linkId);
     }
 
+    @Override
+    public Link findLinkById(Long linkId) {
+        String query = "select * from links where id = ?";
+        return jdbc.queryForObject(query, this::mapRow, linkId);
+    }
+
     private Link mapRow(ResultSet rs, int rowNum) throws SQLException {
         try {
             return new Link(
@@ -133,7 +139,7 @@ public class SqlLinkRepository implements LinkRepository {
                 rs.getTimestamp("last_checked").toInstant().toString()
             );
         } catch (JsonProcessingException e) {
-            throw new SQLException("Ошибка десериализации JSONB", e);
+            throw new SQLException("Ошибка десериализации", e);
         }
     }
 }

@@ -12,4 +12,5 @@ public interface LinkService {
     List<Link> getUserListLinks(Long chatId);
     Page<Link> findDueLinks(Pageable page);
     void updateLastChecked(Long linkId, Timestamp when);
+    Link findById(Long linkId);
 }

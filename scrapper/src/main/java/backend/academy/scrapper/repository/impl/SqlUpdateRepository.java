@@ -41,15 +41,13 @@ public class SqlUpdateRepository implements UpdateRepository {
     }
 
     @Override
-    public List<UpdateDto> findUnsents(int page, int size) {
+    public List<UpdateDto> findAll() {
         String sql = """
       SELECT id, link_id, occurred_at, payload, sent
       FROM updates
-      WHERE sent = false
       ORDER BY occurred_at
-      LIMIT ? OFFSET ?
       """;
-        return jdbc.query(sql, new UpdateRowMapper(), size, page * size);
+        return jdbc.query(sql, new UpdateRowMapper());
     }
 
     @Override

@@ -51,4 +51,9 @@ public class LinkServiceImpl implements LinkService {
     public void updateLastChecked(Long linkId, Timestamp when) {
         linksRepo.updateLastChecked(linkId, when);
     }
+
+    @Override
+    public Link findById(Long linkId) {
+        return linksRepo.findLinkById(linkId);
+    }
 }
