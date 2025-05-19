@@ -39,8 +39,9 @@ public class OrmUpdateRepository implements UpdateRepository {
     }
 
     @Override
-    public List<UpdateDto> findAll() {
-        return repo.findAll().stream().map(this::toModel).toList();
+    public List<UpdateDto> findUnsent() {
+        List<UpdateEntity> p = repo.findBySentFalse();
+        return p.stream().map(this::toModel).toList();
     }
 
     @Override

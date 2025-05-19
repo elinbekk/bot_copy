@@ -104,7 +104,7 @@ public class SqlLinkRepository implements LinkRepository {
                 FROM links
                 WHERE last_checked < NOW()
                 ORDER BY last_checked
-                LIMIT :limit OFFSET :offset
+                LIMIT ? OFFSET ?
             """;
 
         Object[] args = new Object[] {pg.getPageSize(), pg.getOffset()};

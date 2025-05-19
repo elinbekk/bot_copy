@@ -56,7 +56,7 @@ public class SqlUpdatesRepositoryTest extends BaseSqlTest {
         Timestamp occurredAt = Timestamp.from(now);
         updateRepository.save(savedLinkId, payload, occurredAt);
 
-        List<UpdateDto> updates = updateRepository.findAll();
+        List<UpdateDto> updates = updateRepository.findUnsent();
         assertThat(updates).hasSize(1);
 
         UpdateDto u = updates.get(0);
@@ -73,7 +73,7 @@ public class SqlUpdatesRepositoryTest extends BaseSqlTest {
         Timestamp time = Timestamp.from(Instant.now());
         updateRepository.save(savedLinkId, payload, time);
 
-        List<UpdateDto> updates = updateRepository.findAll();
+        List<UpdateDto> updates = updateRepository.findUnsent();
         assertThat(updates).hasSize(1);
 
         Long updateId = updates.getFirst().getId();

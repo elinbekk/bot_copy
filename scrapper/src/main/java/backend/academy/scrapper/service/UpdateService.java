@@ -6,7 +6,7 @@ import java.util.List;
 public interface UpdateService {
     void save(UpdateDto update);
 
-    List<UpdateDto> getAll();
+    List<UpdateDto> getUnsents();
 
     void markSent(List<Long> updateIds);
 }

@@ -28,7 +28,7 @@ public class NotificationSender {
 
     @Scheduled(fixedRateString = "${app.scheduler.interval-in-ms}")
     public void sendNotifications() {
-        List<UpdateDto> unsents = updateService.getAll();
+        List<UpdateDto> unsents = updateService.getUnsents();
         for (UpdateDto upd : unsents) {
             Link link = linkService.findById(upd.getLinkId());
             final String text = formatMessage(upd, link.getLinkType());

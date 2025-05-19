@@ -41,11 +41,12 @@ public class SqlUpdateRepository implements UpdateRepository {
     }
 
     @Override
-    public List<UpdateDto> findAll() {
+    public List<UpdateDto> findUnsent() {
         String sql =
                 """
       SELECT id, link_id, occurred_at, payload, sent
       FROM updates
+      where sent = false
       ORDER BY occurred_at
       """;
         return jdbc.query(sql, new UpdateRowMapper());
@@ -53,8 +54,13 @@ public class SqlUpdateRepository implements UpdateRepository {
 
     @Override
     public void markSent(List<Long> updateIds) {
+        if (updateIds == null || updateIds.isEmpty()) {
+            return;
+        }
         String inSql = updateIds.stream().map(id -> "?").collect(joining(","));
-        jdbc.update("UPDATE updates SET sent = true WHERE id IN (" + inSql + ")", updateIds.toArray());
+        String ids = updateIds.stream().map(String::valueOf).collect(joining(","));
+        System.out.println("IDS:" + ids);
+        jdbc.update("UPDATE updates SET sent = true WHERE id IN (" + inSql + ")", ids);
     }
 
     private static class UpdateRowMapper implements RowMapper<UpdateDto> {

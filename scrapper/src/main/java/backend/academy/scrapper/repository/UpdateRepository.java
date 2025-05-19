@@ -8,7 +8,7 @@ import java.util.List;
 public interface UpdateRepository {
     void save(Long linkId, JsonNode payload, Timestamp occurredAt);
 
-    List<UpdateDto> findAll();
+    List<UpdateDto> findUnsent();
 
     void markSent(List<Long> updateIds);
 }
