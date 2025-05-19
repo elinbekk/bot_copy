@@ -3,7 +3,7 @@ package backend.academy.scrapper;
 import backend.academy.scrapper.client.GithubClient;
 import backend.academy.scrapper.client.StackOverflowClient;
 import backend.academy.scrapper.dto.UpdateDto;
-import backend.academy.scrapper.entity.Link;
+import backend.academy.scrapper.dto.Link;
 import backend.academy.scrapper.service.ChatService;
 import backend.academy.scrapper.service.LinkService;
 import backend.academy.scrapper.service.UpdateService;

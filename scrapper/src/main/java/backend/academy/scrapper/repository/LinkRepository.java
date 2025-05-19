@@ -1,6 +1,6 @@
 package backend.academy.scrapper.repository;
 
-import backend.academy.scrapper.entity.Link;
+import backend.academy.scrapper.dto.Link;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import java.sql.Timestamp;

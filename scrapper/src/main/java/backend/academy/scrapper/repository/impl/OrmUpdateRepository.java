@@ -43,9 +43,7 @@ public class OrmUpdateRepository implements UpdateRepository {
 
     @Override
     public List<UpdateDto> findAll() {
-//        Page<UpdateEntity> p = repo.findBySentFalse(PageRequest.of(page,size, Sort.by("occurredAt")));
         return repo.findAll().stream().map(this::toModel).toList();
-//        return p.getContent().stream().map(this::toModel).toList();
     }
 
     @Override

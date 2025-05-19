@@ -1,4 +1,6 @@
-package backend.academy.scrapper.entity;
+package backend.academy.scrapper.dto;
+
+import backend.academy.scrapper.entity.LinkType;
 
 import java.util.Map;
 import java.util.Set;

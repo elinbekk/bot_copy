@@ -1,6 +1,6 @@
 package backend.academy.scrapper.repository;
 
-import backend.academy.scrapper.entity.Link;
+import backend.academy.scrapper.dto.Link;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;

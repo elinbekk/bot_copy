@@ -1,6 +1,5 @@
 package backend.academy.scrapper.repository;
 
-import backend.academy.scrapper.entity.Link;
 import backend.academy.scrapper.entity.LinkEntity;
 import java.sql.Timestamp;
 import java.util.Collection;

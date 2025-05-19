@@ -3,7 +3,8 @@ package backend.academy.scrapper;
 import backend.academy.scrapper.client.BotClient;
 import backend.academy.scrapper.dto.LinkUpdate;
 import backend.academy.scrapper.dto.UpdateDto;
-import backend.academy.scrapper.entity.Link;
+import backend.academy.scrapper.dto.Link;
+import backend.academy.scrapper.entity.LinkType;
 import backend.academy.scrapper.service.LinkService;
 import backend.academy.scrapper.service.UpdateService;
 import java.util.List;
@@ -28,10 +29,9 @@ public class NotificationSender {
     @Scheduled(fixedRateString = "${app.scheduler.interval-in-ms}")
     public void sendNotifications() {
         List<UpdateDto> unsents = updateService.getAll();
-        logger.info("ОТПРАВИТЬ СКОЛЬКИМ: {}", unsents.size());
-        for (UpdateDto u : unsents) {
-            Link link = linkService.findById(u.getLinkId());
-            final String text = getString(u);
+        for (UpdateDto upd : unsents) {
+            Link link = linkService.findById(upd.getLinkId());
+            final String text = formatMessage(upd, link.getLinkType());
             logger.info("ТЕКСТ УВЕДОМЛЕНИЯ:{}", text);
             LinkUpdate dto = new LinkUpdate(
                 link.getUrl(),
@@ -42,22 +42,21 @@ public class NotificationSender {
         }
     }
 
-    private String getString(UpdateDto updateDto) {
-        Link link = linkService.findById(updateDto.getLinkId());
-        switch (link.getLinkType()) {
+    String formatMessage(UpdateDto updateDto, LinkType linkType) {
+        switch (linkType) {
             case GITHUB_REPO, GITHUB_PR, GITHUB_ISSUE -> {
                 String title = updateDto.getPayload().get("title").asText();
                 String user = updateDto.getPayload().get("user").asText();
                 String when = updateDto.getPayload().get("createdAt").asText();
                 String preview = updateDto.getPayload().get("preview").asText();
-                return String.format("%s\nАвтор: %s\nВремя: %s\n%s…", title, user, when, preview);
+                return String.format("%s\nАвтор: %s\nВремя: %s\n%s...", title, user, when, preview);
             }
             case STACKOVERFLOW -> {
                 String question = updateDto.getPayload().get("questionTitle").asText();
                 String user = updateDto.getPayload().get("user").asText();
                 String created = updateDto.getPayload().get("createdAt").asText();
                 String preview = updateDto.getPayload().get("preview").asText();
-                return String.format("Вопрос: %s\nОт: %s\nВремя: %s\n%s…", question, user, created, preview);
+                return String.format("Вопрос: %s\nОт: %s\nВремя: %s\n%s...", question, user, created, preview);
             }
             default ->
                 throw new IllegalArgumentException("Неизвестный тип ссылки");

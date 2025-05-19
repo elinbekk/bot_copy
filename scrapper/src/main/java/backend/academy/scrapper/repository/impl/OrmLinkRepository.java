@@ -1,7 +1,7 @@
 package backend.academy.scrapper.repository.impl;
 
 import backend.academy.scrapper.entity.ChatEntity;
-import backend.academy.scrapper.entity.Link;
+import backend.academy.scrapper.dto.Link;
 import backend.academy.scrapper.entity.LinkEntity;
 import backend.academy.scrapper.entity.LinkType;
 import backend.academy.scrapper.repository.LinkEntityRepository;
