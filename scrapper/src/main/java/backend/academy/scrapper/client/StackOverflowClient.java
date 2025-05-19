@@ -1,7 +1,5 @@
 package backend.academy.scrapper.client;
 
-import static backend.academy.scrapper.ScrapperConstants.SO_REGEX;
-
 import backend.academy.scrapper.config.StackoverflowProperties;
 import backend.academy.scrapper.dto.StackOverflowQuestion;
 import backend.academy.scrapper.dto.StackOverflowResponse;
@@ -10,18 +8,20 @@ import backend.academy.scrapper.exception.StackOverflowException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.net.URI;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriComponentsBuilder;
+import static backend.academy.scrapper.ScrapperConstants.SO_REGEX;
 
 @Component
 public class StackOverflowClient implements UpdateChecker {
@@ -50,6 +50,17 @@ public class StackOverflowClient implements UpdateChecker {
     }
 
     private StackOverflowQuestion getQuestion(Link resource) {
+        final StackOverflowResponse stackOverflowResponse = getStackOverflowResponse(resource);
+
+        if (stackOverflowResponse == null
+                || stackOverflowResponse.getItems() == null
+                || stackOverflowResponse.getItems().isEmpty()) {
+            throw new StackOverflowException("Пустой ответ от Stackoverflow");
+        }
+        return stackOverflowResponse.getItems().getFirst();
+    }
+
+    private @Nullable StackOverflowResponse getStackOverflowResponse(Link resource) {
         StackOverflowResponse stackOverflowResponse = restClient
                 .get()
                 .uri(buildUrlWithFilters(resource))
@@ -62,13 +73,7 @@ public class StackOverflowClient implements UpdateChecker {
                     throw new StackOverflowException("Серверная ошибка: " + response.getStatusCode());
                 })
                 .body(StackOverflowResponse.class);
-
-        if (stackOverflowResponse == null
-                || stackOverflowResponse.getItems() == null
-                || stackOverflowResponse.getItems().isEmpty()) {
-            throw new StackOverflowException("Пустой ответ от Stackoverflow");
-        }
-        return stackOverflowResponse.getItems().getFirst();
+        return stackOverflowResponse;
     }
 
     private URI buildUrlWithFilters(Link resource) {
@@ -119,39 +124,4 @@ public class StackOverflowClient implements UpdateChecker {
         }
     }
 
-    public Optional<JsonNode> fetchDetail(Link link) {
-        try {
-            // 1) получаем JSON-ответ уже как дерево
-            String raw = restClient.get()
-                .uri(buildUrlWithFilters(link))
-                .retrieve()
-                .body(String.class);
-            JsonNode root = objectMapper.readTree(raw);
-            JsonNode item = root.path("items").get(0);
-
-            // 2) проверяем дату
-            Instant lastActivity = Instant.ofEpochSecond(item.path("last_activity_date").asLong());
-            Instant lastChecked  = Instant.parse(link.getLastCheckedTime());
-            if (!lastActivity.isAfter(lastChecked)) {
-                return Optional.empty();
-            }
-
-            // 3) формируем payload
-            ObjectNode payload = objectMapper.createObjectNode();
-            payload.put("questionTitle", item.path("title").asText());
-            payload.put("user",          item.path("owner").path("display_name").asText());
-            payload.put("createdAt",     Instant.ofEpochSecond(item.path("creation_date").asLong()).toString());
-
-            String body = item.path("body").asText("");
-            payload.put("preview", body.length() <= 200
-                ? body
-                : body.substring(0, 200)
-            );
-
-            return Optional.of(payload);
-        } catch (Exception e) {
-            log.error("Ошибка fetchDetail для SO: {}", e.getMessage(), e);
-            return Optional.empty();
-        }
-    }
 }
