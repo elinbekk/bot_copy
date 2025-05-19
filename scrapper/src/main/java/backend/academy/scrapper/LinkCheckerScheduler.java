@@ -45,9 +45,7 @@ public class LinkCheckerScheduler {
                 List<Link> links = linkService.getUserListLinks(chatId);
                 for(Link link : links) {
                     logger.debug("Проверяемая ссылка: {} (Тип: {})", link.getUrl(), link.getLinkType());
-                    if (isUpdated(link)) {
-                        saveUpdateDetails(link);
-                    }
+                    processUpdateDetails(link);
                 }
             }
         } catch (Exception e) {
@@ -62,22 +60,29 @@ public class LinkCheckerScheduler {
         };
     }
 
-    private void saveUpdateDetails(Link link) {
-        Optional<JsonNode> details = Optional.empty();
+    private void processUpdateDetails(Link link) {
+        Optional<GithubClient.Detail> githubDetail;
+        Optional<StackOverflowClient.Detail> soDetail;
         switch (link.getLinkType()) {
             case GITHUB_REPO, GITHUB_ISSUE, GITHUB_PR -> {
-                details = githubClient.fetchDetail(link);
+                githubDetail = githubClient.fetchDetail(link);
+                githubDetail.ifPresent(detail ->saveUpdateDetail(link, detail.getLastUpdate(), detail.getPayload()));
             }
             case STACKOVERFLOW -> {
-                details = stackoverflowClient.fetchDetail(link);
+                soDetail = stackoverflowClient.fetchDetail(link);
+                soDetail.ifPresent(detail -> saveUpdateDetail(link, detail.getLastUpdate(), detail.getPayload()));
             }
         }
+    }
+
+    private void saveUpdateDetail(Link link, Instant lastUpdate, JsonNode payload) {
         UpdateDto upd = new UpdateDto(
             link.getLinkId(),
-            Timestamp.from(Instant.now()),
-            details.get(),
+            Timestamp.from(lastUpdate),
+            payload,
             false
         );
         updateService.save(upd);
+        linkService.updateLastChecked(link.getLinkId(), Timestamp.from(Instant.now()));
     }
 }
