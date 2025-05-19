@@ -1,0 +1,159 @@
+21:42:20 [INFO] ------------------------------------------------------------------------
+21:42:20 [INFO] BUILD FAILURE
+21:42:20 [INFO] ------------------------------------------------------------------------
+21:42:20 [INFO] Total time:  31.593 s
+21:42:20 [INFO] Finished at: 2025-05-19T21:42:20Z
+21:42:20 [INFO] ------------------------------------------------------------------------
+21:42:20 [ERROR] Failed to execute goal com.diffplug.spotless:spotless-maven-plugin:2.44.2:check (default-cli) on project scrapper: The following files had format violations:
+21:42:20 [ERROR]     src/main/java/backend/academy/scrapper/client/StackOverflowClient.java
+21:42:20 [ERROR]         @@ -14,7 +14,6 @@
+21:42:20 [ERROR]          import·java.io.IOException;
+21:42:20 [ERROR]          import·java.net.URI;
+21:42:20 [ERROR]          import·java.nio.charset.Charset;
+21:42:20 [ERROR]         -import·java.nio.charset.StandardCharsets;
+21:42:20 [ERROR]          import·java.time.Instant;
+21:42:20 [ERROR]          import·java.util.Optional;
+21:42:20 [ERROR]          import·java.util.regex.Matcher;
+21:42:20 [ERROR]     src/main/java/backend/academy/scrapper/repository/ChatEntityRepository.java
+21:42:20 [ERROR]         @@ -1,8 +1,6 @@
+21:42:20 [ERROR]          package·backend.academy.scrapper.repository;
+21:42:20 [ERROR]
+21:42:20 [ERROR]          import·backend.academy.scrapper.entity.ChatEntity;
+21:42:20 [ERROR]         -import·java.util.List;
+21:42:20 [ERROR]          import·org.springframework.data.jpa.repository.JpaRepository;
+21:42:20 [ERROR]
+21:42:20 [ERROR]         -public·interface·ChatEntityRepository·extends·JpaRepository<ChatEntity,·Long>·{
+21:42:20 [ERROR]         -}
+21:42:20 [ERROR]         +public·interface·ChatEntityRepository·extends·JpaRepository<ChatEntity,·Long>·{}
+21:42:20 [ERROR]     src/main/java/backend/academy/scrapper/repository/impl/SqlLinkRepository.java
+21:42:20 [ERROR]         @@ -8,7 +8,6 @@
+21:42:20 [ERROR]          import·com.fasterxml.jackson.databind.ObjectMapper;
+21:42:20 [ERROR]          import·java.sql.*;
+21:42:20 [ERROR]          import·java.time.Instant;
+21:42:20 [ERROR]         -import·java.util.HashMap;
+21:42:20 [ERROR]          import·java.util.List;
+21:42:20 [ERROR]          import·java.util.Map;
+21:42:20 [ERROR]          import·java.util.Set;
+21:42:20 [ERROR] Run 'mvn spotless:apply' to fix these violations.
+21:42:20 [ERROR] -> [Help 1]
+org.apache.maven.lifecycle.LifecycleExecutionException: Failed to execute goal com.diffplug.spotless:spotless-maven-plugin:2.44.2:check (default-cli) on project scrapper: The following files had format violations:
+    src/main/java/backend/academy/scrapper/client/StackOverflowClient.java
+        @@ -14,7 +14,6 @@
+         import·java.io.IOException;
+         import·java.net.URI;
+         import·java.nio.charset.Charset;
+        -import·java.nio.charset.StandardCharsets;
+         import·java.time.Instant;
+         import·java.util.Optional;
+         import·java.util.regex.Matcher;
+    src/main/java/backend/academy/scrapper/repository/ChatEntityRepository.java
+        @@ -1,8 +1,6 @@
+         package·backend.academy.scrapper.repository;
+
+         import·backend.academy.scrapper.entity.ChatEntity;
+        -import·java.util.List;
+         import·org.springframework.data.jpa.repository.JpaRepository;
+
+        -public·interface·ChatEntityRepository·extends·JpaRepository<ChatEntity,·Long>·{
+        -}
+        +public·interface·ChatEntityRepository·extends·JpaRepository<ChatEntity,·Long>·{}
+    src/main/java/backend/academy/scrapper/repository/impl/SqlLinkRepository.java
+        @@ -8,7 +8,6 @@
+         import·com.fasterxml.jackson.databind.ObjectMapper;
+         import·java.sql.*;
+         import·java.time.Instant;
+        -import·java.util.HashMap;
+         import·java.util.List;
+         import·java.util.Map;
+         import·java.util.Set;
+Run 'mvn spotless:apply' to fix these violations.
+    at org.apache.maven.lifecycle.internal.MojoExecutor.doExecute2 (MojoExecutor.java:333)
+    at org.apache.maven.lifecycle.internal.MojoExecutor.doExecute (MojoExecutor.java:316)
+    at org.apache.maven.lifecycle.internal.MojoExecutor.execute (MojoExecutor.java:212)
+    at org.apache.maven.lifecycle.internal.MojoExecutor.execute (MojoExecutor.java:174)
+    at org.apache.maven.lifecycle.internal.MojoExecutor.access$000 (MojoExecutor.java:75)
+    at org.apache.maven.lifecycle.internal.MojoExecutor$1.run (MojoExecutor.java:162)
+    at org.apache.maven.plugin.DefaultMojosExecutionStrategy.execute (DefaultMojosExecutionStrategy.java:39)
+    at org.apache.maven.lifecycle.internal.MojoExecutor.execute (MojoExecutor.java:159)
+    at org.apache.maven.lifecycle.internal.LifecycleModuleBuilder.buildProject (LifecycleModuleBuilder.java:105)
+    at org.apache.maven.lifecycle.internal.LifecycleModuleBuilder.buildProject (LifecycleModuleBuilder.java:73)
+    at org.apache.maven.lifecycle.internal.builder.singlethreaded.SingleThreadedBuilder.build (SingleThreadedBuilder.java:53)
+    at org.apache.maven.lifecycle.internal.LifecycleStarter.execute (LifecycleStarter.java:118)
+    at org.apache.maven.DefaultMaven.doExecute (DefaultMaven.java:261)
+    at org.apache.maven.DefaultMaven.doExecute (DefaultMaven.java:173)
+    at org.apache.maven.DefaultMaven.execute (DefaultMaven.java:101)
+    at org.apache.maven.cli.MavenCli.execute (MavenCli.java:906)
+    at org.apache.maven.cli.MavenCli.doMain (MavenCli.java:283)
+    at org.apache.maven.cli.MavenCli.main (MavenCli.java:206)
+    at jdk.internal.reflect.DirectMethodHandleAccessor.invoke (DirectMethodHandleAccessor.java:103)
+    at java.lang.reflect.Method.invoke (Method.java:580)
+    at org.codehaus.plexus.classworlds.launcher.Launcher.launchEnhanced (Launcher.java:255)
+    at org.codehaus.plexus.classworlds.launcher.Launcher.launch (Launcher.java:201)
+    at org.codehaus.plexus.classworlds.launcher.Launcher.mainWithExitCode (Launcher.java:361)
+    at org.codehaus.plexus.classworlds.launcher.Launcher.main (Launcher.java:314)
+Caused by: org.apache.maven.plugin.MojoExecutionException: The following files had format violations:
+    src/main/java/backend/academy/scrapper/client/StackOverflowClient.java
+        @@ -14,7 +14,6 @@
+         import·java.io.IOException;
+         import·java.net.URI;
+         import·java.nio.charset.Charset;
+        -import·java.nio.charset.StandardCharsets;
+         import·java.time.Instant;
+         import·java.util.Optional;
+         import·java.util.regex.Matcher;
+    src/main/java/backend/academy/scrapper/repository/ChatEntityRepository.java
+        @@ -1,8 +1,6 @@
+         package·backend.academy.scrapper.repository;
+
+         import·backend.academy.scrapper.entity.ChatEntity;
+        -import·java.util.List;
+         import·org.springframework.data.jpa.repository.JpaRepository;
+
+        -public·interface·ChatEntityRepository·extends·JpaRepository<ChatEntity,·Long>·{
+        -}
+        +public·interface·ChatEntityRepository·extends·JpaRepository<ChatEntity,·Long>·{}
+    src/main/java/backend/academy/scrapper/repository/impl/SqlLinkRepository.java
+        @@ -8,7 +8,6 @@
+         import·com.fasterxml.jackson.databind.ObjectMapper;
+         import·java.sql.*;
+         import·java.time.Instant;
+        -import·java.util.HashMap;
+         import·java.util.List;
+         import·java.util.Map;
+         import·java.util.Set;
+Run 'mvn spotless:apply' to fix these violations.
+    at com.diffplug.spotless.maven.SpotlessCheckMojo.process (SpotlessCheckMojo.java:111)
+    at com.diffplug.spotless.maven.AbstractSpotlessMojo.execute (AbstractSpotlessMojo.java:255)
+    at org.apache.maven.plugin.DefaultBuildPluginManager.executeMojo (DefaultBuildPluginManager.java:126)
+    at org.apache.maven.lifecycle.internal.MojoExecutor.doExecute2 (MojoExecutor.java:328)
+    at org.apache.maven.lifecycle.internal.MojoExecutor.doExecute (MojoExecutor.java:316)
+    at org.apache.maven.lifecycle.internal.MojoExecutor.execute (MojoExecutor.java:212)
+    at org.apache.maven.lifecycle.internal.MojoExecutor.execute (MojoExecutor.java:174)
+    at org.apache.maven.lifecycle.internal.MojoExecutor.access$000 (MojoExecutor.java:75)
+    at org.apache.maven.lifecycle.internal.MojoExecutor$1.run (MojoExecutor.java:162)
+    at org.apache.maven.plugin.DefaultMojosExecutionStrategy.execute (DefaultMojosExecutionStrategy.java:39)
+    at org.apache.maven.lifecycle.internal.MojoExecutor.execute (MojoExecutor.java:159)
+    at org.apache.maven.lifecycle.internal.LifecycleModuleBuilder.buildProject (LifecycleModuleBuilder.java:105)
+    at org.apache.maven.lifecycle.internal.LifecycleModuleBuilder.buildProject (LifecycleModuleBuilder.java:73)
+    at org.apache.maven.lifecycle.internal.builder.singlethreaded.SingleThreadedBuilder.build (SingleThreadedBuilder.java:53)
+    at org.apache.maven.lifecycle.internal.LifecycleStarter.execute (LifecycleStarter.java:118)
+    at org.apache.maven.DefaultMaven.doExecute (DefaultMaven.java:261)
+    at org.apache.maven.DefaultMaven.doExecute (DefaultMaven.java:173)
+    at org.apache.maven.DefaultMaven.execute (DefaultMaven.java:101)
+    at org.apache.maven.cli.MavenCli.execute (MavenCli.java:906)
+    at org.apache.maven.cli.MavenCli.doMain (MavenCli.java:283)
+    at org.apache.maven.cli.MavenCli.main (MavenCli.java:206)
+    at jdk.internal.reflect.DirectMethodHandleAccessor.invoke (DirectMethodHandleAccessor.java:103)
+    at java.lang.reflect.Method.invoke (Method.java:580)
+    at org.codehaus.plexus.classworlds.launcher.Launcher.launchEnhanced (Launcher.java:255)
+    at org.codehaus.plexus.classworlds.launcher.Launcher.launch (Launcher.java:201)
+    at org.codehaus.plexus.classworlds.launcher.Launcher.mainWithExitCode (Launcher.java:361)
+    at org.codehaus.plexus.classworlds.launcher.Launcher.main (Launcher.java:314)
+21:42:20 [ERROR]
+21:42:20 [ERROR] Re-run Maven using the -X switch to enable full debug logging.
+21:42:20 [ERROR]
+21:42:20 [ERROR] For more information about the errors and possible solutions, please read the following articles:
+21:42:20 [ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoExecutionException
+21:42:20 [ERROR]
+21:42:20 [ERROR] After correcting the problems, you can resume the build with the command
+21:42:20 [ERROR]   mvn <args> -rf :scrapper
