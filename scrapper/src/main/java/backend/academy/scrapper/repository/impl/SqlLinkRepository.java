@@ -108,10 +108,6 @@ public class SqlLinkRepository implements LinkRepository {
                 LIMIT :limit OFFSET :offset
             """;
 
-        Map<String, Object> params = new HashMap<>();
-        params.put("limit", pg.getPageSize());
-        params.put("offset", pg.getOffset());
-
         Object[] args = new Object[] {pg.getPageSize(), pg.getOffset()};
         List<Link> content = jdbc.query(sql, args, this::mapRow);
         return new PageImpl<>(content, pg, content.size());

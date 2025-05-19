@@ -21,6 +21,7 @@ public class LinkServiceImpl implements LinkService {
         this.linksRepo = links;
     }
 
+    @Override
     public void addLink(Long chatId, Link link) {
         if (!chatsRepo.exists(chatId)) {
             throw new IllegalArgumentException("Чат не зарегистрирован");
@@ -32,11 +33,13 @@ public class LinkServiceImpl implements LinkService {
         linksRepo.save(link);
     }
 
+    @Override
     public void removeLink(Long chatId, String url) {
         if (!chatsRepo.exists(chatId)) throw new IllegalArgumentException();
         linksRepo.delete(chatId, url);
     }
 
+    @Override
     public List<Link> getUserListLinks(Long chatId) {
         if (!chatsRepo.exists(chatId)) throw new IllegalArgumentException();
         return linksRepo.findAllLinksByChatId(chatId);

@@ -13,6 +13,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -78,7 +80,7 @@ public class StackOverflowClient implements UpdateChecker {
     }
 
     private void handle4xxError(HttpRequest httpRequest, ClientHttpResponse response) throws IOException {
-        String body = new String(response.getBody().readAllBytes());
+        String body = new String(response.getBody().readAllBytes(), Charset.defaultCharset());
         throw new StackOverflowException("Клиентская ошибка: " + response.getStatusCode() + " " + body);
     }
 
