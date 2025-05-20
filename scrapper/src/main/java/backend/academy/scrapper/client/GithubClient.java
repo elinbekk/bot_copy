@@ -9,13 +9,15 @@ import backend.academy.scrapper.dto.GithubIssue;
 import backend.academy.scrapper.dto.GithubPR;
 import backend.academy.scrapper.dto.GithubRepo;
 import backend.academy.scrapper.dto.GithubResource;
-import backend.academy.scrapper.entity.Link;
+import backend.academy.scrapper.dto.Link;
 import backend.academy.scrapper.entity.LinkType;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.net.URI;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.slf4j.Logger;
@@ -54,6 +56,7 @@ public class GithubClient implements UpdateChecker {
 
             JsonNode json = objectMapper.readTree(response.getBody());
             Instant lastUpdate = parseUpdateTime(json, link.getLinkType());
+
             log.info("Status Code: {}", response.getStatusCode());
 
             return lastUpdate.isAfter(Instant.parse(link.getLastCheckedTime()));
@@ -155,5 +158,59 @@ public class GithubClient implements UpdateChecker {
             return new GithubRepo(repoMatcher.group(1), repoMatcher.group(2));
         }
         throw new IllegalArgumentException("Неподдерживаемый Github URL");
+    }
+
+    public Optional<Detail> fetchDetail(Link link) {
+        try {
+            URI uri = buildUriWithFilters(link);
+            log.info("Запрос к GitHub: {}", uri);
+            ResponseEntity<String> response = getResponse(uri);
+            JsonNode json = objectMapper.readTree(response.getBody());
+
+            Instant lastUpdate = parseUpdateTime(json, link.getLinkType());
+            Instant lastChecked = Instant.parse(link.getLastCheckedTime());
+            if (!lastUpdate.isAfter(lastChecked)) {
+                return Optional.empty();
+            }
+            final ObjectNode payload = buildPayload(link, json);
+            return Optional.of(new Detail(lastUpdate, payload));
+        } catch (Exception e) {
+            log.error("Ошибка при fetchDetail GitHub: {}", e.getMessage(), e);
+            return Optional.empty();
+        }
+    }
+
+    private ObjectNode buildPayload(Link link, JsonNode json) {
+        ObjectNode payload = objectMapper.createObjectNode();
+        payload.put("title", json.get("title").asText());
+        payload.put("user", json.get("user").get("login").asText());
+        String when =
+                switch (link.getLinkType()) {
+                    case GITHUB_REPO -> json.get("created_at").asText();
+                    default -> json.get("updated_at").asText();
+                };
+        payload.put("createdAt", when);
+
+        String body = json.has("body") ? json.get("body").asText() : "";
+        payload.put("preview", body.length() <= 200 ? body : body.substring(0, 200));
+        return payload;
+    }
+
+    public static class Detail {
+        private final Instant lastUpdate;
+        private final JsonNode payload;
+
+        public Detail(Instant lastUpdate, JsonNode payload) {
+            this.lastUpdate = lastUpdate;
+            this.payload = payload;
+        }
+
+        public Instant getLastUpdate() {
+            return lastUpdate;
+        }
+
+        public JsonNode getPayload() {
+            return payload;
+        }
     }
 }

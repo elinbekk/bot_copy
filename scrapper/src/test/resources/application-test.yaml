@@ -1,0 +1,11 @@
+spring:
+  datasource:
+    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
+    url: jdbc:tc:postgresql:15-alpine:///testdb
+    username: test
+    password: test
+
+  liquibase:
+    enabled: true
+    change-log: classpath:/migrations/changelog-master.xml
+access-type: SQL

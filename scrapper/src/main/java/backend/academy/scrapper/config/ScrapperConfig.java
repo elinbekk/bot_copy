@@ -6,4 +6,4 @@ import org.springframework.validation.annotation.Validated;
 
 @Validated
 @ConfigurationProperties(prefix = "app")
-public record ScrapperConfig(@NotEmpty String baseUrl) {}
+public record ScrapperConfig(@NotEmpty String baseUrl, @NotEmpty String accessType) {}

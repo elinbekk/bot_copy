@@ -1,4 +1,4 @@
-package backend.academy.scrapper;
+package backend.academy.scrapper.client_test;
 
 import static backend.academy.scrapper.entity.LinkType.GITHUB_REPO;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
@@ -7,9 +7,10 @@ import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 
+import backend.academy.scrapper.WiremockIntegrationTest;
 import backend.academy.scrapper.client.GithubClient;
 import backend.academy.scrapper.config.GithubProperties;
-import backend.academy.scrapper.entity.Link;
+import backend.academy.scrapper.dto.Link;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Assertions;

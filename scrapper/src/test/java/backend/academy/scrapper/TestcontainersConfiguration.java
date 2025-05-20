@@ -24,10 +24,10 @@ class TestcontainersConfiguration {
     @RestartScope
     @ServiceConnection
     PostgreSQLContainer<?> postgresContainer() {
-        return new PostgreSQLContainer<>("postgres:17-alpine")
+        return new PostgreSQLContainer<>("postgres:15-alpine")
                 .withExposedPorts(5432)
-                .withDatabaseName("local")
-                .withUsername("postgres")
+                .withDatabaseName("test")
+                .withUsername("test")
                 .withPassword("test");
     }
 
