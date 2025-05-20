@@ -15,6 +15,7 @@ dependency-reduced-pom.xml
 *.iws
 *.iml
 *.ipr
+.run
 
 ### Scala SBT
 .bsp
